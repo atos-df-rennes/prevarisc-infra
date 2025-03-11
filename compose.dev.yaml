@@ -4,16 +4,20 @@ services:
       args:
         user: prv
         uid: 1000
-      dockerfile: app/Dockerfile
+      dockerfile: php/Dockerfile
     restart: unless-stopped
     volumes:
       - ./prevarisc:/var/www/html/prevarisc
       - ./app/HashedFileDataStore.php:/var/www/html/prevarisc/application/plugins/HashedFileDataStore.php
-      - ./app/php.ini:/usr/local/etc/php/php.ini
-      - ./app/apache/apache.conf:/etc/apache2/sites-available/000-default.conf
-      - ./app/apache/httpd-prevarisc-version.conf:/etc/apache2/httpd-prevarisc-version.conf
-      - ./app/apache/httpd-prevarisc-config.conf:/etc/apache2/httpd-prevarisc-config.conf
-      - ./app/mysql/my.cnf:/etc/mysql/conf.d
+      - ./php/php.ini:/usr/local/etc/php/php.ini
+      - ./apache/apache.conf:/etc/apache2/sites-available/000-default.conf
+      - ./apache/httpd-prevarisc-version.conf:/etc/apache2/httpd-prevarisc-version.conf
+      - ./apache/httpd-prevarisc-config.conf:/etc/apache2/httpd-prevarisc-config.conf
+      - ./mysql/my.cnf:/etc/mysql/conf.d
+    post_start:
+      - command: chmod 775 /var/www/html/prevarisc/public
+      - command: chmod -R 775 /var/www/html/prevarisc/public/data
+      - command: bash -c 'mkdir -p /var/www/html/prevarisc/public/data/uploads/{commission,dossier,etablissement,etablissement_miniature}'
     ports:
       - target: 80
         published: 7080

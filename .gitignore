@@ -1,4 +1,4 @@
 .idea
-app/apache/httpd-prevarisc-config.conf
-app/apache/httpd-prevarisc-version.conf
+apache/httpd-prevarisc-config.conf
+apache/httpd-prevarisc-version.conf
 prevarisc/

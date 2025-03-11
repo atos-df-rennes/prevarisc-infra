@@ -3,14 +3,16 @@ FROM php:7.1-apache
 ARG user
 ARG uid
 
-RUN useradd -u "$uid" -d /home/"$user" "$user"
-RUN usermod -aG prv www-data
-RUN mkdir -p /home/"$user"/.composer && \
-    mkdir -p /home/"$user"/cache && \
-    chmod 775 /home/"$user"/cache && \
-    mkdir -p /home/"$user"/logs && \
-    chown -R "$user":"$user" /home/"$user" &&\
-    chown -R "$user":"$user" /var/www
+# Création de l'utilisateur "prv"
+RUN useradd -u "$uid" -d /home/"$user" "$user" \
+    && usermod -aG prv www-data \
+    && mkdir -p /home/"$user"/.composer \
+    # Création des dossiers spécifiques à l'application et paramétrage des droits/permissions
+    && mkdir -p /home/"$user"/cache \
+    && chmod 775 /home/"$user"/cache \
+    && mkdir -p /home/"$user"/logs \
+    && chown -R "$user":"$user" /home/"$user" \
+    && chown -R "$user":"$user" /var/www
 
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
 

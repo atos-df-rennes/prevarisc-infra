@@ -81,8 +81,8 @@ SetEnv PREVARISC_PROXY_HOST "127.0.0.1"
 SetEnv PREVARISC_PROXY_USERNAME ""
 
 # Set data path where all the data is stored
-SetEnv PREVARISC_REAL_DATA_PATH "/mnt/prevarisc-data"
-Define PREVARISC_REAL_DATA_PATH "/mnt/prevarisc-data"
+SetEnv PREVARISC_REAL_DATA_PATH "/var/www/html/prevarisc/public/data"
+Define PREVARISC_REAL_DATA_PATH "/var/www/html/prevarisc/public/data"
 SetEnv PREVARISC_DATASTORE_ADAPTER "Plugin_HashedFileDataStore"
 # SetEnv PREVARISC_DATASTORE_ADAPTER "Plugin_SimpleFileDataStore"
 
