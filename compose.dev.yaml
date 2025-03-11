@@ -1,0 +1,21 @@
+services:
+  app:
+    build:
+      args:
+        user: prv
+        uid: 1000
+      dockerfile: app/Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ./prevarisc:/var/www/html/prevarisc
+      - ./app/HashedFileDataStore.php:/var/www/html/prevarisc/application/plugins/HashedFileDataStore.php
+      - ./app/php.ini:/usr/local/etc/php/php.ini
+      - ./app/apache/apache.conf:/etc/apache2/sites-available/000-default.conf
+      - ./app/apache/httpd-prevarisc-version.conf:/etc/apache2/httpd-prevarisc-version.conf
+      - ./app/apache/httpd-prevarisc-config.conf:/etc/apache2/httpd-prevarisc-config.conf
+    ports:
+      - target: 80
+        published: 7080
+        protocol: tcp
+    extra_hosts:
+      - host.docker.internal:host-gateway

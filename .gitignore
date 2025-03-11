@@ -1,0 +1,4 @@
+.idea
+app/apache/httpd-prevarisc-config.conf
+app/apache/httpd-prevarisc-version.conf
+prevarisc/
