@@ -13,9 +13,27 @@ services:
       - ./app/apache/apache.conf:/etc/apache2/sites-available/000-default.conf
       - ./app/apache/httpd-prevarisc-version.conf:/etc/apache2/httpd-prevarisc-version.conf
       - ./app/apache/httpd-prevarisc-config.conf:/etc/apache2/httpd-prevarisc-config.conf
+      - ./app/mysql/my.cnf:/etc/mysql/conf.d
     ports:
       - target: 80
         published: 7080
         protocol: tcp
     extra_hosts:
       - host.docker.internal:host-gateway
+
+  db:
+    image: mysql:5.6.51
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - target: 3306
+        published: 33061
+        protocol: tcp
+    environment:
+      MYSQL_ROOT_PASSWORD: planmusique
+      MYSQL_DATABASE: PRV_prevarisc_v2
+      MYSQL_USER: prevarisc
+      MYSQL_PASSWORD: planmusique
+
+volumes:
+  db_data:
