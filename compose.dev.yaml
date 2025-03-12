@@ -8,6 +8,9 @@ services:
     restart: unless-stopped
     volumes:
       - ./prevarisc:/var/www/html/prevarisc
+      # Passerelle Plat'AU montée pour que Prevarisc puisse faire un healthcheck.
+      # Lorsque le code sera rapatrié dans l'application, ce montage ne sera plus nécessaire.
+      - ./prevarisc-passerelle-platau:/var/www/html/prevarisc-passerelle-platau
       - ./app/HashedFileDataStore.php:/var/www/html/prevarisc/application/plugins/HashedFileDataStore.php
       - ./php/php.ini:/usr/local/etc/php/php.ini
       - ./apache/apache.conf:/etc/apache2/sites-available/000-default.conf
