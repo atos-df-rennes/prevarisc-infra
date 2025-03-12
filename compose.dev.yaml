@@ -4,7 +4,7 @@ services:
       args:
         user: prv
         uid: 1000
-      dockerfile: php/Dockerfile
+      dockerfile: php/prevarisc/Dockerfile
     restart: unless-stopped
     volumes:
       - ./prevarisc:/var/www/html/prevarisc
@@ -12,7 +12,7 @@ services:
       # Lorsque le code sera rapatrié dans l'application, ce montage ne sera plus nécessaire.
       - ./prevarisc-passerelle-platau:/var/www/html/prevarisc-passerelle-platau
       - ./app/HashedFileDataStore.php:/var/www/html/prevarisc/application/plugins/HashedFileDataStore.php
-      - ./php/php.ini:/usr/local/etc/php/php.ini
+      - ./php/prevarisc/php.ini:/usr/local/etc/php/php.ini
       - ./apache/apache.conf:/etc/apache2/sites-available/000-default.conf
       - ./apache/httpd-prevarisc-version.conf:/etc/apache2/httpd-prevarisc-version.conf
       - ./apache/httpd-prevarisc-config.conf:/etc/apache2/httpd-prevarisc-config.conf
@@ -27,6 +27,17 @@ services:
         protocol: tcp
     extra_hosts:
       - host.docker.internal:host-gateway
+
+  platau:
+    build:
+      args:
+        user: prv
+        uid: 1000
+      dockerfile: php/prevarisc-passerelle-platau/Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ./prevarisc-passerelle-platau:/var/www/html
+      - ./php/prevarisc-passerelle-platau/php.ini:/usr/local/etc/php/php.ini
 
   db:
     image: mysql:5.6.51
