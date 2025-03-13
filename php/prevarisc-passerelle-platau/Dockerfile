@@ -21,3 +21,5 @@ RUN apt update \
         pdo_mysql
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+USER "$user"

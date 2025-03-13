@@ -33,18 +33,26 @@ cp apache/httpd-prevarisc-version.conf.example apache/httpd-prevarisc-version.co
 
 Buildez les conteneurs et démarrez la stack :
 ```shell
-docker compose --file composer.dev.yaml build
+docker compose --file compose.dev.yaml build
 docker compose --file compose.dev.yaml up --detach
 ```
 
 Enfin, se connectez aux conteneurs PHP de Prevarisc de la passerelle Plat'AU et installez les dépendances :
 ```shell
-docker exec -ti app bash
+docker compose --file compose.dev.yaml exec -ti app bash
 cd prevarisc
+git checkout migration-symfony
 composer install
 ```
 ```shell
-docker exec -ti platau bash
+docker compose --file compose.dev.yaml exec -ti app bash
+cd prevarisc-migration
+cp .env.example .env
+composer install
+php bin/console doctrine:migrations:migrate --no-interaction
+```
+```shell
+docker compose --file compose.dev.yaml exec -ti platau bash
 cd prevarisc-passerelle-platau
 composer install
 ```
@@ -53,13 +61,13 @@ composer install
 
 Pour installer les outils de développements, connectez-vous au conteneur PHP de la passerelle Plat'AU et installez les dépendances :
 ```shell
-docker exec -ti platau bash
+docker compose --file compose.dev.yaml exec -ti platau bash
 cd prevarisc/tools
 composer install
 ```
 Pour lancer les outils, connectez-vous au conteneur PHP de la passerelle Plat'AU et lancez les commandes de manière standard :
 ```shell
-docker exec -ti platau bash
+docker compose --file compose.dev.yaml exec -ti platau bash
 cd prevarisc
 
 PHPStan : tools/vendor/bin/phpstan --memory-limit=-1
@@ -69,7 +77,7 @@ Générer le changelog : tools/vendor/bin/conventional-changelog
 ```
 Pour lancer les tests unitaires, connectez-vous au conteneur PHP de Prevarisc et lancez les tests :
 ```shell
-docker exec -ti app bash
+docker compose --file compose.dev.yaml exec -ti app bash
 cd prevarisc
 vendor/bin/phpunit --bootstrap tests/bootstrap/indexTest.php --testdox tests/
 ```

@@ -4,7 +4,7 @@ ARG user
 ARG uid
 
 # Création de l'utilisateur "prv"
-RUN useradd -u "$uid" -d /home/"$user" "$user" \
+RUN useradd -G www-data -u "$uid" -d /home/"$user" "$user" \
     && usermod -aG prv www-data \
     && mkdir -p /home/"$user"/.composer \
     # Création des dossiers spécifiques à l'application et paramétrage des droits/permissions
@@ -32,3 +32,5 @@ RUN a2enmod authz_core deflate dir ssl headers expires include rewrite \
         exif
 
 COPY --from=composer:2.2 /usr/bin/composer /usr/bin/composer
+
+USER "$user"
