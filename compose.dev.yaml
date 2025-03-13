@@ -40,9 +40,10 @@ services:
       dockerfile: php/prevarisc-passerelle-platau/Dockerfile
     restart: unless-stopped
     volumes:
-      - ./prevarisc:/var/www/html/prevarisc
       - ./prevarisc-passerelle-platau:/var/www/html/prevarisc-passerelle-platau
       - ./php/prevarisc-passerelle-platau/php.ini:/usr/local/etc/php/php.ini
+      - ./prevarisc:/var/www/html/prevarisc
+      - ./prevarisc-migration:/var/www/html/prevarisc-migration
 
   db:
     image: mysql:5.6.51

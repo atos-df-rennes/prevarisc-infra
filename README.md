@@ -66,6 +66,7 @@ cd prevarisc/tools
 composer install
 ```
 Pour lancer les outils, connectez-vous au conteneur PHP de la passerelle Plat'AU et lancez les commandes de manière standard :
+- Prevarisc
 ```shell
 docker compose --file compose.dev.yaml exec -ti platau bash
 cd prevarisc
@@ -80,6 +81,16 @@ Pour lancer les tests unitaires, connectez-vous au conteneur PHP de Prevarisc et
 docker compose --file compose.dev.yaml exec -ti app bash
 cd prevarisc
 vendor/bin/phpunit --bootstrap tests/bootstrap/indexTest.php --testdox tests/
+```
+- Migration Symfony
+```shell
+docker compose --file compose.dev.yaml exec -ti platau bash
+cd prevarisc-migration
+
+PHPStan : tools/vendor/bin/phpstan --memory-limit=-1
+Rector : tools/vendor/bin/rector  [--dry-run]
+PHP-CS-FIXER : tools/vendor/bin/php-cs-fixer fix [--dry-run]
+Générer le changelog : tools/vendor/bin/conventional-changelog
 ```
 
 ## Installation de production
