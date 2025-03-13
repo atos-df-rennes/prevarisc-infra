@@ -1,0 +1,108 @@
+# Generic parameters
+SetEnv PREVARISC_DEBUG_ENABLED 1
+SetEnv PREVARISC_SECURITY_SALT ""
+SetEnv PREVARISC_ENFORCE_SECURITY 0
+SetEnv PREVARISC_SESSION_MAX_LIFETIME 3600
+
+# Database configuration
+SetEnv PREVARISC_DB_ADAPTER "mysqli"
+SetEnv PREVARISC_DB_HOST "db"
+SetEnv PREVARISC_DB_CHARSET "utf8"
+SetEnv PREVARISC_DB_USERNAME ""
+SetEnv PREVARISC_DB_PASSWORD ""
+SetEnv PREVARISC_DB_DBNAME "PRV_prevarisc_v2"
+SetEnv PREVARISC_DB_PORT 33061
+
+# Cache configuration
+SetEnv PREVARISC_CACHE_LIFETIME "3600"
+SetEnv PREVARISC_CACHE_ADAPTER "File"
+SetEnv PREVARISC_CACHE_DIR "/home/prv/cache"
+
+# LDAP Configuration
+SetEnv PREVARISC_LDAP_ENABLED 0
+SetEnv PREVARISC_LDAP_HOST ""
+SetEnv PREVARISC_LDAP_PORT "389"
+SetEnv PREVARISC_LDAP_USERNAME ""
+SetEnv PREVARISC_LDAP_PASSWORD ""
+SetEnv PREVARISC_LDAP_BASEDN ""
+
+# Clé d'authentification API
+SetEnv PREVARISC_SECURITY_KEY ""
+
+SetEnv PREVARISC_MAIL_ENABLED 0
+
+# Couches cartographiques
+SetEnv PREVARISC_PLUGIN_IGNKEY "essentiels,adresse,administratif,cartes,cartovecto"
+SetEnv PREVARISC_IGN_AUTOCONF "/ign/prevarisc/customConfig.json"
+# SetEnv PREVARISC_PLUGIN_GOOGLEMAPKEY ""
+
+# Geoconcept
+# SetEnv PREVARISC_PLUGIN_GEOCONCEPT_URL "https://servcarto/geoconcept-web/wmts"
+# SetEnv PREVARISC_PLUGIN_GEOCONCEPT_LAYER "Atlas"
+# SetEnv PREVARISC_PLUGIN_GEOCONCEPT_PROJECTION "EPSG27563"
+# SetEnv PREVARISC_PLUGIN_GEOCONCEPT_APP_ID ""
+# SetEnv PREVARISC_PLUGIN_GEOCONCEPT_TOKEN ""
+# SetEnv PREVARISC_PLUGIN_GEOCONCEPT_GEOCODER "https://servcarto/geoconcept-web/api/lbs/geocode/json"
+#SetEnv PREVARISC_CARTO_DEFAULT_LON "5.377678"
+#SetEnv PREVARISC_CARTO_DEFAULT_LAT "43.296388"
+
+# Plugins tiers
+# SetEnv PREVARISC_THIRDPARTY_PLUGINS "Plugin_SDIS29;Plugin_LibelleDossierObservations;Plugin_LibelleDossierPrescriptions;Plugin_FacteurCriticite"
+
+# CAS
+SetEnv PREVARISC_CAS_ENABLED 0
+SetEnv PREVARISC_CAS_HOST "rns090lv.rennes.si.fr.atosorigin.com"
+SetEnv PREVARISC_CAS_PORT "8080"
+SetEnv PREVARISC_CAS_CONTEXT "cas"
+SetEnv PREVARISC_CAS_NO_SERVER_VALIDATION "1"
+SetEnv PREVARISC_CAS_VERSION "2.0"
+
+# SSO NTLM
+SetEnv PREVARISC_NTLM_ENABLED 0
+
+# Parametres specifiques
+SetEnv PREVARISC_LOCAL_SOMMEIL_TYPES "1;5"
+SetEnv PREVARISC_COMMISSION_COMMUNALE_TYPE ""
+SetEnv PREVARISC_RISQUES_NATURELS_EXEMPLES "Avalanche, Cyclonique, Feux de Forêt, Inondation, Mouvement de terrain, Sismique, Submersion marine, Tempête, Volcanique"
+SetEnv PREVARISC_RISQUES_TECHNOLOGIQUES_EXEMPLES "Industriel, Nucléaire, Rupture de barrage, Transport de matières dangereuses"
+SetEnv PREVARISC_DASHBOARD_NEXT_COMMISSIONS_DAYS 15
+SetEnv PREVARISC_DASHBOARD_DOSSIERS_SANS_AVIS_DAYS 15
+SetEnv PREVARISC_DASHBOARD_COURRIER_SANS_REPONSE_DAYS 10
+
+# Visualiseur géobretagne
+# SetEnv PREVARISC_PLUGIN_GEOBRETAGNE "https://geobretagne.fr/m/"
+# SetEnv PREVARISC_PLUGIN_GEOBRETAGNE "http://localhost:7080/js/sdis29/sviewer/index.html"
+
+# Proxy
+SetEnv PREVARISC_PROXY_ENABLED 0
+SetEnv PREVARISC_PROXY_PROTOCOL "HTTP"
+SetEnv PREVARISC_PROXY_PORT "8080"
+SetEnv PREVARISC_PROXY_HOST "127.0.0.1"
+SetEnv PREVARISC_PROXY_USERNAME ""
+
+# Set data path where all the data is stored
+SetEnv PREVARISC_REAL_DATA_PATH "/var/www/html/prevarisc/public/data"
+Define PREVARISC_REAL_DATA_PATH "/var/www/html/prevarisc/public/data"
+SetEnv PREVARISC_DATASTORE_ADAPTER "Plugin_HashedFileDataStore"
+# SetEnv PREVARISC_DATASTORE_ADAPTER "Plugin_SimpleFileDataStore"
+
+# Utiliser la date de commission pour relancer la périodicité
+SetEnv PREVARISC_DATE_COMMISSION_RELANCE_PERIODICITE 0
+
+# Utiliser le nouveau descriptif
+SetEnv PREVARISC_DESCRIPTIF_PERSONNALISE 1
+
+# Passer la périodicité en années
+SetEnv PREVARISC_UNITE_PERIODICITE_ANNEES 0
+
+# Désactive tous les affichages liés à Plat'AU
+SetEnv PREVARISC_DEACTIVATE_PLATAU 0
+
+# Nombre maximum de dossiers à afficher en simultané
+# SetEnv PREVARISC_DOSSIERS_MAX_A_AFFICHER 8
+
+# Utiliser l'API Adresse plutôt que la base locale Prevarisc
+SetEnv PREVARISC_API_ADRESSE 0
+
+# Utiliser l'affichage Bootstrap v3 plutôt que Boostrap v2
+SetEnv PREVARISC_BOOTSTRAP_3 0

@@ -1,0 +1,61 @@
+services:
+  app:
+    build:
+      args:
+        user: prv
+        uid: 1000
+      dockerfile: php/prevarisc/Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ./prevarisc:/var/www/html/prevarisc
+      - ./app/HashedFileDataStore.php:/var/www/html/prevarisc/application/plugins/HashedFileDataStore.php
+      - ./php/prevarisc/php.ini:/usr/local/etc/php/php.ini
+      - ./apache/apache.conf:/etc/apache2/sites-available/000-default.conf
+      - ./apache/httpd-prevarisc-version.conf:/etc/apache2/httpd-prevarisc-version.conf
+      - ./apache/httpd-prevarisc-config.conf:/etc/apache2/httpd-prevarisc-config.conf
+      - ./mysql/my.cnf:/etc/mysql/conf.d
+      - ./prevarisc-migration:/var/www/html/prevarisc-migration
+      # Passerelle Plat'AU montée pour que Prevarisc puisse faire un healthcheck.
+      # Lorsque le code sera rapatrié dans l'application, ce montage ne sera plus nécessaire.
+      - ./prevarisc-passerelle-platau:/var/www/html/prevarisc-passerelle-platau
+    post_start:
+      - command: chmod 775 /var/www/html/prevarisc/public
+      - command: chmod -R 775 /var/www/html/prevarisc/public/data
+      - command: bash -c 'mkdir -p /var/www/html/prevarisc/public/data/uploads/{commission,dossier,etablissement,etablissement_miniature}'
+    ports:
+      - target: 80
+        published: 7080
+        protocol: tcp
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
+  # Passerelle Plat'AU dans un conteneur car version de PHP différente.
+  # Lorsque le code sera rapatrié dans l'application, ce conteneur ne sera plus nécessaire.
+  platau:
+    build:
+      args:
+        user: prv
+        uid: 1000
+      dockerfile: php/prevarisc-passerelle-platau/Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ./prevarisc:/var/www/html/prevarisc
+      - ./prevarisc-passerelle-platau:/var/www/html/prevarisc-passerelle-platau
+      - ./php/prevarisc-passerelle-platau/php.ini:/usr/local/etc/php/php.ini
+
+  db:
+    image: mysql:5.6.51
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - target: 3306
+        published: 33061
+        protocol: tcp
+    environment:
+      MYSQL_ROOT_PASSWORD: planmusique
+      MYSQL_DATABASE: PRV_prevarisc_v2
+      MYSQL_USER: prevarisc
+      MYSQL_PASSWORD: planmusique
+
+volumes:
+  db_data:
