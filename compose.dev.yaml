@@ -20,8 +20,9 @@ services:
       - ./prevarisc-passerelle-platau:/var/www/html/prevarisc-passerelle-platau
     post_start:
       - command: chmod 775 /var/www/html/prevarisc/public
-      - command: chmod -R 775 /var/www/html/prevarisc/public/data
       - command: bash -c 'mkdir -p /var/www/html/prevarisc/public/data/uploads/{commission,dossier,etablissement,etablissement_miniature}'
+      - command: bash -c 'mkdir -p /var/www/html/prevarisc/public/data/uploads/documents/{1,2,3,4}'
+      - command: chmod -R 775 /var/www/html/prevarisc/public/data
     ports:
       - target: 80
         published: 7080
