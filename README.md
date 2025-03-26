@@ -57,6 +57,9 @@ cd prevarisc-passerelle-platau
 composer install
 ```
 
+> [!NOTE]
+> Si vous souhaitez utiliser le HashedFileDataStore, copier/coller le fichier présent dans app/ vers /prevarisc/application/plugins
+
 ### Outils de développement
 
 Pour installer les outils de développements, connectez-vous au conteneur PHP de la passerelle Plat'AU et installez les dépendances :
