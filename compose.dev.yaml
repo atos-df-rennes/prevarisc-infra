@@ -8,7 +8,6 @@ services:
     restart: unless-stopped
     volumes:
       - ./prevarisc:/var/www/html/prevarisc
-      - ./app/HashedFileDataStore.php:/var/www/html/prevarisc/application/plugins/HashedFileDataStore.php
       - ./php/prevarisc/php.ini:/usr/local/etc/php/php.ini
       - ./apache/apache.conf:/etc/apache2/sites-available/000-default.conf
       - ./apache/httpd-prevarisc-version.conf:/etc/apache2/httpd-prevarisc-version.conf
@@ -20,8 +19,8 @@ services:
       - ./prevarisc-passerelle-platau:/var/www/html/prevarisc-passerelle-platau
     post_start:
       - command: chmod 775 /var/www/html/prevarisc/public
-      - command: bash -c 'mkdir -p /var/www/html/prevarisc/public/data/uploads/{commission,dossier,etablissement,etablissement_miniature}'
-      - command: bash -c 'mkdir -p /var/www/html/prevarisc/public/data/uploads/documents/{1,2,3,4}'
+      - command: bash -c 'mkdir -p /var/www/html/prevarisc/public/data/uploads/{commission,dossier,etablissement,etablissement_miniature} && chown prv:prv /var/www/html/prevarisc/public/data/uploads/*'
+      - command: bash -c 'mkdir -p /var/www/html/prevarisc/public/data/uploads/documents/{1,2,3,4} && chown prv:prv /var/www/html/prevarisc/public/data/uploads/documents/*'
       - command: chmod -R 775 /var/www/html/prevarisc/public/data
     ports:
       - target: 80
