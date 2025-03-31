@@ -41,7 +41,7 @@ Enfin, se connectez aux conteneurs PHP de Prevarisc de la passerelle Plat'AU et 
 ```shell
 docker compose --file compose.dev.yaml exec -ti app bash
 cd prevarisc
-git checkout migration-symfony
+git checkout feature/migration-symfony
 composer install
 ```
 ```shell
