@@ -14,6 +14,7 @@ ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/do
 RUN apt update \
     && apt install -y \
         zip \
+        git \
     && apt clean \
     && chmod +x /usr/local/bin/install-php-extensions \
     && install-php-extensions \
