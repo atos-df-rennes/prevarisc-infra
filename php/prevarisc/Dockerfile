@@ -29,8 +29,7 @@ RUN a2enmod authz_core deflate dir ssl headers expires include rewrite \
         zip \
         gd \
         ldap \
-        exif \
-        intl
+        exif
 
 COPY --from=composer:2.2 /usr/bin/composer /usr/bin/composer
 
