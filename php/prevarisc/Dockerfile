@@ -17,6 +17,10 @@ RUN useradd -G www-data -u "$uid" -d /home/"$user" "$user" \
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
 
 RUN a2enmod authz_core deflate dir ssl headers expires include rewrite \
+    && sed -i '/deb http:\/\/deb.debian.org\/debian buster main/d' /etc/apt/sources.list \
+    && sed -i 's/^# deb http:\/\/snapshot.debian.org\/archive\/debian\/20191118T000000Z buster main/deb http:\/\/snapshot.debian.org\/archive\/debian\/20191118T000000Z buster main/' /etc/apt/sources.list \
+    && sed -i '/deb http:\/\/security.debian.org\/debian-security buster\/updates main/d' /etc/apt/sources.list \
+    && sed -i '/deb http:\/\/deb.debian.org\/debian buster-updates main/d' /etc/apt/sources.list \
     && apt update \
     && apt install -y \
         zip \
