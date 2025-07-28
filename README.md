@@ -39,9 +39,6 @@ docker compose --file compose.dev.yaml up --detach
 
 Enfin, se connectez aux conteneurs PHP de Prevarisc de la passerelle Plat'AU et installez les dépendances :
 ```shell
-cd prevarisc
-git checkout feature/migration-symfony
-cd ..
 docker compose --file compose.dev.yaml exec -ti app bash
 cd prevarisc
 composer install
