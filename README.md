@@ -37,7 +37,7 @@ docker compose --file compose.dev.yaml build
 docker compose --file compose.dev.yaml up --detach
 ```
 
-Enfin, se connectez aux conteneurs PHP de Prevarisc de la passerelle Plat'AU et installez les dépendances :
+Enfin, se connectez aux conteneurs PHP de Prevarisc et de la passerelle Plat'AU et installez les dépendances :
 ```shell
 docker compose --file compose.dev.yaml exec -ti app bash
 cd prevarisc
@@ -47,6 +47,7 @@ composer install
 docker compose --file compose.dev.yaml exec -ti app bash
 cd prevarisc-migration
 cp .env.example .env
+Renseignez les valeurs de développement : APP_ENV=dev, APP_DEBUG=true
 composer install
 php bin/console doctrine:migrations:migrate --no-interaction
 ```
