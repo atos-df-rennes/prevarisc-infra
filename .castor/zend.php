@@ -36,3 +36,12 @@ function zendAnalyse(): void
     io()->section('Executing PHPStan');
     run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc', 'platau', 'tools/vendor/bin/phpstan', '--memory-limit=-1']);
 }
+
+#[AsTask(name: 'test', namespace: 'zend', description: 'Test for Zend application')]
+function zendTest(): void
+{
+    io()->title('Testing Zend application');
+
+    io()->section('Executing PHPUnit');
+    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc', 'app', 'vendor/bin/phpunit', '--bootstrap', 'tests/bootstrap/indexTest.php', '--testdox', 'tests/']);
+}

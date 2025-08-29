@@ -56,6 +56,21 @@ function analyse(): void
     );
 }
 
+#[AsTask(description: 'Test all applications')]
+function test(): void
+{
+    io()->title('Testing all applications');
+
+    parallel(
+        function () {
+            zendTest();
+        },
+        function () {
+            symfonyTest();
+        }
+    );
+}
+
 #[AsTask(namespace: 'prevarisc', description: 'Setup the project')]
 function setup(): void
 {

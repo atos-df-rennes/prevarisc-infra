@@ -36,3 +36,12 @@ function symfonyAnalyse(): void
     io()->section('Executing PHPStan');
     run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'platau', 'tools/vendor/bin/phpstan', '--memory-limit=-1']);
 }
+
+#[AsTask(name: 'test', namespace: 'symfony', description: 'Test for Symfony application')]
+function symfonyTest(): void
+{
+    io()->title('Testing Symfony application');
+
+    io()->section('Executing PHPUnit');
+    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'php', 'bin/phpunit', '--testdox']);
+}
