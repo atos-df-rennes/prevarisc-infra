@@ -4,8 +4,10 @@ use Castor\Attribute\AsTask;
 
 use Symfony\Component\Process\ExecutableFinder;
 use function Castor\check;
+use function Castor\fs;
 use function Castor\import;
 use function Castor\io;
+use function Castor\notify;
 use function Castor\parallel;
 use function Castor\run;
 
@@ -71,25 +73,43 @@ function test(): void
     );
 }
 
-#[AsTask(namespace: 'prevarisc', description: 'Setup the project')]
+#[AsTask(namespace: 'prevarisc', description: 'Setup Prevarisc')]
 function setup(): void
 {
-    io()->title('Setting up the project');
+    io()->title('Setting up Prevarisc.');
 
     check(
-      'Checking if Git is installed',
+      'Checking if Git is installed.',
       'Git is not installed. Please install it first.',
       fn () => (new ExecutableFinder())->find('git')
     );
 
-    io()->section('Cloning Prevarisc repository');
+    io()->section('Cloning repositories.');
+
+    io()->text('Cloning Prevarisc repository.');
     run(['git', 'clone', 'https://github.com/atos-df-rennes/prevarisc.git']);
 
     io()->info('You will need a Personal Access Token for the next operation. Please create one if you do not have one already.');
-    io()->confirm('Resume script?');
-    io()->section('Cloning Prevarisc Migration repository');
+
+    $resumeScript = io()->confirm('Resume script?');
+    if (!$resumeScript) {
+        return;
+    }
+
+    io()->text('Cloning Prevarisc Migration repository.');
     run(['git', 'clone', 'https://github.com/atos-df-rennes/prevarisc-migration.git']);
 
-    io()->section('Cloning Prevarisc Passerelle Plat\'AU repository');
+    io()->text('Cloning Prevarisc Passerelle Plat\'AU repository.');
     run(['git', 'clone', 'https://github.com/atos-df-rennes/prevarisc-passerelle-platau.git']);
+
+    io()->section('Copying web server files.');
+
+    io()->text('Copying configuration file.');
+    fs()->copy('apache/httpd-prevarisc-config.conf.example', 'apache/httpd-prevarisc-config.conf');
+
+    io()->text('Copying version file.');
+    fs()->copy('apache/httpd-prevarisc-version.conf.example', 'apache/httpd-prevarisc-version.conf');
+
+    // @todo: Voir pour faire fonctionner la notification
+    // notify('Prevarisc is ready!');
 }
