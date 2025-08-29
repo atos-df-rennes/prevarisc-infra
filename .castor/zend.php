@@ -7,23 +7,32 @@ use function Castor\run;
 #[AsTask(name: 'cs-check', namespace: 'zend', description: 'Check coding style for Zend application')]
 function zendCsCheck(): void
 {
-  io()->title('Checking coding style for Zend application');
+    io()->title('Checking coding style for Zend application');
 
-  io()->section('Executing Rector');
-  run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', 'platau', 'php', 'prevarisc/tools/vendor/bin/rector', '--config', 'prevarisc/rector.php', '--dry-run']);
+    io()->section('Executing Rector');
+    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc', 'platau', 'tools/vendor/bin/rector', '--dry-run']);
 
-  io()->section('Executing PHP-CS-FIXER');
-  run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', 'platau', 'php', 'prevarisc/tools/vendor/bin/php-cs-fixer', '--config=prevarisc/.php-cs-fixer.dist.php', 'fix', '--dry-run']);
+    io()->section('Executing PHP-CS-FIXER');
+    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc', 'platau', 'tools/vendor/bin/php-cs-fixer', 'fix', '--dry-run']);
 }
 
 #[AsTask(name: 'cs-fix', namespace: 'zend', description: 'Fix coding style for Zend application')]
 function zendCsFix(): void
 {
-  io()->title('Fixing coding style for Zend application');
+    io()->title('Fixing coding style for Zend application');
 
-  io()->section('Executing Rector');
-  run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', 'platau', 'php', 'prevarisc/tools/vendor/bin/rector', '--config', 'prevarisc/rector.php']);
+    io()->section('Executing Rector');
+    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc', 'platau', 'tools/vendor/bin/rector']);
 
-  io()->section('Executing PHP-CS-FIXER');
-  run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', 'platau', 'php', 'prevarisc/tools/vendor/bin/php-cs-fixer', '--config=prevarisc/.php-cs-fixer.dist.php', 'fix']);
+    io()->section('Executing PHP-CS-FIXER');
+    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc', 'platau', 'tools/vendor/bin/php-cs-fixer', 'fix']);
+}
+
+#[AsTask(name: 'analyse', namespace: 'zend', description: 'Analyse for Zend application')]
+function zendAnalyse(): void
+{
+    io()->title('Analysing Zend application');
+
+    io()->section('Executing PHPStan');
+    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc', 'platau', 'tools/vendor/bin/phpstan', '--memory-limit=-1']);
 }

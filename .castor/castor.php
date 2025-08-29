@@ -41,6 +41,21 @@ function csFix(): void
     );
 }
 
+#[AsTask(description: 'Analyse all applications')]
+function analyse(): void
+{
+    io()->title('Analysing all applications');
+
+    parallel(
+        function () {
+            zendAnalyse();
+        },
+        function () {
+            symfonyAnalyse();
+        }
+    );
+}
+
 #[AsTask(namespace: 'prevarisc', description: 'Setup the project')]
 function setup(): void
 {
