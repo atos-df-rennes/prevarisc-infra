@@ -96,6 +96,12 @@ PHP-CS-FIXER : tools/vendor/bin/php-cs-fixer fix [--dry-run]
 Générer le changelog : tools/vendor/bin/conventional-changelog
 ```
 
+## Castor
+
+[Castor](https://castor.jolicode.com/) est utilisé pour simplifer l'installation et l'exploitation lors du développement de Prevarisc. Pour pouvoir utiliser les commandes Castor, [installer Castor](https://castor.jolicode.com/installation/#as-a-static-binary) et [activer l'autocomplétion](https://castor.jolicode.com/going-further/interacting-with-castor/autocomplete/#installation).
+
+Entrer `castor` dans la console pour voir la liste des commandes disponibles.
+
 ## Installation de production
 
 A venir.
