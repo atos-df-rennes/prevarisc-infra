@@ -33,8 +33,11 @@ RUN a2enmod authz_core deflate dir ssl headers expires include rewrite \
         zip \
         gd \
         ldap \
-        exif
+        exif \
+        xdebug
 
 COPY --from=composer:2.2 /usr/bin/composer /usr/bin/composer
+# Xdebug conf
+COPY php/prevarisc/xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
 
 USER "$user"
