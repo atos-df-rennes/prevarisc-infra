@@ -23,34 +23,74 @@ function setup(): void
 
     io()->section('Cloning repositories.');
 
-    io()->text('Cloning Prevarisc repository.');
-    run(['git', 'clone', 'https://github.com/atos-df-rennes/prevarisc.git']);
-
-    io()->info('You will need a Personal Access Token for the next operation. Please create one if you do not have one already.');
-
-    $resumeScript = io()->confirm('Resume script?');
-    if (!$resumeScript) {
-        return;
+    if (!fs()->exists('prevarisc')) {
+        io()->text('Cloning Prevarisc repository.');
+        run([
+            'git',
+            'clone',
+            'https://github.com/atos-df-rennes/prevarisc.git'
+        ]);
+    } else {
+        io()->text('Prevarisc repository already exists.');
     }
 
-    io()->text('Cloning Prevarisc Migration repository.');
-    run(['git', 'clone', 'https://github.com/atos-df-rennes/prevarisc-migration.git']);
+    if (!fs()->exists('prevarisc-migration')) {
+        io()->info('You will need a Personal Access Token for the next operation. Please create one if you do not have one already.');
 
-    io()->text('Cloning Prevarisc Passerelle Plat\'AU repository.');
-    run(['git', 'clone', 'https://github.com/atos-df-rennes/prevarisc-passerelle-platau.git']);
+        $resumeScript = io()->confirm('Resume script?');
+        if (!$resumeScript) {
+            return;
+        }
+
+        io()->text('Cloning Prevarisc Migration repository.');
+        run([
+            'git',
+            'clone',
+            'https://github.com/atos-df-rennes/prevarisc-migration.git'
+        ]);
+    } else {
+        io()->text('Prevarisc Migration repository already exists.');
+    }
+
+    if (!fs()->exists('prevarisc-passerelle-platau')) {
+        io()->text('Cloning Prevarisc Passerelle Plat\'AU repository.');
+        run([
+            'git',
+            'clone',
+            'https://github.com/atos-df-rennes/prevarisc-passerelle-platau.git'
+        ]);
+    } else {
+        io()->text('Prevarisc Passerelle Plat\'AU repository already exists.');
+    }
 
     io()->section('Copying web server files.');
 
-    io()->text('Copying configuration file.');
-    fs()->copy('apache/httpd-prevarisc-config.conf.example', 'apache/httpd-prevarisc-config.conf');
+    if (!fs()->exists('apache/httpd-prevarisc-config.conf')) {
+        io()->text('Copying configuration file.');
+        fs()->copy('apache/httpd-prevarisc-config.conf.example', 'apache/httpd-prevarisc-config.conf');
 
-    io()->text('Copying version file.');
-    fs()->copy('apache/httpd-prevarisc-version.conf.example', 'apache/httpd-prevarisc-version.conf');
+        io()->info('You may want to update the configuration file with your values.');
+        $continueInstallation = io()->confirm('Resume sript?');
 
-    io()->info('The configuration file is missing some information.');
-    $continueInstallation = io()->confirm('Do you want to fill it out now? (installation can continue)');
-    if (!$continueInstallation) {
-        return;
+        if (!$continueInstallation) {
+            return;
+        }
+    } else {
+        io()->text('Configuration file already exists.');
+    }
+
+    if (!fs()->exists('apache/httpd-prevarisc-version.conf')) {
+        io()->text('Copying version file.');
+        fs()->copy('apache/httpd-prevarisc-version.conf.example', 'apache/httpd-prevarisc-version.conf');
+    } else {
+        io()->text('Version file already exists.');
+    }
+
+    if (!fs()->exists('prevarisc/application/plugins/HashedFileDataStore.php')) {
+        io()->text('Copying HashedFileDataStore.');
+        fs()->copy('app/HashedFileDataStore.php', 'prevarisc/application/plugins/HashedFileDataStore.php');
+    } else {
+        io()->text('HashedFileDataStore already exists.');
     }
 
     io()->section('Starting Prevarisc.');
@@ -72,38 +112,41 @@ function setup(): void
         message: 'Waiting for prevarisc platau container to be ready.'
     );
 
-    io()->text('Creating Symfony env file and filling it with default dev values.');
-    fs()->copy('prevarisc-migration/.env.example', 'prevarisc-migration/.env');
+    if (!fs()->exists('prevarisc-migration/.env')) {
+        io()->text('Creating Symfony env file and filling it with default dev values.');
+        fs()->copy('prevarisc-migration/.env.example', 'prevarisc-migration/.env');
 
-    $envFileContent = fs()->readFile('prevarisc-migration/.env');
-    $envFileContentArray = explode(PHP_EOL, $envFileContent);
+        $envFileContent = fs()->readFile('prevarisc-migration/.env');
+        $envFileContentArray = explode(PHP_EOL, $envFileContent);
 
-    foreach ($envFileContentArray as $key => $envFileContentLine) {
-        if (str_starts_with($envFileContentLine, 'APP_ENV')) {
-            $envFileContentArray[$key] = 'APP_ENV=dev';
+        foreach ($envFileContentArray as $key => $envFileContentLine) {
+            if (str_starts_with($envFileContentLine, 'APP_ENV')) {
+                $envFileContentArray[$key] = 'APP_ENV=dev';
+            }
+            if (str_starts_with($envFileContentLine, 'APP_DEBUG')) {
+                $envFileContentArray[$key] = 'APP_DEBUG=true';
+            }
+            if (str_starts_with($envFileContentLine, 'APP_SECRET')) {
+                $envFileContentArray[$key] = 'APP_SECRET=' . bin2hex(random_bytes(16));
+            }
+            if (str_starts_with($envFileContentLine, 'DATABASE_URL="mysql')) {
+                $envFileContentArray[$key] = 'DATABASE_URL="mysql://root:planmusique@db:3306/PRV_prevarisc_v2?serverVersion=5.6&charset=utf8mb4"';
+            }
+            if (str_starts_with($envFileContentLine, 'PREVARISC_PATH')) {
+                $envFileContentArray[$key] = 'PREVARISC_PATH=/var/www/html/prevarisc';
+            }
         }
-        if (str_starts_with($envFileContentLine, 'APP_DEBUG')) {
-            $envFileContentArray[$key] = 'APP_DEBUG=true';
-        }
-        if (str_starts_with($envFileContentLine, 'APP_SECRET')) {
-            $envFileContentArray[$key] = 'APP_SECRET='.bin2hex(random_bytes(16));
-        }
-        if (str_starts_with($envFileContentLine, 'DATABASE_URL="mysql')) {
-            $envFileContentArray[$key] = 'DATABASE_URL="mysql://root:planmusique@db:3306/PRV_prevarisc_v2?serverVersion=5.6&charset=utf8mb4"';
-        }
-        if (str_starts_with($envFileContentLine, 'PREVARISC_PATH')) {
-            $envFileContentArray[$key] = 'PREVARISC_PATH=/var/www/html/prevarisc';
-        }
+
+        $envFileContent = implode(PHP_EOL, $envFileContentArray);
+        file_put_contents('prevarisc-migration/.env', $envFileContent);
+    } else {
+        io()->text('Symfony env file already exists.');
     }
-
-    $envFileContent = implode(PHP_EOL, $envFileContentArray);
-    file_put_contents('prevarisc-migration/.env', $envFileContent);
 
     composerInstall();
     composerInstallDev();
 
-    io()->section('Creating database and updating schema.');
-    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'php', 'bin/console', 'd:d:c']);
+    io()->section('Updating database schema.');
     run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'php', 'bin/console', 'd:m:m', '--no-interaction']);
 
     io()->success('Prevarisc is now ready!');
