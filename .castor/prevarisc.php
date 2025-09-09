@@ -152,6 +152,22 @@ function setup(): void
     io()->success('Prevarisc is now ready!');
 }
 
+#[AsTask(namespace: 'prevarisc', description: 'Start Prevarisc')]
+function start(): void
+{
+    io()->title('Starting Prevarisc.');
+
+    exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'up', '-d']);
+}
+
+#[AsTask(namespace: 'prevarisc', description: 'Stop Prevarisc')]
+function stop(): void
+{
+    io()->title('Stoping Prevarisc.');
+
+    exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'down', '--remove-orphans']);
+}
+
 function composerInstall(): void
 {
     io()->title('Installing composer dependencies.');
