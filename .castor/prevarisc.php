@@ -143,11 +143,7 @@ function setup(): void
         io()->text('Symfony env file already exists.');
     }
 
-    composerInstall();
-    composerInstallDev();
-
-    io()->section('Updating database schema.');
-    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'php', 'bin/console', 'd:m:m', '--no-interaction']);
+    update();
 
     io()->success('Prevarisc is now ready!');
 }
@@ -166,6 +162,24 @@ function stop(): void
     io()->title('Stoping Prevarisc.');
 
     exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'down', '--remove-orphans']);
+}
+
+#[AsTask(namespace: 'prevarisc', description: 'Update Prevarisc')]
+function update(): void
+{
+    io()->title('Updating Prevarisc.');
+
+    parallel(
+        function () {
+            composerInstall();
+        },
+        function () {
+            composerInstallDev();
+        },
+        function () {
+            symfonyMigrate();
+        },
+    );
 }
 
 function composerInstall(): void

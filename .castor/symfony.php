@@ -45,3 +45,12 @@ function symfonyTest(): void
     io()->section('Executing PHPUnit');
     run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'php', 'bin/phpunit', '--testdox']);
 }
+
+#[AsTask(name: 'migrate', namespace: 'symfony', description: 'Migrate database schema')]
+function symfonyMigrate(): void
+{
+    io()->title('Migrating database schema');
+
+    io()->section('Executing Doctrine migrations');
+    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'php', 'bin/console', 'd:m:m', '--no-interaction']);
+}
