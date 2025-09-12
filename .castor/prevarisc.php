@@ -143,7 +143,9 @@ function setup(): void
         io()->text('Symfony env file already exists.');
     }
 
-    update();
+    composerInstall();
+    composerInstallDev();
+    symfonyMigrate();
 
     io()->success('Prevarisc is now ready!');
 }
