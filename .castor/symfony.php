@@ -2,6 +2,8 @@
 
 use Castor\Attribute\AsTask;
 use Castor\Attribute\AsRawTokens;
+use Castor\Attribute\ASOption;
+use Symfony\Component\Console\Input\InputOption;
 use function Castor\io;
 use function Castor\run;
 
@@ -18,28 +20,24 @@ function symfonyConsole(#[AsRawTokens] array $args): void
     );
 }
 
-#[AsTask(name: 'cs-check', namespace: 'symfony', description: 'Check coding style for Symfony application')]
-function symfonyCsCheck(): void
+#[AsTask(name: 'cs', namespace: 'symfony', description: 'Check coding style for Symfony application')]
+function symfonyCs(
+    #[AsOption(name: 'dry-run', mode: InputOption::VALUE_NONE, description: 'Lance les linters sans modifications')]
+    bool $dryRun
+): void
 {
     io()->title('Checking coding style for Symfony application');
 
-    io()->section('Executing Rector');
-    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'platau', 'tools/vendor/bin/rector', '--dry-run']);
-
-    io()->section('Executing PHP-CS-FIXER');
-    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'platau', 'tools/vendor/bin/php-cs-fixer', 'fix', '--dry-run']);
-}
-
-#[AsTask(name: 'cs-fix', namespace: 'symfony', description: 'Fix coding style for Symfony application')]
-function symfonyCsFix(): void
-{
-    io()->title('Fixing coding style for Symfony application');
+    $options = [];
+    if(true === $dryRun) {
+        $options = ['--dry-run'];
+    }
 
     io()->section('Executing Rector');
-    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'platau', 'tools/vendor/bin/rector']);
+    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'platau', 'tools/vendor/bin/rector', ...$options]);
 
     io()->section('Executing PHP-CS-FIXER');
-    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'platau', 'tools/vendor/bin/php-cs-fixer', 'fix']);
+    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'platau', 'tools/vendor/bin/php-cs-fixer', 'fix', ...$options]);
 }
 
 #[AsTask(name: 'analyse', namespace: 'symfony', description: 'Analyse for Symfony application')]
