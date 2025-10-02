@@ -1,6 +1,8 @@
 <?php
 
 use Castor\Attribute\AsTask;
+use Castor\Attribute\ASOption;
+use Symfony\Component\Console\Input\InputOption;
 
 use function Castor\import;
 use function Castor\io;
@@ -9,31 +11,19 @@ use function Castor\parallel;
 import(__DIR__);
 
 #[AsTask(description: 'Check coding style for all applications')]
-function csCheck(): void
+function cs(
+    #[AsOption(name: 'dry-run', mode: InputOption::VALUE_NONE, description: 'Lance les linters sans modifications')]
+    bool $dryRun
+): void
 {
     io()->title('Checking coding style for all applications');
 
     parallel(
-        function () {
-            zendCsCheck();
+        function () use ($dryRun): void {
+            zendCs($dryRun);
         },
-        function () {
-            symfonyCsCheck();
-        }
-    );
-}
-
-#[AsTask(description: 'Fix coding style for all applications')]
-function csFix(): void
-{
-    io()->title('Fixing coding style for all applications');
-
-    parallel(
-        function () {
-            zendCsFix();
-        },
-        function () {
-            symfonyCsFix();
+        function () use ($dryRun): void {
+            symfonyCs($dryRun);
         }
     );
 }

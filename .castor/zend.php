@@ -1,31 +1,30 @@
 <?php
 
 use Castor\Attribute\AsTask;
+use Castor\Attribute\ASOption;
+use Symfony\Component\Console\Input\InputOption;
+
 use function Castor\io;
 use function Castor\run;
 
-#[AsTask(name: 'cs-check', namespace: 'zend', description: 'Check coding style for Zend application')]
-function zendCsCheck(): void
+#[AsTask(name: 'cs', namespace: 'zend', description: 'Check coding style for Zend application')]
+function zendCs(
+    #[AsOption(name: 'dry-run', mode: InputOption::VALUE_NONE, description: 'Lance les linters sans modifications')]
+    bool $dryRun
+): void
 {
+    $options = [];
+    if(true === $dryRun) {
+        $options = ['--dry-run'];
+    }
+
     io()->title('Checking coding style for Zend application');
 
     io()->section('Executing Rector');
-    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc', 'platau', 'tools/vendor/bin/rector', '--dry-run']);
+    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc', 'platau', 'tools/vendor/bin/rector', ...$options]);
 
     io()->section('Executing PHP-CS-FIXER');
-    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc', 'platau', 'tools/vendor/bin/php-cs-fixer', 'fix', '--dry-run']);
-}
-
-#[AsTask(name: 'cs-fix', namespace: 'zend', description: 'Fix coding style for Zend application')]
-function zendCsFix(): void
-{
-    io()->title('Fixing coding style for Zend application');
-
-    io()->section('Executing Rector');
-    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc', 'platau', 'tools/vendor/bin/rector']);
-
-    io()->section('Executing PHP-CS-FIXER');
-    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc', 'platau', 'tools/vendor/bin/php-cs-fixer', 'fix']);
+    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc', 'platau', 'tools/vendor/bin/php-cs-fixer', 'fix', ...$options]);
 }
 
 #[AsTask(name: 'analyse', namespace: 'zend', description: 'Analyse for Zend application')]
