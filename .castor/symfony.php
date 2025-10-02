@@ -4,6 +4,7 @@ use Castor\Attribute\AsTask;
 use Castor\Attribute\AsRawTokens;
 use Castor\Attribute\ASOption;
 use Symfony\Component\Console\Input\InputOption;
+use function Castor\exit_code;
 use function Castor\io;
 use function Castor\run;
 
@@ -29,15 +30,20 @@ function symfonyCs(
     io()->title('Checking coding style for Symfony application');
 
     $options = [];
-    if(true === $dryRun) {
+    $rectorTitle = 'Executing Rector';
+    $phpCsFixerTitle = 'Executing PHP-CS-FIXER';
+
+    if (true === $dryRun) {
         $options = ['--dry-run'];
+        $rectorTitle .= ' with '.implode(', ', $options);
+        $phpCsFixerTitle .= ' with '.implode(', ', $options);
     }
 
-    io()->section('Executing Rector');
-    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'platau', 'tools/vendor/bin/rector', ...$options]);
+    io()->section($rectorTitle);
+    exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'platau', 'tools/vendor/bin/rector', ...$options]);
 
-    io()->section('Executing PHP-CS-FIXER');
-    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'platau', 'tools/vendor/bin/php-cs-fixer', 'fix', ...$options]);
+    io()->section($phpCsFixerTitle);
+    exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'platau', 'tools/vendor/bin/php-cs-fixer', 'fix', ...$options]);
 }
 
 #[AsTask(name: 'analyse', namespace: 'symfony', description: 'Analyse for Symfony application')]
