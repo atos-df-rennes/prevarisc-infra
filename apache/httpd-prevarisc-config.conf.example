@@ -62,7 +62,7 @@ SetEnv PREVARISC_NTLM_ENABLED 0
 
 # Parametres specifiques
 SetEnv PREVARISC_LOCAL_SOMMEIL_TYPES "1;5"
-SetEnv PREVARISC_COMMISSION_COMMUNALE_TYPE ""
+SetEnv PREVARISC_COMMISSION_COMMUNALE_TYPE "2"
 SetEnv PREVARISC_RISQUES_NATURELS_EXEMPLES "Avalanche, Cyclonique, Feux de Forêt, Inondation, Mouvement de terrain, Sismique, Submersion marine, Tempête, Volcanique"
 SetEnv PREVARISC_RISQUES_TECHNOLOGIQUES_EXEMPLES "Industriel, Nucléaire, Rupture de barrage, Transport de matières dangereuses"
 SetEnv PREVARISC_DASHBOARD_NEXT_COMMISSIONS_DAYS 15
