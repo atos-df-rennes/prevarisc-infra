@@ -32,11 +32,15 @@ function symfonyCs(
     $options = [];
     $rectorTitle = 'Executing Rector';
     $phpCsFixerTitle = 'Executing PHP-CS-FIXER';
+    $twigCsFixerTitle = 'Executing TWIG-CS-FIXER';
+    $optionsTwigCsFixer = ['fix'];
 
     if (true === $dryRun) {
         $options = ['--dry-run'];
         $rectorTitle .= ' with '.implode(', ', $options);
         $phpCsFixerTitle .= ' with '.implode(', ', $options);
+        $twigCsFixerTitle .= ' with '.implode(', ', $options);
+        $optionsTwigCsFixer = ['check'];
     }
 
     io()->section($rectorTitle);
@@ -44,6 +48,9 @@ function symfonyCs(
 
     io()->section($phpCsFixerTitle);
     exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'platau', 'tools/vendor/bin/php-cs-fixer', 'fix', ...$options]);
+
+    io()->section($twigCsFixerTitle);
+    exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'platau', 'tools/vendor/bin/twig-cs-fixer', ...$optionsTwigCsFixer]);
 }
 
 #[AsTask(name: 'analyse', namespace: 'symfony', description: 'Analyse for Symfony application')]
