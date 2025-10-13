@@ -12,7 +12,6 @@ services:
       - ./apache/apache.conf:/etc/apache2/sites-available/000-default.conf
       - ./apache/httpd-prevarisc-version.conf:/etc/apache2/httpd-prevarisc-version.conf
       - ./apache/httpd-prevarisc-config.conf:/etc/apache2/httpd-prevarisc-config.conf
-      - ./mysql/my.cnf:/etc/mysql/conf.d
       - ./prevarisc-migration:/var/www/html/prevarisc-migration
       # Passerelle Plat'AU montée pour que Prevarisc puisse faire un healthcheck.
       # Lorsque le code sera rapatrié dans l'application, ce montage ne sera plus nécessaire.
@@ -48,6 +47,7 @@ services:
     image: mysql:5.6.51
     volumes:
       - db_data:/var/lib/mysql
+      - ./mysql/my.cnf:/etc/mysql/conf.d/my.cnf
     ports:
       - target: 3306
         published: 33061
