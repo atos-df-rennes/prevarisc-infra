@@ -4,6 +4,7 @@ use Castor\Attribute\AsTask;
 use Symfony\Component\Process\ExecutableFinder;
 use function Castor\check;
 use function Castor\exit_code;
+use function Castor\finder;
 use function Castor\fs;
 use function Castor\io;
 use function Castor\parallel;
@@ -189,10 +190,29 @@ function loadDump(): void
 {
     io()->title('Loading Prevarisc dump.');
 
-    $dumpName = io()->ask('Enter the name of the dump file (must be located in prevarisc-infra/)');
+    io()->text('Searching dump files (ordered by modification time, newest first).');
+    $sqlDumps = finder()->files()->in(dirname(__DIR__))->depth('== 0')->name('*.sql')->sortByModifiedTime()->reverseSorting();
+
+    if (!$sqlDumps->hasResults()) {
+        io()->error('No dump file found.');
+
+        return;
+    }
+
+    if (iterator_count($sqlDumps) === 1) {
+        $dumpName = $sqlDumps->getIterator()->current()->getFilename();
+    } else {
+        $dumpNames = array_values(array_map(fn ($sqlDump) => $sqlDump->getFilename(), iterator_to_array($sqlDumps)));
+
+        $dumpName = io()->choice('Please choose which dump file you want to load', $dumpNames, 0);
+    }
+
+    io()->info('Loading dump file: '.$dumpName);
 
     run(['docker', 'cp', $dumpName, 'prevarisc-infra-db-1:/'.$dumpName]);
     run('docker exec -w / -i prevarisc-infra-db-1 mysql -u root -p"planmusique" PRV_prevarisc_v2 < '.$dumpName);
+
+    io()->success('Dump loaded successfully.');
 }
 
 function composerInstall(): void
