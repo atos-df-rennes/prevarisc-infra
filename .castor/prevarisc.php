@@ -10,6 +10,7 @@ use function Castor\io;
 use function Castor\parallel;
 use function Castor\run;
 use function Castor\wait_for_docker_container;
+use function Castor\watch;
 
 #[AsTask(namespace: 'prevarisc', description: 'Setup Prevarisc')]
 function setup(): void
@@ -149,6 +150,8 @@ function setup(): void
     symfonyMigrate();
 
     io()->success('Prevarisc is now ready!');
+
+    watchForApacheConfigurationChanges();
 }
 
 #[AsTask(namespace: 'prevarisc', description: 'Start Prevarisc')]
@@ -157,6 +160,8 @@ function start(): void
     io()->title('Starting Prevarisc.');
 
     exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'up', '-d']);
+
+    watchForApacheConfigurationChanges();
 }
 
 #[AsTask(namespace: 'prevarisc', description: 'Stop Prevarisc')]
@@ -213,6 +218,21 @@ function loadDump(): void
     run('docker exec -w / -i prevarisc-infra-db-1 mysql -u root -p"planmusique" PRV_prevarisc_v2 < '.$dumpName);
 
     io()->success('Dump loaded successfully.');
+}
+
+function watchForApacheConfigurationChanges(): void
+{
+    io()->info('Watching for changes in Apache configuration files.');
+    io()->comment('Press Ctrl+C to stop watching.');
+
+    watch('apache/', function (string $file, string $action) {
+        if (str_ends_with($file, '~')) {
+            return;
+        }
+
+        io()->writeln("[{$action}] {$file}. Reloading Apache configuration.");
+        exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'restart', 'app']);
+    });
 }
 
 function composerInstall(): void
