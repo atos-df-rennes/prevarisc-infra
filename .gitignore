@@ -5,3 +5,4 @@ apache/httpd-prevarisc-version.conf
 ./prevarisc-passerelle-platau/
 ./prevarisc-migration
 .castor/.castor.stub.php
+*.md
