@@ -24,6 +24,7 @@ RUN a2enmod authz_core deflate dir ssl headers expires include rewrite \
     && apt update \
     && apt install -y \
         zip \
+        git \
     && apt clean \
     && chmod +x /usr/local/bin/install-php-extensions \
     && install-php-extensions \
