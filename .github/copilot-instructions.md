@@ -17,3 +17,5 @@ Lors de la génération du code, suis les instructions suivantes :
   - Analyse avec PHPStan : castor symfony:analyse
   - Rector et CodingStyle : castor symfony:cs
   - Tests PHPUnit : castor symfony:test
+
+Si d'autres fichiers markdown sont présents dans ce dossier, prends-les en compte. En particulier, des fichiers spécifique à certaines tâches peuvent être présents, par exemple edition-dossier.md décrivant les actions et attendus spécifique à l'édition de dossiers.
