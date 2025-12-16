@@ -34,6 +34,15 @@ DossierController (create/edit/save)
 
 **Source legacy :** `$listeChamps` dans `prevarisc/application/controllers/DossierController.php`
 
+⚠️ **IMPORTANT : Tous les champs listés dans `$listeChamps` ne sont PAS affichés dans le formulaire !**
+
+**Champs exclus du formulaire principal** :
+- `DESCGEN` / `descriptifGeneral` : Géré dans section séparée `descriptif.phtml`
+- `DESCEFF` / `descriptifEffectifs` : Géré dans section séparée `descriptif.phtml`
+- `COORDSSI` / `coordonneesSsi` : N'apparaît jamais dans les vues (obsolète ou géré ailleurs)
+
+Ces champs apparaissent dans `$listeChamps` mais ne doivent **PAS** être inclus dans `DossierFields.php`.
+
 **Mapping (exemples - complet dans `docs/tech/dossier/MAPPING_CHAMPS_DOSSIER.md`) :**
 
 | Legacy | Symfony | Type |
@@ -136,8 +145,10 @@ castor symfony:test     # 100% passent
 2. **Réutiliser code existant** (services, templates, JS)
 3. **PHP 7.1.33 :** DocBlocks obligatoires, pas propriétés typées
 4. **Mapping :** Colonnes MAJUSCULES → propriétés camelCase
-5. **Champs jamais utilisés :** Commenter avec explication
-6. **Débugger JS :** `console.log()` + vérifier éléments DOM existent
+5. **⚠️ Champs exclus du formulaire :** `DESCGEN`/`DESCEFF`/`COORDSSI` dans `$listeChamps` mais **PAS dans le formulaire**
+6. **Champs jamais utilisés :** Commenter avec explication
+7. **Débugger JS :** `console.log()` + vérifier éléments DOM existent
+8. **Valider avec legacy :** Comparer `$listeChamps` ET affichage réel du formulaire
 
 **FormTypes Symfony :**
 - `TextType` : texte court
