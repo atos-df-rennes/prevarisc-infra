@@ -147,9 +147,10 @@ castor symfony:test     # 100% passent
 3. **PHP 7.1.33 :** DocBlocks obligatoires, pas propriétés typées
 4. **Mapping :** Colonnes MAJUSCULES → propriétés camelCase
 5. **⚠️ Champs exclus du formulaire :** `DESCGEN`/`DESCEFF`/`COORDSSI`/`NUMCHRONO` dans `$listeChamps` mais **PAS dans le formulaire**
-6. **Champs jamais utilisés :** Commenter avec explication
-7. **Débugger JS :** `console.log()` + vérifier éléments DOM existent
-8. **Valider avec legacy :** Comparer `$listeChamps` ET affichage réel du formulaire
+6. **⚠️ Champs dates :** Vérifier type dans entité (certains en string : `dateCommission`)
+7. **Champs jamais utilisés :** Commenter avec explication
+8. **Débugger JS :** `console.log()` + vérifier éléments DOM existent
+9. **Valider avec legacy :** Comparer `$listeChamps` ET affichage réel du formulaire
 
 **FormTypes Symfony :**
 - `TextType` : texte court
@@ -161,3 +162,21 @@ castor symfony:test     # 100% passent
 ---
 
 **Version :** 3.0 optimisée | **Dernière màj :** 16 décembre 2025
+
+## ⚠️ Types de champs dates
+
+**Attention :** Certains champs dates sont stockés en **string** dans le legacy !
+
+### Dates en DateTime (type="date")
+→ Utiliser `DateType::class` avec `widget => 'single_text'`
+
+### Dates en String (type="string")
+→ Utiliser `TextType::class`
+
+**Exemple connu :**
+- `dateCommission` : VARCHAR(10) format dd/mm/yyyy → `TextType`
+
+**Process :**
+1. Vérifier le type dans `src/Entity/Dossier.php`
+2. Si `@ORM\Column(type="string")` → TextType
+3. Si `@ORM\Column(type="date")` → DateType
