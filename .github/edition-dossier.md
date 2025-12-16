@@ -40,6 +40,7 @@ DossierController (create/edit/save)
 - `DESCGEN` / `descriptifGeneral` : Géré dans section séparée `descriptif.phtml`
 - `DESCEFF` / `descriptifEffectifs` : Géré dans section séparée `descriptif.phtml`
 - `COORDSSI` / `coordonneesSsi` : N'apparaît jamais dans les vues (obsolète ou géré ailleurs)
+- `NUMCHRONO` / `numeroChronologique` : N'existe pas dans l'entité (champ fantôme)
 
 Ces champs apparaissent dans `$listeChamps` mais ne doivent **PAS** être inclus dans `DossierFields.php`.
 
@@ -145,7 +146,7 @@ castor symfony:test     # 100% passent
 2. **Réutiliser code existant** (services, templates, JS)
 3. **PHP 7.1.33 :** DocBlocks obligatoires, pas propriétés typées
 4. **Mapping :** Colonnes MAJUSCULES → propriétés camelCase
-5. **⚠️ Champs exclus du formulaire :** `DESCGEN`/`DESCEFF`/`COORDSSI` dans `$listeChamps` mais **PAS dans le formulaire**
+5. **⚠️ Champs exclus du formulaire :** `DESCGEN`/`DESCEFF`/`COORDSSI`/`NUMCHRONO` dans `$listeChamps` mais **PAS dans le formulaire**
 6. **Champs jamais utilisés :** Commenter avec explication
 7. **Débugger JS :** `console.log()` + vérifier éléments DOM existent
 8. **Valider avec legacy :** Comparer `$listeChamps` ET affichage réel du formulaire
