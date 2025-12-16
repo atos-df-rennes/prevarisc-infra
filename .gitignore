@@ -6,3 +6,4 @@ apache/httpd-prevarisc-version.conf
 ./prevarisc-migration
 .castor/.castor.stub.php
 /*.md
+/*.sql
