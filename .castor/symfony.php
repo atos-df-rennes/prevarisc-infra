@@ -63,12 +63,21 @@ function symfonyAnalyse(): void
 }
 
 #[AsTask(name: 'test', namespace: 'symfony', description: 'Test for Symfony application')]
-function symfonyTest(): void
+function symfonyTest(
+    #[AsOption(name: 'all', mode: InputOption::VALUE_NONE, description: 'Lance la suite complète de tests incluant les tests fonctionnels')]
+    bool $all
+): void
 {
     io()->title('Testing Symfony application');
 
     io()->section('Executing PHPUnit');
-    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'php', 'bin/phpunit', '--testdox']);
+
+    $options = [];
+    if (false === $all) {
+        $options = ['--exclude-group', 'functional'];
+    }
+
+    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'php', 'bin/phpunit', '--testdox', ...$options]);
 }
 
 #[AsTask(name: 'migrate', namespace: 'symfony', description: 'Migrate database schema')]
