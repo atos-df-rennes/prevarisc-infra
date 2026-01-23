@@ -152,6 +152,10 @@ public function findWithRelations(int $limit = 50): array {
 - Répertoire : `prevarisc-migration/tests/`
 - Namespace : `App\Tests\`
 - Framework : PHPUnit 7.5
+- **Base de données** : Pas de base de données de test dédiée ni de fixtures (Foundry) pour l'instant
+  - Tests unitaires : Sans base de données (mocks/stubs si nécessaire)
+  - Tests d'intégration : Utilisation de la base de développement (lecture seule recommandée)
+  - Tests fonctionnels : Marqués `@group functional` et exécutés en environnement contrôlé
 
 ### Pyramide de tests à respecter
 
@@ -199,117 +203,287 @@ public function findWithRelations(int $limit = 50): array {
 
 ### Structure des tests
 
+**Exemple 1 : Test unitaire d'un service métier**
+
 ```php
-namespace App\Tests\Services;
+namespace App\Tests\Service;
 
-use App\Service\CalculService;
+use App\Service\Prescriptions;
 use PHPUnit\Framework\TestCase;
-use PHPUnit\Framework\Attributes\DataProvider;
 
-class CalculServiceTest extends TestCase
+class PrescriptionsTest extends TestCase
 {
-    private CalculService $service;
+    /** @var Prescriptions */
+    private $service;
 
     protected function setUp(): void
     {
-        $this->service = new CalculService();
+        $this->service = new Prescriptions();
     }
 
     /**
      * Test avec un cas nominal clair
      */
-    public function testCalculeMontantAvecTauxStandard(): void
+    public function testValiderPrescriptionAvecTexteApplicable(): void
     {
-        $result = $this->service->calcule(100, 0.2);
+        $result = $this->service->valider('Article R123-45', 'Type A');
         
-        self::assertSame(120.0, $result);
+        self::assertTrue($result);
     }
 
     /**
-     * Test des cas limites
+     * Test des cas limites avec DataProvider
+     * @dataProvider casLimitesProvider
      */
-    #[DataProvider('casLimitesProvider')]
-    public function testGereCasLimites(float $montant, float $taux, float $expected): void
+    public function testGereCasLimites(?string $texte, ?string $type, bool $expected): void
     {
-        $result = $this->service->calcule($montant, $taux);
+        $result = $this->service->valider($texte, $type);
         
         self::assertSame($expected, $result);
     }
 
-    public static function casLimitesProvider(): array
+    /**
+     * @return array<string, array<mixed>>
+     */
+    public function casLimitesProvider(): array
     {
         return [
-            'montant zéro' => [0, 0.2, 0.0],
-            'taux zéro' => [100, 0, 100.0],
-            'valeurs négatives' => [-100, 0.2, -120.0],
+            'texte vide' => ['', 'Type A', false],
+            'type null' => ['Article R123-45', null, false],
+            'tous vides' => ['', '', false],
         ];
     }
 }
 ```
 
-### Tests fonctionnels avec KernelTestCase
+**Exemple 2 : Test unitaire avec logique conditionnelle**
 
-Pour tester des services avec dépendances (Doctrine, etc.) :
+```php
+namespace App\Tests\Service;
+
+use App\Service\Changement;
+use PHPUnit\Framework\TestCase;
+
+class ChangementTest extends TestCase
+{
+    /** @var Changement */
+    private $service;
+
+    protected function setUp(): void
+    {
+        $this->service = new Changement();
+    }
+
+    public function testDetecterChangementCategorie(): void
+    {
+        $ancienne = 'ERP de 1ère catégorie';
+        $nouvelle = 'ERP de 2ème catégorie';
+        
+        $resultat = $this->service->detecterChangement($ancienne, $nouvelle);
+        
+        self::assertTrue($resultat['aChangement']);
+        self::assertSame('Changement de catégorie', $resultat['type']);
+    }
+}
+```
+
+### Tests d'intégration avec KernelTestCase
+
+Pour tester des services ou repositories avec dépendances (Doctrine, services injectés) :
 
 ```php
 namespace App\Tests\Repository;
 
-use App\Tests\Factory\MarcheFactory;
+use App\Entity\Dossier;
+use App\Entity\DossierType;
+use App\Repository\DossierRepository;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Zenstruck\Foundry\Test\Factories;
-use Zenstruck\Foundry\Test\ResetDatabase;
 
-class MarcheRepositoryTest extends KernelTestCase
+class DossierRepositoryTest extends KernelTestCase
 {
-    public function testTrouverMarchesActifsParAnnee(): void
+    /** @var DossierRepository */
+    private $repository;
+
+    protected function setUp(): void
+    {
+        self::bootKernel();
+        $this->repository = static::getContainer()->get(DossierRepository::class);
+    }
+
+    /**
+     * Teste une requête complexe avec jointures
+     */
+    public function testFindDossiersByTypeAvecJointures(): void
     {
         // Arrange
-        MarcheFactory::createOne(['actif' => true, 'annee' => 2025]);
-        MarcheFactory::createOne(['actif' => false, 'annee' => 2025]);
-
-        $repository = static::getContainer()->get(MarcheRepository::class);
-
+        $typeId = 1; // Type ERP existant dans la base de données de test
+        
         // Act
-        $result = $repository->findMarchesActifsParAnnee(2025);
-
+        $result = $this->repository->findByTypeWithRelations($typeId);
+        
         // Assert
-        self::assertCount(1, $result);
-        self::assertTrue($result[0]->isActif());
+        self::assertIsArray($result);
+        foreach ($result as $dossier) {
+            self::assertInstanceOf(Dossier::class, $dossier);
+            self::assertNotNull($dossier->getType());
+        }
+    }
+
+    /**
+     * Teste le QueryBuilder custom avec critères multiples
+     */
+    public function testFindDossiersAvecCriteresMultiples(): void
+    {
+        $qb = $this->repository->createQueryBuilder('d')
+            ->leftJoin('d.type', 't')
+            ->where('t.id = :typeId')
+            ->andWhere('d.dateDepot >= :dateDebut')
+            ->setParameter('typeId', 1)
+            ->setParameter('dateDebut', new \DateTime('2025-01-01'))
+            ->setMaxResults(10);
+        
+        $result = $qb->getQuery()->getResult();
+        
+        self::assertLessThanOrEqual(10, count($result));
+    }
+}
+```
+
+**Note importante** : Ce projet n'utilise pas de fixtures ni de base de données de test dédiée pour l'instant. Les tests d'intégration doivent donc :
+- Soit utiliser des données existantes dans la base de développement (avec précaution)
+- Soit être marqués comme `@group functional` pour être exécutés uniquement en environnement contrôlé
+- Être conçus pour ne pas modifier les données existantes (requêtes en lecture seule)
+
+**Exemple : Test de formulaire Symfony**
+
+```php
+namespace App\Tests\Form\Type;
+
+use App\Entity\Dossier;
+use App\Form\Type\DossierType;
+use Symfony\Component\Form\Test\TypeTestCase;
+
+class DossierTypeTest extends TypeTestCase
+{
+    /**
+     * Teste la soumission d'un formulaire avec données valides
+     */
+    public function testSoumissionFormulaireValide(): void
+    {
+        $formData = [
+            'objet' => 'Aménagement local',
+            'dateDepot' => '2025-01-15',
+            'type' => 1,
+        ];
+
+        $model = new Dossier();
+        $form = $this->factory->create(DossierType::class, $model);
+        $form->submit($formData);
+
+        self::assertTrue($form->isSynchronized());
+        self::assertTrue($form->isValid());
+        self::assertSame('Aménagement local', $model->getObjet());
+    }
+
+    /**
+     * Teste la validation avec données invalides
+     */
+    public function testValidationDonneesInvalides(): void
+    {
+        $formData = [
+            'objet' => '', // Champ obligatoire vide
+            'dateDepot' => 'date-invalide',
+        ];
+
+        $form = $this->factory->create(DossierType::class);
+        $form->submit($formData);
+
+        self::assertFalse($form->isValid());
+        self::assertCount(2, $form->getErrors(true));
     }
 }
 ```
 
 ### Groupe de tests "functional"
 
-Pour tests nécessitant ressources externes ou configuration spécifique :
+Pour tests nécessitant ressources externes, base de données ou configuration spécifique :
 
 ```php
-use PHPUnit\Framework\Attributes\Group;
+namespace App\Tests\Service;
 
-#[Group('functional')]
-class ExportPdfTest extends KernelTestCase
+use App\Service\Informations;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+
+/**
+ * Tests nécessitant la base de données et les dépendances réelles
+ * @group functional
+ */
+class InformationsServiceTest extends KernelTestCase
 {
-    // Tests nécessitant des librairies système (wkhtmltopdf, etc.)
+    /** @var Informations */
+    private $service;
+
+    protected function setUp(): void
+    {
+        self::bootKernel();
+        $this->service = static::getContainer()->get(Informations::class);
+    }
+
+    public function testRecupererInformationsEtablissement(): void
+    {
+        $etablissementId = 1; // Établissement existant en base
+        
+        $result = $this->service->getInformations($etablissementId);
+        
+        self::assertIsArray($result);
+        self::assertArrayHasKey('libelle', $result);
+    }
+}
+```
+
+**Tests de génération de documents (PDF, exports)**
+
+```php
+namespace App\Tests\Export;
+
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+
+/**
+ * @group functional
+ */
+class ExportPdfDossierTest extends KernelTestCase
+{
+    /**
+     * Teste la génération d'un PDF de dossier
+     * Nécessite wkhtmltopdf installé sur le système
+     */
+    public function testGenererPdfDossier(): void
+    {
+        // Test de génération PDF...
+        self::markTestIncomplete('Nécessite wkhtmltopdf et configuration spécifique');
+    }
 }
 ```
 
 Exécution :
 ```bash
-castor symfony:test                         # Tous les tests
-castor symfony:test --group functional           # Uniquement les tests locaux
-castor symfony:test --exclude-group functional   # Exclure les tests locaux
-castor symfony:test --filter NomDuTest      # Test spécifique
-castor symfony:test --testdox                # Format lisible
+castor symfony:test                              # Tous les tests
+castor symfony:test --group functional           # Uniquement les tests fonctionnels
+castor symfony:test --exclude-group functional   # Exclure les tests fonctionnels
+castor symfony:test --filter NomDuTest           # Test spécifique
+castor symfony:test --testdox                    # Format lisible
 ```
 
 ### Bonnes pratiques
 
-1. **Nommage explicite** : `testCalculeMontantAvecTauxNegatif()` plutôt que `testCalcul()`
-3. **Un concept par test** : Ne teste qu'une seule chose à la fois
-4. **DataProvider** : Mutualise les tests avec différentes données
-6. **Isolation** : Chaque test doit pouvoir s'exécuter seul
-7. **Assertions précises** : `assertSame()` plutôt que `assertEquals()` pour les types stricts
-8. **Messages d'erreur** : Ajoute un message clair sur les assertions critiques
+1. **Nommage explicite** : `testValiderDossierAvecTypeErp()` plutôt que `testValider()`
+2. **Un concept par test** : Ne teste qu'une seule chose à la fois
+3. **DataProvider** : Mutualise les tests avec différentes données (annotation `@dataProvider`)
+4. **Isolation** : Chaque test doit pouvoir s'exécuter seul, sans dépendre d'autres tests
+5. **Assertions précises** : `assertSame()` plutôt que `assertEquals()` pour les types stricts
+6. **Messages d'erreur** : Ajoute un message clair sur les assertions critiques
+7. **Type hints PHP 7.1** : Utilise les DocBlocks pour les types (pas d'attributs PHP 8)
+8. **Arrange-Act-Assert** : Structure tes tests clairement en 3 phases distinctes
 
 ### Couverture de code
 
