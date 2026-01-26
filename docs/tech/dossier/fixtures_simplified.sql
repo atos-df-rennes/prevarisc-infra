@@ -1,0 +1,85 @@
+-- Fixtures dossiers test simplifiées - Version corrigée
+-- Structure : dossier (TYPE_DOSSIER) + dossiernature (ID_NATURE, ID_DOSSIER)
+
+-- Nettoyage
+DELETE dn FROM dossiernature dn
+INNER JOIN dossier d ON dn.ID_DOSSIER = d.ID_DOSSIER
+WHERE d.OBJET_DOSSIER LIKE '[TEST-JS]%';
+
+DELETE FROM dossier WHERE OBJET_DOSSIER LIKE '[TEST-JS]%';
+
+-- Test 1: Type 1 (Étude), Nature 1 (PC) - Complet avec avis
+INSERT INTO dossier (TYPE_DOSSIER, OBJET_DOSSIER, DATEINSERT_DOSSIER, INCOMPLET_DOSSIER, AVIS_DOSSIER_COMMISSION, DATECOMM_DOSSIER)
+VALUES (1, '[TEST-JS] PC standard', '2026-01-26 10:00:00', 0, 1, '2026-02-20');
+SET @dossier1 = LAST_INSERT_ID();
+INSERT INTO dossiernature (ID_DOSSIER, ID_NATURE) VALUES (@dossier1, 1);
+
+-- Test 2: Type 1, Nature 2 (AT)
+INSERT INTO dossier (TYPE_DOSSIER, OBJET_DOSSIER, DATEINSERT_DOSSIER, INCOMPLET_DOSSIER)
+VALUES (1, '[TEST-JS] AT - Autorisation travaux', '2026-01-26 10:10:00', 0);
+SET @dossier2 = LAST_INSERT_ID();
+INSERT INTO dossiernature (ID_DOSSIER, ID_NATURE) VALUES (@dossier2, 2);
+
+-- Test 3: Type 1, Nature 3 (Dérogation)
+INSERT INTO dossier (TYPE_DOSSIER, OBJET_DOSSIER, DATEINSERT_DOSSIER, INCOMPLET_DOSSIER)
+VALUES (1, '[TEST-JS] Dérogation article R123-45', '2026-01-26 10:20:00', 0);
+SET @dossier3 = LAST_INSERT_ID();
+INSERT INTO dossiernature (ID_DOSSIER, ID_NATURE) VALUES (@dossier3, 3);
+
+-- Test 4: Type 1, Nature 19 (Levée réserves) - AVIS DÉFAVORABLE
+INSERT INTO dossier (TYPE_DOSSIER, OBJET_DOSSIER, DATEINSERT_DOSSIER, INCOMPLET_DOSSIER, AVIS_DOSSIER_COMMISSION, FACTDANGE_DOSSIER, ECHEANCIERTRAV_DOSSIER)
+VALUES (1, '[TEST-JS] Levée réserves - AVIS DÉFAVORABLE', '2026-01-26 10:30:00', 0, 2, 'Risque incendie élevé', '2026-06-30');
+SET @dossier4 = LAST_INSERT_ID();
+INSERT INTO dossiernature (ID_DOSSIER, ID_NATURE) VALUES (@dossier4, 19);
+
+-- Test 5: Type 1, Nature 4 (Cahier charges SSI) - INCOMPLET
+INSERT INTO dossier (TYPE_DOSSIER, OBJET_DOSSIER, DATEINSERT_DOSSIER, INCOMPLET_DOSSIER)
+VALUES (1, '[TEST-JS] Cahier charges SSI - INCOMPLET', '2026-01-26 10:40:00', 1);
+SET @dossier5 = LAST_INSERT_ID();
+INSERT INTO dossiernature (ID_DOSSIER, ID_NATURE) VALUES (@dossier5, 4);
+
+-- Test 6: Type 2 (Visite commission), Nature 21 (Périodique)
+INSERT INTO dossier (TYPE_DOSSIER, OBJET_DOSSIER, DATEINSERT_DOSSIER, INCOMPLET_DOSSIER, DATEVISITE_DOSSIER, DATECOMM_DOSSIER, AVIS_DOSSIER_COMMISSION)
+VALUES (2, '[TEST-JS] Visite périodique', '2026-01-26 11:00:00', 0, '2026-02-15', '2026-02-28', 1);
+SET @dossier6 = LAST_INSERT_ID();
+INSERT INTO dossiernature (ID_DOSSIER, ID_NATURE) VALUES (@dossier6, 21);
+
+-- Test 7: Type 2, Nature 20 (Réception travaux)
+INSERT INTO dossier (TYPE_DOSSIER, OBJET_DOSSIER, DATEINSERT_DOSSIER, INCOMPLET_DOSSIER, DATEVISITE_DOSSIER)
+VALUES (2, '[TEST-JS] Réception travaux', '2026-01-26 11:10:00', 0, '2026-02-16');
+SET @dossier7 = LAST_INSERT_ID();
+INSERT INTO dossiernature (ID_DOSSIER, ID_NATURE) VALUES (@dossier7, 20);
+
+-- Test 8: Type 3 (Groupe visite), Nature 26 (Périodique)
+INSERT INTO dossier (TYPE_DOSSIER, OBJET_DOSSIER, DATEINSERT_DOSSIER, INCOMPLET_DOSSIER, DATEVISITE_DOSSIER)
+VALUES (3, '[TEST-JS] Groupe visite périodique', '2026-01-26 12:00:00', 0, '2026-02-17');
+SET @dossier8 = LAST_INSERT_ID();
+INSERT INTO dossiernature (ID_DOSSIER, ID_NATURE) VALUES (@dossier8, 26);
+
+-- Test 9: Type 5 (Courrier), Nature 52 (Lettre)
+INSERT INTO dossier (TYPE_DOSSIER, OBJET_DOSSIER, DATEINSERT_DOSSIER, INCOMPLET_DOSSIER)
+VALUES (5, '[TEST-JS] Lettre demande renseignements', '2026-01-26 13:00:00', 0);
+SET @dossier9 = LAST_INSERT_ID();
+INSERT INTO dossiernature (ID_DOSSIER, ID_NATURE) VALUES (@dossier9, 52);
+
+-- Test 10: Type 1, Nature 1 (PC) - PLATAU (détecté par mot-clé)
+INSERT INTO dossier (TYPE_DOSSIER, OBJET_DOSSIER, DATEINSERT_DOSSIER, INCOMPLET_DOSSIER, AVIS_DOSSIER_COMMISSION)
+VALUES (1, '[TEST-JS] PC via PLATAU - Test intégration', '2026-01-26 14:00:00', 0, 1);
+SET @dossier10 = LAST_INSERT_ID();
+INSERT INTO dossiernature (ID_DOSSIER, ID_NATURE) VALUES (@dossier10, 1);
+
+-- Vérification
+SELECT 'Dossiers créés:' as Info, COUNT(*) as Total FROM dossier WHERE OBJET_DOSSIER LIKE '[TEST-JS]%';
+
+SELECT 
+    d.ID_DOSSIER,
+    dt.LIBELLE_DOSSIERTYPE as Type,
+    dnl.LIBELLE_DOSSIERNATURE as Nature,
+    LEFT(d.OBJET_DOSSIER, 50) as Objet,
+    CASE WHEN d.INCOMPLET_DOSSIER = 1 THEN 'INCOMPLET' ELSE 'COMPLET' END as Etat
+FROM dossier d
+JOIN dossiertype dt ON d.TYPE_DOSSIER = dt.ID_DOSSIERTYPE
+LEFT JOIN dossiernature dn ON d.ID_DOSSIER = dn.ID_DOSSIER
+LEFT JOIN dossiernatureliste dnl ON dn.ID_NATURE = dnl.ID_DOSSIERNATURE
+WHERE d.OBJET_DOSSIER LIKE '[TEST-JS]%'
+ORDER BY d.ID_DOSSIER;
