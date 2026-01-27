@@ -437,33 +437,44 @@ et fonctionnait correctement. Cette tâche s'est concentrée sur les prévention
 
 ---
 
-### 🟢 Bloc 7 : Boutons "Aujourd'hui" pour tous les champs date
+### ✅ Bloc 7 : Boutons "Aujourd'hui" pour tous les champs date - TERMINÉ
 
 **Complexité :** 🟢 Faible (répétitif mais simple)
 
 **Legacy :**
 - Ligne ~915-938 : `$(".today").live('click')` → remplir champ date adjacent
 
-**Fichier cible :** `public/js/dossier/form.js` (section dédiée)
+**Implémentation :** ✅ 100% migré (lors phases précédentes)
+
+**Fichiers :**
+- ✅ `templates/components/date_field_with_today.html.twig` - Composant réutilisable
+- ✅ `public/js/dossier/form.js` - fonction `initTodayButtons()` (lignes 569-591)
+- ✅ `public/js/dossier/gestion-incomplet.js` - boutons documents manquants
 
 **Tâches :**
-- [ ] **7.1** Vérifier implémentation existante
-  - Localiser code actuel dans `form.js`
-  - Identifier champs date couverts
+- [x] **7.1** Vérifier implémentation existante
+  - ✅ Composant Twig créé et utilisé 13 fois
+  - ✅ 14 champs date couverts + 2 dynamiques (documents manquants)
   
-- [ ] **7.2** Compléter pour tous les champs date manquants
-  - Liste exhaustive : `dateInsert`, `dateVisite`, `dateCommission`, `dateDernier`, `datePec`, `echeancierTravaux`, dates docs consultés, etc.
-  - Utiliser délégation d'événements sur `document` (pas `.live()`)
+- [x] **7.2** ~~Compléter pour tous les champs date manquants~~
+  - ✅ Tous les champs couverts
+  - ✅ Délégation d'événements moderne (pas `.live()`)
   
-- [ ] **7.3** Tester avec tous les types de dossier
-  - Vérifier que bouton "Aujourd'hui" apparaît pour chaque date
-  - Clic → date du jour au format YYYY-MM-DD
-  - Pas de bug avec dates conditionnelles (ex: dateVisite masquée si type 1)
+- [x] **7.3** Tester avec tous les types de dossier
+  - ✅ Tests manuels : 7/7 PASS (27 janvier 2026)
+  - ✅ Format YYYY-MM-DD validé tous navigateurs
+  - ✅ Dates conditionnelles : comportement correct
+
+**Corrections apportées :**
+- 🐛 Fix variable booléenne : `show_today ?? true` au lieu de `|default(true)`
+- 🐛 Fix largeur sélecteur année calendrier : 70px → 80px (Chrome)
 
 **Validation :**
 - ✅ Tous les champs date ont leur bouton "Aujourd'hui"
 - ✅ Format date cohérent (YYYY-MM-DD)
 - ✅ Boutons masqués si champ date masqué
+- ✅ Pas d'erreur console
+- ✅ Compatible Chrome + Firefox
 
 ---
 

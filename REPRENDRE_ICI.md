@@ -1,7 +1,7 @@
 # 🎯 Point de reprise - Migration JavaScript Dossier
 
-**Date :** 27 janvier 2026 - 11h42  
-**Session :** Migration formulaire dossier - Blocs 3 & 6 terminés  
+**Date :** 27 janvier 2026 - 15h00  
+**Session :** Migration formulaire dossier - Blocs 1-3, 6-7 terminés  
 **Branche :** `migration/dossier-informations-edition`
 
 ---
@@ -128,43 +128,56 @@ feat(dossier): complète intégration calendrier - Bloc 3 (95%)
 - ✅ Masquage instantané au change des checkboxes
 
 **Tests manuels :**
-- ✅ Test 1 : Checkbox horsdelai → masque AVIS + AVIS_COMMISSION + dateCommission (PASS)
-- ✅ Test 2 : Checkbox absquorum → masque AVIS_COMMISSION + dateCommission (PASS)
-- ✅ Test 3 : Checkbox npsp → même comportement absquorum (PASS)
-- ✅ Test 4 : Changement avis Défavorable (Type 2/3) → affiche facteur + échéancier (PASS)
-- ✅ Test 5 : Type 1 Nature 19 Défavorable → affiche facteur uniquement (PASS)
-- ✅ Test 6 : Désactivation checkboxes → réaffiche champs (PASS)
-- ✅ Test 7 : Aucune erreur console (PASS)
+- ✅ 7/7 tests PASS validés
 
 **Commits :**
 ```bash
 8607a4c - feat(dossier): complète gestion avis avec event listeners checkboxes (Bloc 6)
 ```
 
-**Documentation créée :**
-- ✅ `analyse-bloc6.md` - État existant vs manquant
-- ✅ `tests-bloc6-avis.md` - Guide tests manuels (7 tests)
-- ✅ `architecture-modulaire-avis.md` - Décision architecture reportée Bloc 10
+---
 
-**Décision architecture :**
-- ⚠️ **REPORTÉ AU BLOC 10 :** Refactoring modulaire de form.js (si > 1200 lignes)
-- **Justification :** form.js actuellement 770 lignes (~35% logique avis)
-- **Approche :** Finir migration fonctionnelle → refactoring ensuite
-- **Référence :** Voir Bloc 10.1 dans PLAN_MIGRATION_JS_DOSSIER.md
+### Bloc 7 : Boutons "Aujourd'hui" - ✅ TERMINÉ (100%)
+
+**Implémentation :** (Déjà migré lors phases précédentes)
+- ✅ Composant Twig `date_field_with_today.html.twig` (35 lignes)
+- ✅ JavaScript `form.js` - fonction `initTodayButtons()` (23 lignes)
+- ✅ JavaScript `gestion-incomplet.js` - boutons documents manquants
+- ✅ 14 champs date couverts + 2 dynamiques
+
+**Tests manuels :**
+- ✅ Test 1 : Champ dateInsert → bouton fonctionne (PASS)
+- ✅ Test 2 : Champs administratifs → tous fonctionnent (PASS)
+- ✅ Test 3 : Champs conditionnels → visibilité correcte (PASS)
+- ✅ Test 4 : Documents manquants → 2 boutons OK (PASS)
+- ✅ Test 5 : Ajout dynamique → événements délégués (PASS)
+- ✅ Test 6 : Champs sans bouton → comportement intentionnel (PASS)
+- ✅ Test 7 : Format YYYY-MM-DD + navigateurs (PASS)
+
+**Corrections apportées :**
+```bash
+d7f4467 - fix: le test n'est pas bon pour les valeurs booléennes
+e7850e0 - fix(calendrier): augmente largeur sélecteur année pour Chrome
+```
+
+**Documentation créée :**
+- ✅ `analyse-bloc7.md` - Analyse complète implémentation
+- ✅ `tests-bloc7-aujourdhui.md` - Guide tests (7 scénarios)
 
 ---
 
-## 📊 Récapitulatif Blocs 1-6 (4 Terminés)
+## 📊 Récapitulatif Blocs 1-7 (5 Terminés)
 
 ### Métriques d'avancement
-- **Blocs terminés :** 4/10 (40%)
+- **Blocs terminés :** 5/10 (50%)
   - ✅ Bloc 1 : Visibilité TYPE/NATURE
   - ✅ Bloc 2 : Autocomplete AJAX
   - ✅ Bloc 3 : Calendrier
   - ✅ Bloc 6 : Avis & Dérogations
-- **JavaScript migré :** ~40% du total
-- **Commits créés :** 5 (3 code + 2 docs)
-- **Temps consacré :** ~17 heures
+  - ✅ Bloc 7 : Boutons "Aujourd'hui"
+- **JavaScript migré :** ~50% du total
+- **Commits créés :** 7 (5 code + 2 docs)
+- **Temps consacré :** ~18 heures
 - **Tests manuels :** 100% validés ✅
 
 ### Patterns techniques introduits
