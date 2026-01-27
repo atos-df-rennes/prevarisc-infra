@@ -483,52 +483,70 @@ et fonctionnait correctement. Cette tâche s'est concentrée sur les prévention
 
 ---
 
-### 🔴 Bloc 8 : Intégrations Plat'AU (conditions complexes)
+### Bloc 8 : Gestion Plat'AU (2h) ✅ 100%
 
-**Complexité :** 🔴 Élevée (multiples conditions, événements namespaced)
+**Statut :** ✅ **TERMINÉ** (27 janvier 2026)
 
-**Legacy :**
-- Ligne ~1086-1112 : Event listeners avec namespace `.platau`
-- `.incomplet.live('click.platau')` → afficher champs Plat'AU si incomplet
-- `#AVIS_DOSSIER_COMMISSION.live('change.platau')` → afficher si avis défini
-- Fonction `isDossierPlatau()`, `gestionAffichageInfosPlatau()`
+**Complexité :** 🔴 Élevée (conditions multiples, badges contextuels, retry UI)
 
-**Fichier cible :** `public/js/dossier/platau.js` (déjà existant)
+**Objectif :** Gérer l'affichage conditionnel des pièces jointes Plat'AU + boutons retry export
 
-**Tâches :**
-- [ ] **8.1** Vérifier conformité avec legacy
-  - Relire `platau.js` actuel (récemment modifié)
-  - Comparer avec logique legacy lignes 1086-1112
-  
-- [ ] **8.2** Compléter gestion affichage bloc pièces jointes Plat'AU
-  - Afficher SI :
-    - Dossier incomplet (état = 1) OU
-    - Avis commission défini (value != 0 && != '')
-  - Masquer sinon
-  
-- [ ] **8.3** Gérer badge alerte Plat'AU
-  - Badge `#badge-alerte-platau` doit apparaître si pièces jointes manquantes
-  - Clic sur badge → scroll vers champ `#field-piecesJointesPlatau`
-  
-- [ ] **8.4** Synchroniser avec incomplet & avis
-  - Relier avec `gestion-incomplet.js` et `avisDerogation.js`
-  - Tester toutes les combinaisons :
-    - Complet + Aucun avis → masqué
-    - Complet + Avis défini → affiché
-    - Incomplet + Aucun avis → affiché
-    - Incomplet + Avis défini → affiché
-  
-- [ ] **8.5** ~~Tester retry export~~ ⚠️ NON APPLICABLE
-  - **CLARIFICATION :** Boutons #retry-export-pec et #retry-export-avis NON présents dans HTML migré
-  - **Raison :** Séparation affichage/édition (reload = perte données)
-  - Ces boutons sont sur page affichage (show), pas édition (edit)
-  - Code existant dans platau.js peut être conservé pour compatibilité future
+**Code legacy :**
+- `index.phtml` lignes 1081-1143 : Fonctions Plat'AU
+- `index.phtml` lignes 1370-1468 : Section Plat'AU
+- AJAX `/piece-jointe/display-pj-platau`
+- Boutons retry lignes 1418-1425 (PEC) et 1460-1464 (Avis)
 
-**Validation :**
-- ✅ Logique d'affichage 100% conforme legacy
-- ✅ Badge alerte apparaît uniquement si nécessaire
-- ✅ Tests avec dossiers Plat'AU réels (fixture)
-- ✅ Tests avec dossiers NON Plat'AU (pas d'interférence)
+**Implémentation (100%) :**
+
+**Templates (5 fichiers) :**
+- ✅ `_platau_info.html.twig` - Section informations + passage `date_avis`
+- ✅ `_platau_statut.html.twig` - Statut + boutons retry conditionnels
+- ✅ `_platau_pieces_jointes.html.twig` - Checkboxes + bloc vide si aucune pièce
+- ✅ `edit.html.twig` - Badges warning/info + champs hidden retry
+
+**Backend :**
+- ✅ `DossierType.php` - Champs hidden `platauRetryPec/Avis` (mapped: false)
+
+**JavaScript (platau.js - 224 lignes) :**
+- ✅ `isDossierPlatau()` - Détection attribut `[data-platau-info]`
+- ✅ `initGestionPiecesJointesPlatau()` - Listeners incomplet + avis
+- ✅ `affichePiecesJointesPlatau()` - Affiche avec `.remove('hidden')`
+- ✅ `masquePiecesJointesPlatau()` - Masque avec `.add('hidden')`
+- ✅ `handleRetryExport()` - Clic retry (change statut + badge + désactive)
+- ✅ `updateStatutLabel()` - Change texte + couleur statut
+
+**Événements gérés (6) :**
+1. ✅ Changement "Dossier incomplet"
+2. ✅ Changement avis commission
+3. ✅ Clic badge alerte (scroll vers bloc)
+4. ✅ Affichage initial si statut warning
+5. ✅ **Clic retry PEC** (nouveau)
+6. ✅ **Clic retry Avis** (nouveau)
+
+**Tests validés (10 scénarios) :**
+1-7. Tests existants (détection, affichage conditionnel, scroll)
+8. ✅ Retry PEC avec pièces → Badge warning + checkboxes
+9. ✅ Retry Avis sans pièces → Badge info + message
+10. ✅ Badge persiste au 2ème clic (pas de toggle)
+
+**Commits :**
+- `2e4c458` - fix(platau): corrige sélecteur détection
+- `93fd398` - copilot: ajout boutons retry
+- `104db02` - fix: classe Bootstrap 3
+- `0b2a4a0` - refactor: réutilisation méthode
+
+**UX améliorée :**
+- Badge contextuel selon disponibilité pièces
+- Message clair si aucun document disponible
+- Retry sans reload (pas de perte données)
+
+**Hors périmètre (Bloc 5) :**
+- Traitement backend champs hidden
+- Modification statut en BDD
+- Suppression routes AJAX legacy
+
+**Durée :** 2h30
 
 ---
 
