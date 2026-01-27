@@ -1,7 +1,7 @@
 # 🎯 Point de reprise - Migration JavaScript Dossier
 
-**Date :** 27 janvier 2026 - 15h00  
-**Session :** Migration formulaire dossier - Blocs 1-3, 6-7 terminés  
+**Date :** 27 janvier 2026 - 16h05  
+**Session :** Migration formulaire dossier - 6 blocs terminés (60%)  
 **Branche :** `migration/dossier-informations-edition`
 
 ---
@@ -166,18 +166,50 @@ e7850e0 - fix(calendrier): augmente largeur sélecteur année pour Chrome
 
 ---
 
-## 📊 Récapitulatif Blocs 1-7 (5 Terminés)
+### Bloc 4 : Documents Urbanisme - ✅ TERMINÉ (100%)
+
+**Implémentation :** (Déjà migré lors phases précédentes)
+- ✅ Template Symfony CollectionType (edit.html.twig lignes 103-132)
+- ✅ JavaScript générique `add-collection-widget.js` (83 lignes)
+- ✅ Boutons ajout/suppression avec événement custom
+- ✅ Préfixes automatiques fonctionnels (PC YYYY XXX)
+
+**Tests manuels :**
+- ✅ Test 1 : Ajout 1er document → champ + bouton suppression (PASS)
+- ✅ Test 2 : Ajout multiple (4 docs) → tous affichés (PASS)
+- ✅ Test 3 : Suppression document → disparaît instantanément (PASS)
+- ✅ Test 4 : Sauvegarde nouveaux docs → persistés BDD (PASS)
+- ✅ Test 5 : Édition dossier → documents existants affichés (PASS)
+- ✅ Test 6 : Suppression + sauvegarde → supprimé BDD (PASS)
+- ✅ Test 7 : Annulation modifications → pas d'impact BDD (PASS)
+- ✅ Test 8 : Validation champs → comportement attendu (PASS)
+- ✅ Test 9 : Préfixes automatiques → générés correctement (PASS) ⭐
+- ✅ Test 10 : Événement custom → dispatché correctement (PASS)
+
+**Documentation créée :**
+- ✅ `analyse-bloc4.md` - Analyse complète implémentation
+- ✅ `tests-bloc4-documents-urbanisme.md` - Guide tests (10 scénarios)
+
+**Améliorations vs legacy :**
+- ✅ CollectionType Symfony (plus robuste que plugin jQuery)
+- ✅ Gestionnaire générique réutilisable pour autres collections
+- ✅ Suppression différée au submit formulaire (plus safe)
+
+---
+
+## 📊 Récapitulatif Blocs 1-7 (6 Terminés)
 
 ### Métriques d'avancement
-- **Blocs terminés :** 5/10 (50%)
+- **Blocs terminés :** 6/10 (60%)
   - ✅ Bloc 1 : Visibilité TYPE/NATURE
   - ✅ Bloc 2 : Autocomplete AJAX
   - ✅ Bloc 3 : Calendrier
+  - ✅ Bloc 4 : Documents Urbanisme
   - ✅ Bloc 6 : Avis & Dérogations
   - ✅ Bloc 7 : Boutons "Aujourd'hui"
-- **JavaScript migré :** ~50% du total
+- **JavaScript migré :** ~60% du total
 - **Commits créés :** 7 (5 code + 2 docs)
-- **Temps consacré :** ~18 heures
+- **Temps consacré :** ~19 heures
 - **Tests manuels :** 100% validés ✅
 
 ### Patterns techniques introduits
@@ -196,43 +228,28 @@ e7850e0 - fix(calendrier): augmente largeur sélecteur année pour Chrome
 
 ## 🎯 Prochaines étapes recommandées
 
-### Option 1 : Bloc 4 - Documents urbanisme ⭐⭐ (Gain rapide)
+### Option 1 : Bloc 5 - Validation formulaire ⭐⭐⭐ (Critique)
 
 **Pourquoi ce bloc ?**
-- Déjà partiellement fait (auto-préfixe OK)
-- Simple à finaliser
-- Gain rapide (1-2h)
+- Fonctionnalité critique pour intégrité données
+- Validation côté client/serveur
+- Gestion erreurs et messages
 
-**Complexité :** 🟢 Faible (1-2h)
+**Complexité :** 🟡 Moyenne (2-3h)
 
 **À compléter :**
-- Vérifier gestion existante dans form.js
-- Migrer bouton suppression (délégation événements)
-- Gérer ajout dynamique via prototype Symfony
-- Tester workflow complet (ajouter → sauvegarder → éditer → supprimer)
+- Validation champs obligatoires selon type/nature
+- Validation cohérence dates (dateVisite < dateCommission)
+- Affichage erreurs inline ou flash messages
+- Tests scénarios validation
 
 **Fichiers concernés :**
-- `public/js/dossier/form.js` (section documents urbanisme)
+- `src/Form/Type/DossierType.php` - Contraintes Symfony
+- Validators customs si nécessaire
 
 ---
 
-### Option 2 : Bloc 7 - Boutons "Aujourd'hui" ⭐ (Vérification)
-
-**Pourquoi ce bloc ?**
-- Déjà fait à ~90% (calendar-init.js)
-- Juste vérifier et documenter
-- 30 minutes max
-
-**Complexité :** 🟢 Très faible (30 min)
-
-**À vérifier :**
-- Bouton "Aujourd'hui" visible sur champs date
-- Clic remplit champ avec date du jour
-- Aucune erreur console
-
----
-
-### Option 3 : Bloc 8 - Plat'AU ⭐⭐⭐ (Si utilisé)
+### Option 2 : Bloc 8 - Plat'AU ⭐⭐⭐ (Si utilisé)
 
 **Pourquoi ce bloc ?**
 - Intégration externe importante

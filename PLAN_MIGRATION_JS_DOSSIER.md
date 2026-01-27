@@ -316,38 +316,43 @@ et fonctionnait correctement. Cette tâche s'est concentrée sur les prévention
 
 ---
 
-### 🟢 Bloc 4 : Documents d'urbanisme (ajout/suppression dynamique)
+### ✅ Bloc 4 : Documents d'urbanisme (ajout/suppression dynamique) - TERMINÉ
 
 **Complexité :** 🟢 Faible (CRUD simple, pas d'AJAX)
 
 **Legacy :**
 - Ligne ~846-912 : `.suppression` → supprime un doc urbanisme
-- Inline `onclick='$(this).parent().remove()'` dans template
-- Auto-préfixe PC/AT/PA/DP/CU (déjà dans `form.js`)
+- Ligne ~1064-1067 : Plugin jQuery `gestionSuppNature()`
+- Ligne ~1574-1592 : HTML avec `#listeDocUrba`, bouton `#ajoutDocUrba`
 
-**Fichier cible :** `public/js/dossier/form.js` (section dédiée)
+**Implémentation :** ✅ 100% migré (lors phases précédentes)
+
+**Fichiers :**
+- ✅ `templates/dossier/edit.html.twig` - CollectionType Symfony (lignes 103-132)
+- ✅ `public/js/formulaire/add-collection-widget.js` - Gestionnaire générique (83 lignes)
+- ✅ `src/Form/Type/DossierType.php` - Configuration backend
 
 **Tâches :**
-- [ ] **4.1** Vérifier gestion existante dans `form.js`
-  - Auto-préfixe déjà implémenté (lignes ~X-Y)
-  - S'assurer que suppression fonctionne via Symfony Collection Form
+- [x] **4.1** ~~Vérifier gestion existante~~
+  - ✅ Gestionnaire générique `add-collection-widget.js` en place
+  - ✅ CollectionType Symfony avec `allow_add`/`allow_delete`
   
-- [ ] **4.2** Migrer bouton suppression si nécessaire
-  - Remplacer inline `onclick` par délégation d'événements
-  - Utiliser `data-prototype` de Symfony FormType
+- [x] **4.2** ~~Migrer bouton suppression~~
+  - ✅ Bouton icône poubelle avec délégation événements
+  - ✅ Événement custom `collection:item-added`
   
-- [ ] **4.3** Gérer l'ajout dynamique
-  - Vérifier bouton "Ajouter un document" dans template Twig
-  - Clone du prototype → incrémenter index
+- [x] **4.3** ~~Gérer l'ajout dynamique~~
+  - ✅ Bouton "Ajouter un numéro" avec `data-prototype`
+  - ✅ Clone automatique du prototype Symfony
   
-- [ ] **4.4** Tester workflow complet
-  - Ajouter 3 docs → sauvegarder → ré-éditer → supprimer 1 → sauvegarder
-  - Vérifier persistance en base (table `dossierDocUrba`)
-  - Tester avec préfixes automatiques (PC2023001, etc.)
+- [x] **4.4** Tester workflow complet
+  - ✅ Tests manuels : 10/10 PASS (27 janvier 2026)
+  - ✅ Préfixes automatiques fonctionnels ⭐
+  - ✅ Persistance BDD validée
 
 **Validation :**
 - ✅ Aucun doublon en base après ajout/suppression
-- ✅ Numéros de préfixe corrects
+- ✅ Numéros de préfixe corrects et automatiques
 - ✅ Interface réactive (suppression instantanée)
 
 ---
