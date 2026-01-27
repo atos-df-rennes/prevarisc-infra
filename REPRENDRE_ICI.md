@@ -1,7 +1,7 @@
 # 🎯 Point de reprise - Migration JavaScript Dossier
 
-**Date :** 27 janvier 2026 - 10h15  
-**Session :** Migration formulaire dossier - Bloc 3 Calendrier  
+**Date :** 27 janvier 2026 - 11h42  
+**Session :** Migration formulaire dossier - Blocs 3 & 6 terminés  
 **Branche :** `migration/dossier-informations-edition`
 
 ---
@@ -114,13 +114,57 @@ feat(dossier): complète intégration calendrier - Bloc 3 (95%)
 
 ---
 
-## 📊 Récapitulatif Blocs 1-3 (Terminés)
+### Bloc 6 : Avis & Dérogations - ✅ TERMINÉ (100%)
+
+**Backend :** (Déjà migré lors du Bloc 1)
+- ✅ Logique métier masquage avis dans form.js
+- ✅ Fonction `applyHideAvisLogicOnLoad()` (priorités: incomplet > horsdelai > absquorum/npsp)
+- ✅ Fonction `applyFacteurEcheancierDisplayOnLoad()` (Type 2/3 + Défavorable)
+
+**Frontend :**
+- ✅ `form.js` - Event listeners sur checkboxes `.horsdelai`, `.absquorum`, `.npsp`
+- ✅ Fonction `initHideAvisCheckboxListeners()` (27 lignes)
+- ✅ Appels directs (intra-module) plutôt qu'événements custom
+- ✅ Masquage instantané au change des checkboxes
+
+**Tests manuels :**
+- ✅ Test 1 : Checkbox horsdelai → masque AVIS + AVIS_COMMISSION + dateCommission (PASS)
+- ✅ Test 2 : Checkbox absquorum → masque AVIS_COMMISSION + dateCommission (PASS)
+- ✅ Test 3 : Checkbox npsp → même comportement absquorum (PASS)
+- ✅ Test 4 : Changement avis Défavorable (Type 2/3) → affiche facteur + échéancier (PASS)
+- ✅ Test 5 : Type 1 Nature 19 Défavorable → affiche facteur uniquement (PASS)
+- ✅ Test 6 : Désactivation checkboxes → réaffiche champs (PASS)
+- ✅ Test 7 : Aucune erreur console (PASS)
+
+**Commits :**
+```bash
+8607a4c - feat(dossier): complète gestion avis avec event listeners checkboxes (Bloc 6)
+```
+
+**Documentation créée :**
+- ✅ `analyse-bloc6.md` - État existant vs manquant
+- ✅ `tests-bloc6-avis.md` - Guide tests manuels (7 tests)
+- ✅ `architecture-modulaire-avis.md` - Décision architecture reportée Bloc 10
+
+**Décision architecture :**
+- ⚠️ **REPORTÉ AU BLOC 10 :** Refactoring modulaire de form.js (si > 1200 lignes)
+- **Justification :** form.js actuellement 770 lignes (~35% logique avis)
+- **Approche :** Finir migration fonctionnelle → refactoring ensuite
+- **Référence :** Voir Bloc 10.1 dans PLAN_MIGRATION_JS_DOSSIER.md
+
+---
+
+## 📊 Récapitulatif Blocs 1-6 (4 Terminés)
 
 ### Métriques d'avancement
-- **Blocs terminés :** 3/10 (30%)
-- **JavaScript migré :** ~35% du total
-- **Commits créés :** 4
-- **Temps consacré :** ~16 heures
+- **Blocs terminés :** 4/10 (40%)
+  - ✅ Bloc 1 : Visibilité TYPE/NATURE
+  - ✅ Bloc 2 : Autocomplete AJAX
+  - ✅ Bloc 3 : Calendrier
+  - ✅ Bloc 6 : Avis & Dérogations
+- **JavaScript migré :** ~40% du total
+- **Commits créés :** 5 (3 code + 2 docs)
+- **Temps consacré :** ~17 heures
 - **Tests manuels :** 100% validés ✅
 
 ### Patterns techniques introduits
@@ -139,48 +183,7 @@ feat(dossier): complète intégration calendrier - Bloc 3 (95%)
 
 ## 🎯 Prochaines étapes recommandées
 
-### Option 1 : Bloc 6 - Avis & Dérogations ⭐⭐⭐ (Recommandé)
-
-**Pourquoi ce bloc ?**
-- Partiellement migré (~90%)
-- Fonctionnalité métier critique
-- Complète le Bloc 1 (masquage avis)
-
-**Complexité :** 🟡 Moyenne (2-3h)
-
-**À compléter :**
-- Affichage conditionnel avis selon état dossier
-- Gestion avis défavorable (déjà fait en partie dans form.js)
-- Synchronisation avec incomplet (déjà fait)
-- Tests exhaustifs tous types d'avis
-
-**Fichiers concernés :**
-- `public/js/dossier/form.js` (section avis)
-- ⚠️ `public/js/dossier/avisDerogation.js` (contexte modal séparé, à ne pas confondre)
-
----
-
-### Option 2 : Bloc 8 - Plat'AU ⭐⭐ (Si utilisé)
-
-**Pourquoi ce bloc ?**
-- Intégration externe importante
-- Partiellement migré (~95%)
-- Conditions d'affichage complexes
-
-**Complexité :** 🔴 Élevée (3-4h)
-
-**À compléter :**
-- Gestion affichage bloc pièces jointes Plat'AU
-- Badge alerte si pièces manquantes
-- Synchronisation avec incomplet & avis
-- ⚠️ Boutons retry-export (NON présents en édition, sur page show uniquement)
-
-**Fichiers concernés :**
-- `public/js/dossier/platau.js` (déjà existant)
-
----
-
-### Option 3 : Bloc 4 - Documents urbanisme ⭐ (Faible priorité)
+### Option 1 : Bloc 4 - Documents urbanisme ⭐⭐ (Gain rapide)
 
 **Pourquoi ce bloc ?**
 - Déjà partiellement fait (auto-préfixe OK)
@@ -188,6 +191,42 @@ feat(dossier): complète intégration calendrier - Bloc 3 (95%)
 - Gain rapide (1-2h)
 
 **Complexité :** 🟢 Faible (1-2h)
+
+**À compléter :**
+- Vérifier gestion existante dans form.js
+- Migrer bouton suppression (délégation événements)
+- Gérer ajout dynamique via prototype Symfony
+- Tester workflow complet (ajouter → sauvegarder → éditer → supprimer)
+
+**Fichiers concernés :**
+- `public/js/dossier/form.js` (section documents urbanisme)
+
+---
+
+### Option 2 : Bloc 7 - Boutons "Aujourd'hui" ⭐ (Vérification)
+
+**Pourquoi ce bloc ?**
+- Déjà fait à ~90% (calendar-init.js)
+- Juste vérifier et documenter
+- 30 minutes max
+
+**Complexité :** 🟢 Très faible (30 min)
+
+**À vérifier :**
+- Bouton "Aujourd'hui" visible sur champs date
+- Clic remplit champ avec date du jour
+- Aucune erreur console
+
+---
+
+### Option 3 : Bloc 8 - Plat'AU ⭐⭐⭐ (Si utilisé)
+
+**Pourquoi ce bloc ?**
+- Intégration externe importante
+- Partiellement migré (~95%)
+- Conditions d'affichage complexes
+
+**Complexité :** 🔴 Élevée (3-4h)
 
 **À compléter :**
 - Vérifier gestion existante dans form.js

@@ -560,27 +560,40 @@ et fonctionnait correctement. Cette tâche s'est concentrée sur les prévention
 **Complexité :** 🟡 Moyenne (refactoring, tests)
 
 **Tâches :**
-- [ ] **10.1** Supprimer fichiers legacy obsolètes
+- [ ] **10.1** 🆕 Refactoring modulaire de form.js (si > 1200 lignes)
+  - **DÉCISION 27/01/2026 :** Architecture modulaire reportée au Bloc 10
+  - **Contexte :** form.js actuellement à 770 lignes (35% logique avis)
+  - **Action si nécessaire :**
+    - Créer `public/js/dossier/modules/avis.js` (~300 lignes)
+    - Créer `public/js/dossier/modules/documents.js` (~200 lignes)
+    - Créer `public/js/dossier/modules/validation.js` (~150 lignes)
+    - Créer `public/js/dossier/modules/urbanisme.js` (~100 lignes)
+    - Refactor form.js en orchestrateur (~200 lignes)
+  - **Communication :** Événements custom pour inter-modules
+  - **Justification :** Principe SRP + maintenabilité à long terme
+  - **Référence :** `~/.copilot/session-state/.../files/architecture-modulaire-avis.md`
+
+- [ ] **10.2** Supprimer fichiers legacy obsolètes
   - Supprimer `dossierGeneral.js` (remplacé par `form.js`)
   - Supprimer versions `-bs3.js` si Bootstrap 3 confirmé partout
   
-- [ ] **10.2** Centraliser utilitaires communs
+- [ ] **10.3** Centraliser utilitaires communs
   - Créer `public/js/common/utils.js` pour :
     - `getTodayDate()` (utilisé partout)
     - `formatDate()`, `parseDate()`
     - `debounce()`, `throttle()` si nécessaire
   
-- [ ] **10.3** Documenter architecture finale
+- [ ] **10.4** Documenter architecture finale
   - Créer `docs/tech/dossier/ARCHITECTURE_JS.md`
   - Diagramme de dépendances entre modules JS
   - Guide pour ajouter une nouvelle interaction
   
-- [ ] **10.4** Tests de non-régression exhaustifs
+- [ ] **10.5** Tests de non-régression exhaustifs
   - Checklist complète : 68 natures × 4 types = 272 combinaisons
   - Focus sur 20-30 cas représentatifs (80/20)
   - Tester sur Firefox, Chrome, Safari (si possible)
   
-- [ ] **10.5** Audit performance
+- [ ] **10.6** Audit performance
   - Mesurer temps de chargement page edit dossier
   - Mesurer temps de réponse changement type/nature
   - Optimiser si > 500ms (lazy load, debounce, etc.)
@@ -590,6 +603,7 @@ et fonctionnait correctement. Cette tâche s'est concentrée sur les prévention
 - ✅ Pas d'erreur JS dans console (tous navigateurs)
 - ✅ Lighthouse score > 90 (performance)
 - ✅ Documentation à jour
+- ✅ Architecture modulaire claire (si refactoring appliqué)
 
 ---
 
