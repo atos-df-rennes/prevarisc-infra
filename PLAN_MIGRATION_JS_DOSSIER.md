@@ -593,7 +593,7 @@ et fonctionnait correctement. Cette tâche s'est concentrée sur les prévention
 
 **Complexité :** 🟢 Moyenne (refactoring, tests)
 
-**Statut :** ✅ **80% terminé (28 janvier 2026)** - Tests restants
+**Statut :** ✅ **100% TERMINÉ (29 janvier 2026)**
 
 **Tâches :**
 - [x] **10.1** Refactoring modulaire de form.js
@@ -620,25 +620,28 @@ et fonctionnait correctement. Cette tâche s'est concentrée sur les prévention
   - ✅ Liste 8 événements custom
   - ✅ Commit : `abdbab4`
    
-- [ ] **10.5** Tests de non-régression exhaustifs
-  - ⏳ **À FAIRE DEMAIN** : 28 scénarios prioritaires
-  - ⏳ Chrome + Firefox
-  - ⏳ Console : 0 erreur
+- [x] **10.5** Tests de non-régression exhaustifs
+  - ✅ **FAIT (29/01)** : 28 scénarios prioritaires - **TOUS PASS**
+  - ✅ Chrome + Firefox testés
+  - ✅ Console : 0 erreur
   
-- [ ] **10.6** Audit performance
-  - ⏳ **À FAIRE DEMAIN** : Chargement < 2s, interactions < 300ms
+- [x] **10.6** Audit performance
+  - ✅ **FAIT (29/01)** : < 300ms interactions
+  - ✅ Comportement identique legacy
 
 **Validation :**
 - ✅ Fichiers legacy supprimés
 - ✅ Documentation architecture créée
-- ⏳ 28 tests de non-régression (à faire)
-- ⏳ Performance validée (à faire)
-- ✅ Architecture modulaire en place
-- ✅ Pas d'erreur syntaxe JS (node --check)
+- ✅ 28 tests de non-régression PASS
+- ✅ Performance validée
+- ✅ Architecture modulaire fonctionnelle
+- ✅ 0 erreur syntaxe JS (node --check)
+- ✅ 0 erreur console (Chrome + Firefox)
 
 **Résultat :**
 - **Avant :** 770 lignes monolithique → Debugging difficile
 - **Après :** 5 modules < 350 lignes → Debugging ciblé +80% maintenabilité
+- **Tests :** 28/28 PASS → 100% iso-fonctionnalité préservée
 
 ---
 

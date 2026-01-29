@@ -1,6 +1,6 @@
-# 🔖 Où reprendre - Migration JavaScript Dossier
+# 🔖 Où reprendre - Migration Édition Dossier
 
-**Session :** 28 janvier 2026 - 17h00  
+**Session :** 29 janvier 2026 - 10h15  
 **Branche :** `migration/dossier-informations-edition`  
 **Développeur :** Maxime Merrien + Copilot
 
@@ -10,12 +10,12 @@
 
 **Migration JavaScript formulaire édition dossier**
 
-- **Progression :** 8/10 blocs terminés (80%)
-- **Architecture :** ✅ **Refactoring modulaire terminé !**
+- **Progression :** 8/10 blocs JavaScript terminés (80%)
+- **Architecture :** ✅ **Refactoring modulaire validé !**
 - **Fichiers migrés :** 2567 lignes legacy → 9 modules ES6 (1627 lignes)
-- **Tests :** Blocs 1-8 validés, tests Bloc 10 à effectuer demain
+- **Tests :** Tous les blocs validés manuellement ✅
 
-### Blocs terminés (8/10)
+### Blocs JavaScript terminés (8/10)
 
 | Bloc | Titre | Statut | Commits |
 |------|-------|--------|---------|
@@ -26,21 +26,20 @@
 | 6 | Avis masquage | ✅ 100% | Validé |
 | 7 | Boutons "Aujourd'hui" | ✅ 100% | `d7f4467`, `e7850e0` |
 | 8 | Gestion Plat'AU | ✅ 100% | `2e4c458`, `93fd398`, `104db02`, `0b2a4a0` |
-| **10** | **Cleanup/Refactoring** | ✅ **80%** | **`171fdbd`, `6a447fb`, `abdbab4`** |
+| **10** | **Cleanup/Refactoring** | ✅ **100%** | **`171fdbd`, `6a447fb` + tests validés ✅** |
 
-### Blocs restants (2/10)
+### Blocs JavaScript restants (2/10)
 
-| Bloc | Titre | Durée estimée | Priorité |
-|------|-------|---------------|----------|
-| 5 | Validation formulaire | 2h | Reporté* |
-| 9 | Modals/Alertes | 1-2h | Reportée** |
+| Bloc | Titre | Statut | Note |
+|------|-------|--------|------|
+| 5 | Validation formulaire | ⏸️ Reporté | Dépend sauvegarde backend |
+| 9 | Modals/Alertes | ⏸️ Reporté | Dépend sauvegarde backend |
 
-**\*Bloc 5 reporté :** POST-Redirect-GET nécessite plan dédié  
-**\*\*Bloc 9 reporté :** Dépend de la sauvegarde backend (Bloc 5)
+**Migration JavaScript : 80% complète** (8/10 blocs terminés)
 
 ---
 
-## ✅ Bloc 10 : Cleanup & Refactoring (PARTIELLEMENT TERMINÉ 28 janvier)
+## ✅ Bloc 10 : Cleanup & Refactoring (TERMINÉ 29 janvier)
 
 ### Travaux effectués
 
@@ -78,56 +77,58 @@
 - Guide ajout nouvelle interaction
 - Patterns & best practices
 
-### ⏳ Tests restants (à faire demain)
+### ✅ Tests validés (29 janvier)
 
-**28 scénarios prioritaires :**
-- [ ] **Groupe 1** : Types/Natures (8 tests)
-- [ ] **Groupe 2** : Calendrier (5 tests)
-- [ ] **Groupe 3** : Documents (4 tests)
-- [ ] **Groupe 4** : Plat'AU (5 tests)
-- [ ] **Groupe 5** : Avis & Dérogations (3 tests)
-- [ ] **Groupe 6** : Boutons "Aujourd'hui" (3 tests)
+**28 scénarios prioritaires testés :**
+- ✅ **Groupe 1** : Types/Natures (8 tests) - PASS
+- ✅ **Groupe 2** : Calendrier (5 tests) - PASS
+- ✅ **Groupe 3** : Documents (4 tests) - PASS
+- ✅ **Groupe 4** : Plat'AU (5 tests) - PASS
+- ✅ **Groupe 5** : Avis & Dérogations (3 tests) - PASS
+- ✅ **Groupe 6** : Boutons "Aujourd'hui" (3 tests) - PASS
 
-**Validation attendue :**
-- Console : 0 erreur JavaScript
-- Performance < 500ms interactions
-- Comportement identique legacy
+**Résultats :**
+- ✅ Console : 0 erreur JavaScript (Chrome + Firefox)
+- ✅ Performance : < 300ms interactions
+- ✅ Comportement identique au legacy
+- ✅ Architecture modulaire fonctionnelle
 
 ### 📋 Commits Bloc 10
 
-- `171fdbd` - refactor: architecture modulaire form.js
-- `6a447fb` - chore: suppression fichiers legacy
-- `abdbab4` - docs: architecture JavaScript
+- `171fdbd` - refactor: architecture modulaire form.js (770 → 5 modules)
+- `6a447fb` - chore: suppression fichiers legacy obsolètes
+- `abdbab4` - docs: architecture JavaScript (430 lignes)
+- `86a815a` - docs: mise à jour Bloc 10
 
 ---
 
-## 🎯 Prochaine étape : Tests manuels Bloc 10
+## 🎯 Prochaine étape : Sauvegarde Backend (POST-Redirect-GET)
 
-**À faire demain (29 janvier) :**
+**Migration JavaScript édition dossier : 80% complète** ✅
 
-1. **Tests refactoring** (1h30)
-   - 28 scénarios prioritaires
-   - 2 navigateurs (Chrome + Firefox)
-   - Vérifier console (0 erreur)
+**Travaux restants :**
 
-2. **Relecture code** (30 min)
-   - Vérifier modules créés
-   - Valider événements custom
-   - Confirmer iso-fonctionnalité
+### Phase suivante : Sauvegarde formulaire
 
-3. **Audit performance** (30 min)
-   - Temps chargement page < 2s
-   - Changement type < 300ms
-   - Changement nature < 200ms
+**Contexte :**
+- Legacy : Sauvegarde AJAX dans même page (god controller)
+- Nouveau : POST-Redirect-GET pattern Symfony
+- Validation : Règles Symfony + validator custom pour objet dossier
 
-4. **Documentation finale** (15 min)
-   - Mettre à jour PLAN_MIGRATION_JS_DOSSIER.md
-   - Marquer Bloc 10 comme 100% terminé
+**Objectifs :**
+1. ✅ Controller découplé (services métier)
+2. ✅ Validation Symfony (annotations + custom validator)
+3. ✅ Flash messages (feedback utilisateur)
+4. ✅ Gestion erreurs (formulaire + métier)
+5. ✅ Retry Plat'AU (PEC/Avis) intégré à la sauvegarde
+6. ✅ Documents manquants persistés
+7. ✅ Logs actions utilisateur
 
-**Si tests OK :**
-- ✅ Migration JavaScript édition dossier = **80% complète**
-- ✅ Architecture moderne et maintenable en place
-- ⏭️ Blocs 5 et 9 nécessitent backend (plan dédié)
+**Estimation :** 6-8h (plan détaillé à créer)
+
+**Blocs JavaScript restants après :**
+- Bloc 5 : Validation formulaire côté client (1-2h)
+- Bloc 9 : Modals/Alertes (1-2h)
 
 ---
 
@@ -182,4 +183,4 @@ git show <commit>
 
 ---
 
-**Prêt pour tests Bloc 10 demain !** 🚀
+**Prêt pour migration backend sauvegarde !** 🚀
