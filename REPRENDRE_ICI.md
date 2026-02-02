@@ -134,11 +134,15 @@ DossierController (< 100 lignes)
 - [x] **Phase 1** - Validation Symfony (3h) - **✅ TERMINÉ** 
   - **Livrables :**
     - Custom validator `DossierObjetValidator` (OBJET conditionnel natures 21/26)
-    - 7 tests unitaires (tous passent ✅)
-    - Annotations validation sur entité Dossier (type, nature, dates)
+    - Tests unitaires avec DataProviders (7 scénarios, ConstraintValidatorTestCase)
+    - Annotations validation sur entité Dossier (type, nature, dateInsert)
+  - **Améliorations :**
+    - dateInsert : nullable=false + @Assert\NotNull + @Assert\DateTime
+    - Tests refactorés avec pattern Symfony (ConstraintValidatorTestCase)
+    - DataProviders pour mutualiser tests similaires (-91 lignes)
   - **Tests :** 241 tests, 522 assertions, 0 erreur ✅
   - **PHPStan :** Niveau 10, 0 erreur ✅
-  - **Commit :** `53e3479`
+  - **Commits :** `53e3479`, `663da5e`
   
 - [ ] **Phase 2** - Services métier (4h)
 - [ ] **Phase 3** - Controller refactoring (2h)
