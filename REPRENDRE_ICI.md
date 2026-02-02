@@ -131,15 +131,20 @@ DossierController (< 100 lignes)
   - **Focus :** Avis donnant, documents manquants, champ OBJET conditionnel
   - **Commit :** Documentation créée
 
-- [x] **Phase 1** - Validation Symfony (3h) - **✅ TERMINÉ** 
-  - **Livrables :**
-    - Custom validator `DossierObjetValidator` (OBJET conditionnel natures 21/26)
-    - Tests unitaires avec DataProviders (7 scénarios, ConstraintValidatorTestCase)
-    - Annotations validation sur entité Dossier (type, nature, dateInsert)
+- [x] **Phase 1** - Validation Symfony (3h) - **✅ PARTIELLEMENT TERMINÉ** 
+  - **Livrables réalisés :**
+    - ✅ Custom validator `DossierObjetValidator` (OBJET conditionnel natures 21/26)
+    - ✅ Constraint `DossierObjet` avec annotation @DossierObjet
+    - ✅ Tests unitaires avec DataProviders (7 scénarios, ConstraintValidatorTestCase)
+    - ✅ Annotations validation sur entité Dossier (type, nature, dateInsert)
+    - ✅ dateInsert : nullable=false + @Assert\NotNull + @Assert\DateTime
   - **Améliorations :**
-    - dateInsert : nullable=false + @Assert\NotNull + @Assert\DateTime
     - Tests refactorés avec pattern Symfony (ConstraintValidatorTestCase)
     - DataProviders pour mutualiser tests similaires (-91 lignes)
+  - **Points NON faits (à reprendre ultérieurement) :**
+    - ❌ Synchronisation contraintes FormType (dateInsert required, etc.)
+    - ❌ Service DossierValidationService (validations métier complexes)
+    - **Note :** Ces points seront traités en Phase 2/3, pas bloquants
   - **Tests :** 241 tests, 522 assertions, 0 erreur ✅
   - **PHPStan :** Niveau 10, 0 erreur ✅
   - **Commits :** `53e3479`, `663da5e`
