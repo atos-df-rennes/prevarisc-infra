@@ -1,6 +1,6 @@
 # 🔖 Où reprendre - Migration Édition Dossier
 
-**Session :** 29 janvier 2026 - 10h15  
+**Session :** 2 février 2026 - 10h45  
 **Branche :** `migration/dossier-informations-edition`  
 **Développeur :** Maxime Merrien + Copilot
 
@@ -8,12 +8,17 @@
 
 ## 📊 État d'avancement global
 
-**Migration JavaScript formulaire édition dossier**
+**Migration formulaire édition dossier**
 
-- **Progression :** 8/10 blocs JavaScript terminés (80%)
-- **Architecture :** ✅ **Refactoring modulaire validé !**
+### ✅ JavaScript : 80% complète (8/10 blocs)
+- **Architecture :** Refactoring modulaire validé ✅
 - **Fichiers migrés :** 2567 lignes legacy → 9 modules ES6 (1627 lignes)
 - **Tests :** Tous les blocs validés manuellement ✅
+
+### 🚧 Backend : EN COURS - Sauvegarde formulaire
+- **Phase actuelle :** Phase 0 - Analyse legacy
+- **Objectif :** POST-Redirect-GET + Services découplés
+- **Estimation :** 12h (2 jours)
 
 ### Blocs JavaScript terminés (8/10)
 
@@ -102,33 +107,60 @@
 
 ---
 
-## 🎯 Prochaine étape : Sauvegarde Backend (POST-Redirect-GET)
+## 🚧 Backend : Sauvegarde Formulaire (EN COURS - 2 février)
 
-**Migration JavaScript édition dossier : 80% complète** ✅
+**Objectif :** Migrer la sauvegarde du formulaire vers architecture propre et testable
 
-**Travaux restants :**
+### Architecture cible
 
-### Phase suivante : Sauvegarde formulaire
+```
+DossierController (< 100 lignes)
+    ↓
+    ├─> DossierValidationService     (validations métier)
+    ├─> DossierSaveService           (orchestration persist)
+    ├─> DocumentManquantService      (sync docs manquants)
+    ├─> PlatauRetryService           (retry PEC/Avis)
+    └─> AuditLogService              (logs actions)
+```
 
-**Contexte :**
-- Legacy : Sauvegarde AJAX dans même page (god controller)
-- Nouveau : POST-Redirect-GET pattern Symfony
-- Validation : Règles Symfony + validator custom pour objet dossier
+### Planning (12h = 2 jours)
 
-**Objectifs :**
-1. ✅ Controller découplé (services métier)
-2. ✅ Validation Symfony (annotations + custom validator)
-3. ✅ Flash messages (feedback utilisateur)
-4. ✅ Gestion erreurs (formulaire + métier)
-5. ✅ Retry Plat'AU (PEC/Avis) intégré à la sauvegarde
-6. ✅ Documents manquants persistés
-7. ✅ Logs actions utilisateur
+- [ ] **Phase 0** - Analyse legacy (1h) - **EN COURS**
+- [ ] **Phase 1** - Validation Symfony (3h)
+- [ ] **Phase 2** - Services métier (4h)
+- [ ] **Phase 3** - Controller refactoring (2h)
+- [ ] **Phase 4** - Tests & validation (2h)
 
-**Estimation :** 6-8h (plan détaillé à créer)
+### Livrables attendus
 
-**Blocs JavaScript restants après :**
+**Services créés (6) :**
+- `DossierValidationService` (validation métier)
+- `DossierSaveService` (orchestration)
+- `DocumentManquantService` (gestion docs)
+- `PlatauRetryService` (retry export)
+- `DossierObjetValidator` (custom validator)
+- Tests unitaires associés
+
+**Fichiers modifiés (3) :**
+- `src/Entity/Dossier.php` (annotations validation)
+- `src/Form/DossierType.php` (contraintes)
+- `src/Controller/DossierController.php` (refactor edit)
+
+**Features :**
+- ✅ POST-Redirect-GET pattern
+- ✅ Flash messages (succès/erreur)
+- ✅ Validation Symfony + custom validator objet
+- ✅ Controller < 100 lignes
+- ✅ Services testables unitairement
+- ✅ Gestion transactions (rollback si erreur)
+
+### Après sauvegarde
+
+**Blocs JavaScript restants :**
 - Bloc 5 : Validation formulaire côté client (1-2h)
 - Bloc 9 : Modals/Alertes (1-2h)
+
+**Migration complète : ~85-90%**
 
 ---
 
