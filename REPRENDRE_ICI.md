@@ -125,34 +125,86 @@ DossierController (< 100 lignes)
 
 ### Planning (12h = 2 jours)
 
-- [ ] **Phase 0** - Analyse legacy (1h) - **EN COURS**
-- [ ] **Phase 1** - Validation Symfony (3h)
+- [x] **Phase 0** - Analyse legacy (1h) - **✅ TERMINÉ**
+  - **Livrable :** `files/analyse-sauvegarde-legacy.md` (18 200 caractères)
+  - **Trouvailles :** 8 validations, 10 entités, 6 traitements métier spécifiques
+  - **Focus :** Avis donnant, documents manquants, champ OBJET conditionnel
+  - **Commit :** Documentation créée
+
+- [x] **Phase 1** - Validation Symfony (3h) - **✅ TERMINÉ** 
+  - **Livrables :**
+    - Custom validator `DossierObjetValidator` (OBJET conditionnel natures 21/26)
+    - 7 tests unitaires (tous passent ✅)
+    - Annotations validation sur entité Dossier (type, nature, dates)
+  - **Tests :** 241 tests, 522 assertions, 0 erreur ✅
+  - **PHPStan :** Niveau 10, 0 erreur ✅
+  - **Commit :** `53e3479`
+  
 - [ ] **Phase 2** - Services métier (4h)
 - [ ] **Phase 3** - Controller refactoring (2h)
 - [ ] **Phase 4** - Tests & validation (2h)
 
+### Phase 0 : Résultats de l'analyse (TERMINÉ)
+
+**Fichier legacy analysé :** `prevarisc/application/controllers/DossierController.php`
+
+**Méthode clé :** `saveAction()` (lignes 754-1419 = 665 lignes !)
+
+**Découvertes critiques :**
+
+1. **Validation champ OBJET (conditionnel) :**
+   - Ligne 901-903 : OBJET requis uniquement si nature le demande
+   - Basé sur `$this->listeChamps[$nature]` (lignes 42-160)
+   - **Action :** Créer `DossierObjetValidator` custom
+
+2. **Avis donnant établissement (complexe) :**
+   - Lignes 1300-1403 : Met à jour `etablissement.ID_DOSSIER_DONNANT_AVIS`
+   - Natures concernées : `[7, 16, 17, 19, 21, 23, 24, 26, 28, 29, 47, 48]`
+   - Envoie email si permission `alerte_email.alerte_avis`
+   - **Action :** Créer `AvisDonnantService` + EventListener email
+
+3. **Documents manquants (logique create/update) :**
+   - Lignes 1086-1171 : 3 tableaux parallèles (label, dateSignal, dateRecep)
+   - Identifier par `NUM_DOCSMANQUANT` (index séquentiel)
+   - **Action :** Créer `DocumentManquantService::syncDocumentsManquants()`
+
+4. **10 entités impactées :**
+   - dossier, dossiernature, dossierdocmanquant, dossieraffectation
+   - dossierdocconsulte, listdocajout, dossierdocurba, dossierpreventionniste
+   - dossiertexteappl, dossierliencontact
+
+5. **Traitements conditionnels selon nature :**
+   - Textes applicables : natures `[21, 22, 24, 26, 27, 29]` (création)
+   - Documents consultés : natures `[21, 26]` (visite périodique)
+   - Prescriptions réglementaires : selon type (étude vs visite)
+
+**Document complet :** `~/.copilot/session-state/.../files/analyse-sauvegarde-legacy.md`
+
 ### Livrables attendus
 
-**Services créés (6) :**
+**Services à créer (5) :**
 - `DossierValidationService` (validation métier)
 - `DossierSaveService` (orchestration)
 - `DocumentManquantService` (gestion docs)
+- `AvisDonnantService` (avis donnant + emails)
 - `PlatauRetryService` (retry export)
-- `DossierObjetValidator` (custom validator)
-- Tests unitaires associés
 
-**Fichiers modifiés (3) :**
+**Validators custom (1) :**
+- `DossierObjetValidator` (champ OBJET conditionnel)
+
+**Fichiers à modifier (3) :**
 - `src/Entity/Dossier.php` (annotations validation)
 - `src/Form/DossierType.php` (contraintes)
-- `src/Controller/DossierController.php` (refactor edit)
+- `src/Controller/DossierController.php` (refactor edit < 100 lignes)
 
-**Features :**
+**Features cibles :**
 - ✅ POST-Redirect-GET pattern
 - ✅ Flash messages (succès/erreur)
 - ✅ Validation Symfony + custom validator objet
 - ✅ Controller < 100 lignes
 - ✅ Services testables unitairement
 - ✅ Gestion transactions (rollback si erreur)
+- ✅ Logs actions utilisateur
 
 ### Après sauvegarde
 
