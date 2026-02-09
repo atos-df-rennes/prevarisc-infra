@@ -88,13 +88,31 @@
   - JS minimal et lisible
 - **Icônes :** `<span class="glyphicon" aria-hidden="true">` (Bootstrap 3 standard)
 - **Tests :** Modale s'ouvre, formulaire chargé ✅
-- **TODO :** Compléter destinataires/objet/message + envoi mail (Part 3B2)
+
+#### Part 3B2 : Récupération destinataires email (EN COURS ✅)
+- **Commit :** `c1e52a7` (9 février 2026)
+- **Service :** `AlerteService::getDestinataires(int $typeChangement, Etablissement $etablissement)`
+- **Logique :**
+  - Récupère NUMINSEE depuis première adresse établissement
+  - QueryBuilder Doctrine avec LEFT JOIN sur groupements
+  - Filtre : privilege (alerte_avis/statut/classement) + email NOT NULL + commune
+  - Condition : `u.commune = NUMINSEE OR gc.id = NUMINSEE` (OR optimisé vs UNION legacy)
+  - Retourne `array<int, array{id, nom, prenom, email}>`
+- **Optimisation :** 1 requête au lieu de UNION (2 requêtes identiques dans legacy)
+- **Intégration :** `AlerteController::formulaire()` appelle service
+- **Tests :** SQL manuel validé (user 281 trouvé pour établissement 9) ⚠️ À tester UI
+- **PHPStan :** 0 erreur ✅
+- **TODO :** 
+  1. Tester via interface web (se connecter, éditer dossier, alerter)
+  2. Implémenter objet email (Service_Changement::getObjet)
+  3. Implémenter message email (Service_Changement::convertMessage)
+  4. Implémenter envoi email (POST /symfony/alerte/envoyer)
 
 #### Part 3B2 : Envoi email (À FAIRE)
 - **Route :** `/symfony/alerte/envoyer` (POST)
 - **Service :** Symfony Mailer + MailPit (dev)
 - **Logique :** Submit formulaire → envoi email → flash success
-- **Estimation :** 1-2h
+- **Estimation :** 2-3h
 
 ### ✅ BLOC 18 : Cache legacy via LegacyController ✅
 - **Commits :** `e77d59c`, `2dcf9459` (legacy), `f811f85`, `2468806` (Symfony)
