@@ -34,11 +34,11 @@ SetEnv PREVARISC_MAIL_ENABLED 0
 # Mail configuration (optionnel : peut utiliser MAILER_DSN à la place)
 # Transport: smtp, sendmail, mail
 # SetEnv PREVARISC_MAIL_TRANSPORT "smtp"
-# SetEnv PREVARISC_MAIL_HOST "smtp.example.com"
-# SetEnv PREVARISC_MAIL_PORT "587"
-# SetEnv PREVARISC_MAIL_USERNAME "user@example.com"
-# SetEnv PREVARISC_MAIL_PASSWORD "password"
-# SetEnv PREVARISC_MAIL_SENDER "noreply@example.com"
+# SetEnv PREVARISC_MAIL_HOST "mailpit"
+# SetEnv PREVARISC_MAIL_PORT "1025"
+# SetEnv PREVARISC_MAIL_USERNAME ""
+# SetEnv PREVARISC_MAIL_PASSWORD ""
+# SetEnv PREVARISC_MAIL_SENDER "noreply@prevarisc"
 # SetEnv PREVARISC_MAIL_SENDER_NAME "Prevarisc"
 
 # Couches cartographiques
