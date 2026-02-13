@@ -190,6 +190,17 @@ function update(): void
     );
 }
 
+#[AsTask(namespace: 'prevarisc', description: 'Make Prevarisc dump')]
+function makeDump(): void
+{
+    io()->title('Making Prevarisc dump.');
+
+    $dumpName = 'prevarisc_'.date('Ymd').'.sql';
+    run('docker exec -w / -i prevarisc-infra-db-1 mysqldump -u root -p"planmusique" PRV_prevarisc_v2 > '.$dumpName);
+
+    io()->success('Dump made successfully.');
+}
+
 #[AsTask(namespace: 'prevarisc', description: 'Load Prevarisc dump')]
 function loadDump(): void
 {
