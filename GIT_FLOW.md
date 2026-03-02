@@ -30,7 +30,7 @@ bugfix/xxx  ──────────────────────�
 
 - Branche de **production**
 - Contient uniquement du code **stable et livré**
-- Chaque version livrée est **taguée** (`v2.8.0`, `v2.9.0`, `v2.9.1`…)
+- Chaque version livrée est **taguée** (`v2.8.0`, `v2.9.0`, `v2.9.1`…) — voir [Gestion des versions et tags](#gestion-des-versions-et-tags)
 - Ne reçoit des merges que depuis :
   - les branches `release/x.y` (nouvelle version mineure)
   - les branches `hotfix/x.y.z` (correctif urgent en production)
@@ -87,6 +87,7 @@ bugfix/xxx  ──────────────────────�
 3. Une fois stable : merger dans main
    git checkout main
    git merge --no-ff release/2.9
+   # Le tag est généré via conventional-changelog (voir section dédiée)
    git tag v2.9.0
 
 4. Répercuter sur develop
@@ -109,6 +110,7 @@ bugfix/xxx  ──────────────────────�
 3. Merger dans main et tagger
    git checkout main
    git merge --no-ff hotfix/2.8.1
+   # Le tag est généré via conventional-changelog (voir section dédiée)
    git tag v2.8.1
 
 4. Répercuter sur develop
@@ -121,7 +123,39 @@ bugfix/xxx  ──────────────────────�
 
 ---
 
-## Conventions de nommage
+## Gestion des versions et tags
+
+Les tags de version sont générés via **[marcocesarato/php-conventional-changelog](https://github.com/marcocesarato/php-conventional-changelog)**, qui analyse l'historique des commits pour déterminer automatiquement le prochain numéro de version et générer le changelog.
+
+### Prérequis
+
+Les commits doivent respecter la convention **Conventional Commits** (cf. section [Conventions de commit](#conventions-de-commit)) pour que conventional-changelog puisse les interpréter correctement.
+
+### Calcul du numéro de version (SemVer)
+
+| Type de commit         | Impact sur la version | Exemple                    |
+|------------------------|-----------------------|----------------------------|
+| `fix`                  | Patch (`x.y.Z`)       | `v2.9.0` → `v2.9.1`       |
+| `feat`                 | Mineure (`x.Y.z`)     | `v2.9.0` → `v2.10.0`      |
+| `BREAKING CHANGE`      | Majeure (`X.y.z`)     | `v2.9.0` → `v3.0.0`       |
+
+### Génération du tag et du changelog
+
+```bash
+# Installer conventional-changelog via Composer si nécessaire
+composer require marcocesarato/php-conventional-changelog --dev
+
+# Générer le changelog et bumper la version automatiquement
+vendor/bin/conventional-changelog
+
+# Créer le tag Git correspondant (suggéré par la commande précédente)
+git tag vx.y.z
+git push origin vx.y.z
+```
+
+> Le fichier `CHANGELOG.md` est mis à jour automatiquement avec la liste des commits classés par type (`feat`, `fix`, etc.).
+
+---
 
 | Type       | Format                          | Exemple                        |
 |------------|---------------------------------|--------------------------------|
