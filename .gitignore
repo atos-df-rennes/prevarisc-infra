@@ -1,9 +1,9 @@
 .idea
 apache/httpd-prevarisc-config.conf
 apache/httpd-prevarisc-version.conf
-./prevarisc/
-./prevarisc-passerelle-platau/
-./prevarisc-migration
+prevarisc/
+prevarisc-passerelle-platau/
+prevarisc-migration/
 .castor/.castor.stub.php
 /*.md
 /*.sql
