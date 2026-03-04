@@ -5,5 +5,5 @@ prevarisc/
 prevarisc-passerelle-platau/
 prevarisc-migration/
 .castor/.castor.stub.php
-/*.md
+/docs/*.md
 /*.sql
