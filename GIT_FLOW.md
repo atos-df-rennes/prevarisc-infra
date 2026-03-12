@@ -148,7 +148,9 @@ Le correctif part de la branche de maintenance et est propagé en cascade vers l
 
 ### Hotfix urgent en production (ex: `v2.8.1`)
 
-Réservé aux bugs critiques nécessitant une correction immédiate, sans passer par le cycle de release.
+Réservé aux bugs critiques nécessitant une correction immédiate, sans passer par le cycle de release normal.
+
+> **À utiliser avec parcimonie.** Dans la plupart des cas, un correctif sur une version maintenue doit passer par `release/x.y` (voir section précédente). Le hotfix depuis `main` est justifié uniquement quand l'urgence ne permet pas d'attendre le cycle normal.
 
 ```
 1. Créer hotfix depuis main
@@ -163,13 +165,23 @@ Réservé aux bugs critiques nécessitant une correction immédiate, sans passer
    # Le tag est généré via conventional-changelog (voir section dédiée)
    git tag v2.8.1
 
-4. Répercuter sur develop
+4. Cascader vers toutes les branches release actives (ordre croissant)
+   git checkout release/2.8
+   git merge --no-ff hotfix/2.8.1
+
+   git checkout release/2.9
+   git merge --no-ff hotfix/2.8.1   # ou merger depuis release/2.8
+
+5. Répercuter sur develop
    git checkout develop
    git merge --no-ff hotfix/2.8.1
 
-5. Supprimer la branche hotfix
+6. Supprimer la branche hotfix
    git branch -d hotfix/2.8.1
 ```
+
+> **Pourquoi cascader vers les branches release ?**
+> Si `release/2.8` est active et ne reçoit pas le hotfix, le prochain merge de `release/2.8` vers `main` risque de créer un conflit ou de réintroduire le bug corrigé.
 
 ---
 
