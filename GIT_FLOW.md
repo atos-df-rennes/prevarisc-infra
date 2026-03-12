@@ -7,19 +7,17 @@ Ce document décrit le flux Git utilisé sur le projet Prevarisc. Il est destin�
 ## Vue d'ensemble des branches
 
 ```
-main        ──●─────────────────────────────────────────●──── (tags: v2.8.0, v2.9.0…)
-               \                                       /
-hotfix          ────────●──────────────────────────────        (ex: hotfix/2.8.1)
-                        ↑ merge → main (+ tag)
-                        ↑ merge → develop (si besoin)
-
-develop     ──────────────────●────────●────────●───────────── (intégration continue)
-                             /          \
-release/2.9 ───────────────●────────────●                      (stabilisation)
-                          /              \
-feature/xxx ─────────────●               ↑ merge → develop (une fois stable)
-
-bugfix/xxx  ──────────────────────────────●────●               (merge → develop)
+main        ──[v2.8.0]───────────────────────[v2.8.17]──[v2.9.0]──▶
+                 │                                ↑          ↑
+release/2.8      └──────●──────●──────●───────────●          │   (maintenance, supprimée après 2.9 en prod)
+                         ↑      ↑      ↑                      │
+bugfix/xxx           ────●  ────●  ────●                      │   (partent de release/2.8, cascade upwards)
+                         ↓ cascade merge upwards              │
+release/2.9              ●──────●──────●──────────────────────●   (stabilisation → livraison)
+                         ↓ cascade merge upwards
+develop     ─────────────●──────●──────●──────────────────────●──▶ (intégration continue)
+                         │
+feature/xxx  ────────────●──────────────────▶ develop ou release/2.9
 ```
 
 ---
@@ -42,15 +40,27 @@ bugfix/xxx  ──────────────────────�
 - Sert de base pour créer de nouvelles branches `release/x.y` et `feature/xxx`
 - Toujours dans un état **potentiellement livrable**, mais peut contenir des travaux en cours
 
-### `release/x.y` _(ex: `release/2.9`)_
+### `release/x.y` _(ex: `release/2.8`, `release/2.9`)_
 
-- Créée depuis `develop` pour **stabiliser une nouvelle version mineure**
-- Permet à `develop` de **continuer à avancer** sans être bloqué par une feature instable
-- Reçoit des corrections propres à cette release (bugfix de stabilisation)
-- Une fois stable, mergée dans `develop` **et** dans `main` (avec tag)
+Cette branche a **deux rôles distincts** selon son état dans le cycle de vie :
 
-> **Pourquoi cette branche ?**
-> Si une feature importante est en cours de stabilisation sur `release/2.9`, les autres développeurs peuvent continuer à merger des features ou bugfixes sur `develop` sans attendre. Cela évite de bloquer les livraisons.
+**1. Branche de stabilisation (avant livraison initiale)**
+- Créée depuis `develop` pour préparer une nouvelle version mineure
+- Permet à `develop` de continuer à avancer sans être bloqué
+- Reçoit les corrections de stabilisation avant la mise en prod
+- Une fois stable, mergée dans `main` (avec tag) **et** dans `develop`
+
+**2. Branche de maintenance (après livraison initiale)**
+- Reste active tant qu'une version plus récente n'a pas remplacé celle-ci en production
+- Reçoit les `bugfix/xxx` ciblant cette version
+- Les corrections sont **propagées en cascade vers le haut** : `release/2.8` → `release/2.9` → `develop`
+- Permet de livrer des versions patch (`v2.8.17`) sans impacter le travail en cours sur `develop`
+- **Supprimée** une fois que la version suivante (`release/2.9`) est livrée à l'ensemble des clients
+
+> **Exemple de cycle de vie :**
+> `release/2.8` est créée pour livrer v2.8.0, puis reste active en maintenance pendant que `release/2.9` est en préparation.
+> Chaque correctif sur `release/2.8` est cascadé vers `release/2.9` puis `develop`.
+> Une fois v2.9.0 livré à tous les clients, `release/2.8` est supprimée.
 
 ### `feature/xxx`
 
@@ -60,9 +70,11 @@ bugfix/xxx  ──────────────────────�
 
 ### `bugfix/xxx`
 
-- Créée depuis `develop` pour corriger **un bug non urgent**
+- Créée depuis **`release/x.y` (version maintenue)** ou `develop` selon le contexte :
+  - Si le bug affecte une version en maintenance → partir de `release/x.y`
+  - Si le bug n'affecte que le travail en cours → partir de `develop`
 - Nommage : `bugfix/description-courte` (ex: `bugfix/affichage-date-commission`)
-- Mergée dans `develop`
+- Mergée dans sa branche source, puis propagée en cascade vers le haut
 
 ### `hotfix/x.y.z`
 
@@ -98,7 +110,45 @@ bugfix/xxx  ──────────────────────�
    git branch -d release/2.9
 ```
 
-### Hotfix urgent (ex: `v2.8.1`)
+### Correctif sur version maintenue (ex: `v2.8.17`)
+
+Utilisé lorsqu'une version est encore en production pendant que la suivante est en préparation.
+Le correctif part de la branche de maintenance et est propagé en cascade vers le haut.
+
+```
+1. Créer le bugfix depuis la branche de maintenance
+   git checkout release/2.8
+   git checkout -b bugfix/correction-xxx
+
+2. Corriger le bug, commiter
+
+3. Merger dans release/2.8
+   git checkout release/2.8
+   git merge --no-ff bugfix/correction-xxx
+   git branch -d bugfix/correction-xxx
+
+4. Cascader vers release/2.9 (si elle existe)
+   git checkout release/2.9
+   git merge --no-ff release/2.8
+
+5. Cascader vers develop
+   git checkout develop
+   git merge --no-ff release/2.9   # ou release/2.8 si release/2.9 n'existe pas
+
+6. Livrer le patch : merger release/2.8 dans main et tagger
+   git checkout main
+   git merge --no-ff release/2.8
+   # Le tag est généré via conventional-changelog (voir section dédiée)
+   git tag v2.8.17
+```
+
+> **Note :** La cascade peut se faire immédiatement après chaque correctif, ou être regroupée avant chaque livraison de patch selon le rythme de l'équipe.
+
+> **Fin de vie :** Une fois `v2.9.0` livré à l'ensemble des clients en production, `release/2.8` est supprimée. Les correctifs ne sont plus backportés sur cette branche.
+
+### Hotfix urgent en production (ex: `v2.8.1`)
+
+Réservé aux bugs critiques nécessitant une correction immédiate, sans passer par le cycle de release.
 
 ```
 1. Créer hotfix depuis main
@@ -193,30 +243,32 @@ hotfix(auth): correction session expirée en production
 ## Schéma complet
 
 ```
-main        ─────────────[v2.8.0]──────────────────────────────[v2.8.1]──[v2.9.0]──▶
-                          │                                      │         │
-hotfix/2.8.1              │                          ┌──────────┘         │
-                          │                          │ (correctif urgent) │
-develop     ──────────────●────────●────────●────────●───────────────────●──────────▶
-                          │        │        │                    ▲
-release/2.9               │        └────────┼──────────────────►─┘
-                          │     (stabilisation)                 │
-feature/xxx               └────●──────────►─┘ (merge feature)  │
-                                                                 │
-bugfix/xxx                           ────────●──────────────────┘
+main        ──[v2.8.0]──────────────────────────[v2.8.17]──[v2.9.0]──▶
+                 │                                    ↑          ↑
+release/2.8      └──●──────●────●────●────────────────●          │
+                    │      ↑    ↑    ↑                            │
+bugfix/xxx          │    ──●  ──●  ──●  (partent de release/2.8) │
+                    │      ↓ cascade merge upwards                │
+release/2.9         └──────●────●────●──────────────────────────►─┘
+                           ↓ cascade merge upwards
+develop     ───────────────●────●────●──────────────────────────►──▶
+                           │
+feature/xxx            ────●──────────────────────────►─┘ (merge dans develop ou release/x.y)
 ```
 
 ---
 
 ## En résumé
 
-| Situation                              | Branche source | Branche cible              |
-|----------------------------------------|----------------|----------------------------|
-| Nouvelle feature                       | `develop`      | `develop` ou `release/x.y` |
-| Correction de bug (non urgent)         | `develop`      | `develop`                  |
-| Stabilisation d'une version mineure    | `develop`      | `release/x.y`              |
-| Livraison d'une version mineure        | `release/x.y`  | `main` + `develop`         |
-| Correctif urgent en production         | `main`         | `main` + `develop`         |
+| Situation | Branche source | Branche cible |
+|----------------------------------------|----------------|-------------------------------|
+| Nouvelle feature | `develop` | `develop` ou `release/x.y` |
+| Correction bug sur version maintenue | `release/x.y` | `release/x.y` → cascade up |
+| Correction bug (non urgent, develop) | `develop` | `develop` |
+| Stabilisation d'une version mineure | `develop` | `release/x.y` |
+| Livraison d'une version mineure | `release/x.y` | `main` + `develop` |
+| Correctif urgent en production | `main` | `main` + `develop` |
+| Livraison d'un patch | `release/x.y` (maintenance) | `main` (tag `vx.y.z`) |
 
 ---
 
