@@ -58,5 +58,19 @@ services:
       MYSQL_USER: prevarisc
       MYSQL_PASSWORD: planmusique
 
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - target: 8025
+        published: 8025
+        protocol: tcp
+      - target: 1025
+        published: 1025
+        protocol: tcp
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+
 volumes:
   db_data:

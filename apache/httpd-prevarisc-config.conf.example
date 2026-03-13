@@ -31,6 +31,16 @@ SetEnv PREVARISC_SECURITY_KEY "236c7b8b30093d0ae9288c6915f45a8a"
 
 SetEnv PREVARISC_MAIL_ENABLED 0
 
+# Mail configuration (optionnel : peut utiliser MAILER_DSN à la place)
+# Transport: smtp, sendmail, mail
+# SetEnv PREVARISC_MAIL_TRANSPORT "smtp"
+# SetEnv PREVARISC_MAIL_HOST "mailpit"
+# SetEnv PREVARISC_MAIL_PORT "1025"
+# SetEnv PREVARISC_MAIL_USERNAME ""
+# SetEnv PREVARISC_MAIL_PASSWORD ""
+# SetEnv PREVARISC_MAIL_SENDER "noreply@prevarisc"
+# SetEnv PREVARISC_MAIL_SENDER_NAME "Prevarisc"
+
 # Couches cartographiques
 SetEnv PREVARISC_PLUGIN_IGNKEY "essentiels,adresse,administratif,cartes,cartovecto"
 SetEnv PREVARISC_IGN_AUTOCONF "/ign/prevarisc/customConfig.json"
