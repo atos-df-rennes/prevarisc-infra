@@ -145,3 +145,40 @@ prevarisc-infra/
 ```
 
 Les worktrees sont des répertoires **temporaires** : ils disparaissent après le nettoyage post-merge et ne sont pas versionnés dans `prevarisc-infra/`.
+
+---
+
+## Validation fonctionnelle sur un worktree
+
+Le conteneur Docker monte `./prevarisc` et `./prevarisc-migration` en bind mount, résolu **au démarrage du conteneur**. Pour tester un worktree dans l'application, il faut donc redémarrer le conteneur `app` en pointant vers le bon répertoire.
+
+Un fichier `compose.worktree.yaml` est fourni à cet effet.
+
+### Basculer vers le worktree
+
+```bash
+PREVARISC_DIR=prevarisc-worktree-<feature> \
+PREVARISC_MIGRATION_DIR=prevarisc-migration-worktree-<feature> \
+docker compose -f compose.dev.yaml -f compose.worktree.yaml up -d --no-deps app
+```
+
+> `--no-deps` redémarre uniquement le conteneur `app`, sans toucher à `db`, `mailpit` ni `platau`.  
+> Si les deux worktrees ne sont pas nécessaires, omettre la variable inutile — le fallback reprend le dépôt principal.
+
+### Revenir au dépôt principal
+
+```bash
+docker compose -f compose.dev.yaml up -d --no-deps app
+```
+
+### Exemple concret — Bloc "Dossiers incomplets"
+
+```bash
+# Basculer
+PREVARISC_DIR=prevarisc-worktree-incomplete-dossiers \
+PREVARISC_MIGRATION_DIR=prevarisc-migration-worktree-incomplete-dossiers \
+docker compose -f compose.dev.yaml -f compose.worktree.yaml up -d --no-deps app
+
+# Valider dans le navigateur, puis revenir
+docker compose -f compose.dev.yaml up -d --no-deps app
+```
