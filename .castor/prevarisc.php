@@ -233,17 +233,22 @@ function loadDump(): void
 
 function watchForApacheConfigurationChanges(): void
 {
-    io()->info('Watching for changes in Apache configuration files.');
+    io()->info('Watching for changes in Apache and PHP configuration files.');
     io()->comment('Press Ctrl+C to stop watching.');
 
-    watch('apache/', function (string $file, string $action) {
+    $handler = function (string $file, string $action): void {
         if (str_ends_with($file, '~')) {
             return;
         }
 
         io()->writeln("[{$action}] {$file}. Reloading Apache configuration.");
         exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'restart', 'app']);
-    });
+    };
+
+    parallel(
+        fn () => watch('apache/', $handler),
+        fn () => watch('php/prevarisc/', $handler),
+    );
 }
 
 function composerInstall(): void
