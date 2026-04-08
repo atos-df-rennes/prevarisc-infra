@@ -64,6 +64,61 @@ castor symfony:test     # Tests PHPUnit
 
 ---
 
+## 🚦 Stratégie de migration : Port direct par défaut
+
+### Règle fondamentale
+
+**Reproduire le code legacy tel quel.** Ne pas refactoriser, ne pas réorganiser, ne pas améliorer — sauf si le code Zend est techniquement impossible à porter tel quel.
+
+**Raison :** Tout écart par rapport au legacy, même mineur, introduit un risque de régression que le développeur doit vérifier manuellement. Un port direct donne une garantie structurelle : même logique = même comportement.
+
+### Ce qui est mécanique (adapter sans risque)
+- Syntaxe Zend → Symfony (routing, DI, Twig, Doctrine)
+- `$this->view->x` → `return $this->render(..., ['x' => ...])`
+- `$this->_getParam()` → `$request->get()`
+- `$this->_redirect()` → `return $this->redirectToRoute()`
+- Requêtes SQL brutes → QueryBuilder **à structure identique**
+
+### Ce qui est interdit sans validation explicite
+- Extraire de la logique dans un service si elle est inline dans le legacy
+- Modifier l'ordre des opérations (même si "plus propre")
+- Changer la gestion des cas null/vide/0
+- Ajouter des validations absentes du legacy
+- Fusionner ou découper des blocs conditionnels
+
+### Livraison obligatoire : rapport d'écarts
+
+À chaque livraison, fournir systématiquement le bloc suivant (même si vide) :
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+RAPPORT D'ÉCARTS PAR RAPPORT AU LEGACY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Niveau de confiance global : ✅ / ⚠️ / 🔴
+
+✅ PORT DIRECT — aucune vérification nécessaire sur ces points :
+- [liste des parties portées mécaniquement]
+
+⚠️ ADAPTATIONS — vérifier ces points précis :
+- [Fichier:ligne] Ce qui a changé → Tester : [action UI précise]
+
+🔴 LOGIQUE COMPLEXE — vérification approfondie recommandée :
+- [Fichier:ligne] Ce qui est incertain → Scénarios à tester : [liste]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**Interdiction d'écrire "iso-fonctionnalité 100%"** sans ce rapport détaillé.
+
+### Niveaux de confiance
+
+| Niveau | Signification | Action requise |
+|--------|--------------|----------------|
+| ✅ **Port direct** | Code legacy reproduit tel quel | Aucune vérification logique |
+| ⚠️ **Adaptation** | Glue Symfony nécessaire, logique inchangée | Vérifier les points listés |
+| 🔴 **Logique modifiée** | Réorganisation inévitable | Tester les scénarios listés |
+
+---
+
 ## ✅ Workflow développement
 
 ### 1. Analyser le legacy
@@ -72,17 +127,18 @@ grep -r "DATEVISITE" prevarisc/application/
 find prevarisc/application/controllers/ -name "*Dossier*"
 ```
 
-### 2. Implémenter (incrémental)
-1. Entité → Repository → FormType → Controller → Template → JS
-2. Valider : `castor symfony:analyse && castor symfony:cs && castor symfony:test`
-3. Commiter : `feat(scope): description`
-4. Mettre à jour `docs/tech/REPRENDRE_ICI.md`
+### 2. Implémenter (port direct)
+1. Porter le legacy mécaniquement (controller → template → JS)
+2. Identifier et documenter les écarts inévitables
+3. Valider : `castor symfony:analyse && castor symfony:cs && castor symfony:test`
+4. Commiter : `feat(scope): description`
+5. Mettre à jour `docs/tech/REPRENDRE_ICI.md`
 
 ### 3. Validation avant commit (obligatoire)
 - ✅ PHPStan 0 erreur
 - ✅ CS 0 erreur
 - ✅ Tests 100% passent
-- ✅ Vérification manuelle UI
+- ✅ Rapport d'écarts fourni
 
 ---
 
@@ -107,47 +163,22 @@ find prevarisc/application/controllers/ -name "*Dossier*"
 ## 🎯 Règles absolues
 
 **INTERDIT ❌**
-- `findAll()` sans pagination
-- Logique métier dans controllers
-- Requêtes N+1 (manque jointures)
-- Modifier legacy sans autorisation
+- `findAll()` sans pagination sur les listes
+- Modifier le legacy sans autorisation explicite
 - Fonctionnalités PHP > 7.1
+- Requêtes N+1 **si déjà résolues dans le legacy** (porter la même optimisation)
+- Écrire "iso-fonctionnalité 100%" sans rapport d'écarts détaillé
 
 **REQUIS ✅**
-- Pagination (KnpPaginatorBundle)
-- Services pour logique métier
-- QueryBuilder avec jointures
-- Type hints + DocBlocks
-- Conformité 100% legacy avant optimisation
+- Type hints + DocBlocks PHP 7.1
+- PHPStan niveau 10 + CS sans erreur
+- Rapport d'écarts à chaque livraison
+- Port direct comme point de départ systématique
 
-**Gestion écarts :** Implémenter conformité → Documenter suggestion → Attendre validation
-
----
-
-## 🚀 Best Practices (résumé)
-
-**Controller :**
-```php
-public function edit(int $id, Request $request, DossierService $service): Response {
-    $form = $this->createForm(DossierType::class, $dossier);
-    $form->handleRequest($request);
-    if ($form->isSubmitted() && $form->isValid()) {
-        $service->save($dossier); // Pas dans le controller
-        return $this->redirectToRoute('dossier_show', ['id' => $id]);
-    }
-    return $this->render('dossier/edit.html.twig', ['form' => $form->createView()]);
-}
-```
-
-**Repository :**
-```php
-public function findWithRelations(int $limit = 50): array {
-    return $this->createQueryBuilder('d')
-        ->leftJoin('d.type', 't')->addSelect('t')
-        ->setMaxResults($limit)
-        ->getQuery()->getResult();
-}
-```
+**Optionnel (ne pas imposer sauf demande explicite) :**
+- Extraction en service (seulement si le legacy est déjà structuré ainsi)
+- QueryBuilder custom (seulement si requête complexe existante dans le legacy)
+- Tests unitaires (seulement sur logique métier non triviale)
 
 ---
 
@@ -164,4 +195,4 @@ docs(dossier): mise à jour REPRENDRE_ICI.md
 
 ---
 
-**Version :** 3.0 optimisée | **Dernière màj :** 16 décembre 2025
+**Version :** 4.0 port-direct | **Dernière màj :** 8 avril 2026
