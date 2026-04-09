@@ -90,6 +90,38 @@ function worktreeSetup(): void
     doWorktreeSetup($session['name']);
 }
 
+#[AsTask(name: 'switch', namespace: 'worktree', description: 'Bascule le conteneur entre le dépôt principal et un worktree existant')]
+function worktreeSwitch(): void
+{
+    io()->title('Basculer vers un worktree ou le dépôt principal');
+
+    $sessions = getWorktreeSessions();
+    $mainLabel = 'Dépôt principal (prevarisc + prevarisc-migration)';
+    $choices = [$mainLabel];
+
+    foreach ($sessions as $s) {
+        $repos = getSessionRepoLabels($s);
+        $choices[] = sprintf('Worktree : %s (%s)', $s['name'], implode(' + ', $repos));
+    }
+
+    $choice = io()->choice('Vers quoi souhaitez-vous basculer ?', $choices, 0);
+
+    if ($choice === $mainLabel) {
+        switchContainer(null, null);
+        io()->success('Basculé vers le dépôt principal.');
+
+        return;
+    }
+
+    foreach ($sessions as $s) {
+        if (str_contains($choice, $s['name'])) {
+            doWorktreeSetup($s['name']);
+
+            return;
+        }
+    }
+}
+
 #[AsTask(name: 'remove', namespace: 'worktree', description: 'Nettoie un worktree et supprime la branche associée')]
 function worktreeRemove(
     #[ASOption(name: 'force', mode: InputOption::VALUE_NONE, description: 'Force la suppression même en cas de modifications non commitées')]
