@@ -145,7 +145,7 @@ function worktreeRemove(
         io()->section('Suppression du worktree prevarisc.');
         run(['git', '-C', 'prevarisc', 'worktree', 'remove', ...$forceFlag, '../prevarisc-worktree-'.$name]);
         if (null !== $session['branch']) {
-            run(['git', '-C', 'prevarisc', 'branch', '-d', $session['branch']]);
+            run(['git', '-C', 'prevarisc', 'branch', '-D', $session['branch']]);
         }
     }
 
@@ -153,7 +153,7 @@ function worktreeRemove(
         io()->section('Suppression du worktree prevarisc-migration.');
         run(['git', '-C', 'prevarisc-migration', 'worktree', 'remove', ...$forceFlag, '../prevarisc-migration-worktree-'.$name]);
         if (null !== $session['branch']) {
-            run(['git', '-C', 'prevarisc-migration', 'branch', '-d', $session['branch']]);
+            run(['git', '-C', 'prevarisc-migration', 'branch', '-D', $session['branch']]);
         }
     }
 
