@@ -7,3 +7,5 @@ prevarisc-migration/
 .castor/.castor.stub.php
 /docs/*.md
 /*.sql
+/.merge-upwards-state.json
+/.copilot-conflict-context.txt

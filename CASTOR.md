@@ -367,6 +367,39 @@ Commandes de vérification de l'application `prevarisc-passerelle-platau/`.
 
 ---
 
+## `git:*` — Propagation Git
+
+### `castor git:merge-upwards` ⭐
+**Propage un fix en cascade vers toutes les branches supérieures.**
+
+La hiérarchie est détectée automatiquement depuis les branches distantes :
+`main`/`master` → `release/x.y` (croissant) → `develop`
+
+```bash
+castor git:merge-upwards                      # branche source auto-détectée
+castor git:merge-upwards --from release/2.8   # branche source explicite
+castor git:merge-upwards --repos prevarisc    # un seul dépôt (prevarisc ou migration)
+castor git:merge-upwards --continue           # reprendre après résolution de conflit
+```
+
+**Exemple — fix mergé sur `release/2.8` :**
+```
+Cascade planifiée :
+ prevarisc   release/2.8 → release/2.9
+ prevarisc   release/2.9 → develop
+ migration   release/2.8 → release/2.9
+ migration   release/2.9 → develop
+```
+Chaque étape fait : `fetch` + `checkout` + `pull` + `merge --no-ff` + `push origin`.
+
+**Gestion des conflits — sur conflit, la commande s'arrête et propose :**
+1. **Résolution manuelle** — résoudre dans l'éditeur, puis `castor git:merge-upwards --continue`
+2. **Contexte Copilot** — génère un message structuré (contenu des fichiers en conflit avec leurs marqueurs) à coller dans le chat Copilot pour obtenir la résolution (1 requête), puis appliquer et `--continue`
+
+> L'état de la cascade est persisté dans `.merge-upwards-state.json` (ignoré par git) pour permettre la reprise à tout moment.
+
+---
+
 ## Aide-mémoire rapide
 
 ```bash
@@ -388,6 +421,10 @@ castor prevarisc:load-dump
 # Debugging
 castor prevarisc:logs app
 castor prevarisc:shell
+
+# Propagation d'un fix (merge upwards)
+castor git:merge-upwards
+castor git:merge-upwards --continue   # après résolution de conflit
 
 # Worktrees (travail en parallèle)
 castor worktree:create
