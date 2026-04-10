@@ -1,8 +1,12 @@
 <?php
 
 use Castor\Attribute\AsTask;
+use Castor\Attribute\AsArgument;
+use Castor\Attribute\ASOption;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Process\ExecutableFinder;
 use function Castor\check;
+use function Castor\context;
 use function Castor\exit_code;
 use function Castor\finder;
 use function Castor\fs;
@@ -155,13 +159,18 @@ function setup(): void
 }
 
 #[AsTask(namespace: 'prevarisc', description: 'Start Prevarisc')]
-function start(): void
+function start(
+    #[ASOption(name: 'watch', mode: InputOption::VALUE_NONE, description: 'Surveille les fichiers Apache/PHP et recharge automatiquement')]
+    bool $watch
+): void
 {
     io()->title('Starting Prevarisc.');
 
     exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'up', '-d']);
 
-    watchForApacheConfigurationChanges();
+    if ($watch) {
+        watchForApacheConfigurationChanges();
+    }
 }
 
 #[AsTask(namespace: 'prevarisc', description: 'Stop Prevarisc')]
@@ -170,6 +179,44 @@ function stop(): void
     io()->title('Stoping Prevarisc.');
 
     exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'down', '--remove-orphans']);
+}
+
+#[AsTask(namespace: 'prevarisc', description: 'Rebuild and restart Prevarisc containers')]
+function rebuild(): void
+{
+    io()->title('Rebuilding Prevarisc containers.');
+
+    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'build']);
+    exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'up', '-d']);
+
+    io()->success('Containers rebuilt and restarted.');
+}
+
+#[AsTask(namespace: 'prevarisc', description: 'Follow Docker logs (all containers or a specific one)')]
+function logs(
+    #[AsArgument(name: 'service', description: 'Nom du service Docker à surveiller (ex: app, db, platau). Tous si omis.')]
+    string $service = ''
+): void
+{
+    io()->title('Prevarisc logs' . ('' !== $service ? " — {$service}" : ''));
+
+    $cmd = ['docker', 'compose', '--file', 'compose.dev.yaml', 'logs', '--follow', '--tail=100'];
+    if ('' !== $service) {
+        $cmd[] = $service;
+    }
+
+    run($cmd);
+}
+
+#[AsTask(namespace: 'prevarisc', description: 'Open an interactive shell inside the app container')]
+function shell(): void
+{
+    io()->title('Opening shell in app container.');
+
+    run(
+        ['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', 'app', 'bash'],
+        context: context()->withTty(true)
+    );
 }
 
 #[AsTask(namespace: 'prevarisc', description: 'Update Prevarisc')]

@@ -17,6 +17,28 @@ use function Castor\wait_for_docker_container;
 // Tâches publiques
 // ─────────────────────────────────────────────────────────────────────────────
 
+#[AsTask(name: 'list', namespace: 'worktree', description: 'Liste les worktrees actifs')]
+function worktreeList(): void
+{
+    io()->title('Worktrees actifs');
+
+    $sessions = getWorktreeSessions();
+
+    if ([] === $sessions) {
+        io()->warning('Aucun worktree actif. Utilisez "castor worktree:create" pour en créer un.');
+
+        return;
+    }
+
+    $rows = [];
+    foreach ($sessions as $s) {
+        $repos = getSessionRepoLabels($s);
+        $rows[] = [$s['name'], implode(' + ', $repos), $s['branch'] ?? '—'];
+    }
+
+    io()->table(['Nom', 'Dépôts', 'Branche'], $rows);
+}
+
 #[AsTask(name: 'create', namespace: 'worktree', description: 'Crée un nouveau worktree pour travailler en parallèle')]
 function worktreeCreate(): void
 {
@@ -68,26 +90,9 @@ function worktreeCreate(): void
 
     io()->success(sprintf('Worktree(s) créé(s) sur la branche "%s".', $branch));
 
-    if (io()->confirm('Configurer et basculer vers ce worktree maintenant ?', true)) {
+    if (io()->confirm('Basculer vers ce worktree maintenant ?', true)) {
         doWorktreeSetup($name);
     }
-}
-
-#[AsTask(name: 'setup', namespace: 'worktree', description: 'Configure un worktree et bascule le conteneur vers celui-ci')]
-function worktreeSetup(): void
-{
-    io()->title('Configuration d\'un worktree');
-
-    $sessions = getWorktreeSessions();
-
-    if ([] === $sessions) {
-        io()->warning('Aucun worktree disponible. Utilisez "castor worktree:create" pour en créer un.');
-
-        return;
-    }
-
-    $session = selectWorktreeSession($sessions);
-    doWorktreeSetup($session['name']);
 }
 
 #[AsTask(name: 'switch', namespace: 'worktree', description: 'Bascule le conteneur entre le dépôt principal et un worktree existant')]

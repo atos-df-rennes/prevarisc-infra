@@ -24,6 +24,9 @@ function cs(
         },
         function () use ($dryRun): void {
             symfonyCs($dryRun);
+        },
+        function () use ($dryRun): void {
+            platauCs($dryRun);
         }
     );
 }
@@ -39,6 +42,9 @@ function analyse(): void
         },
         function () {
             symfonyAnalyse();
+        },
+        function () {
+            platauAnalyse();
         }
     );
 }
@@ -54,6 +60,9 @@ function test(): void
         },
         function () {
             symfonyTest();
+        },
+        function () {
+            platauTest();
         }
     );
 }
