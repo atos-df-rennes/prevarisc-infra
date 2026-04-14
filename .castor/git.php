@@ -550,14 +550,19 @@ function buildRepoMap(string $option): array
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * S'assure qu'un agent SSH est actif et que la clé est chargée.
+ * S'assure qu'un agent SSH est actif et qu'une clé est chargée.
+ *
+ * Équivalent PHP de : eval "$(ssh-agent -s)" && ssh-add <clé>
  *
  * Comportement :
  *  - Si l'agent courant a déjà des clés (ssh-add -l = 0) → rien à faire.
- *  - Si SSH_AUTH_SOCK est absent → démarre un nouvel agent et injecte ses
- *    variables via putenv() pour que tous les sous-processus les héritent.
- *  - Lance ensuite ssh-add pour charger la clé (demande le mot de passe une
- *    seule fois) puis enregistre un handler de fin de script pour tuer l'agent.
+ *  - Si SSH_AUTH_SOCK est absent → démarre un nouvel agent via ssh-agent -s,
+ *    parse sa sortie et injecte les variables via putenv() pour que tous les
+ *    sous-processus git les héritent. Enregistre un shutdown handler pour
+ *    tuer l'agent proprement en fin de script.
+ *  - Détecte les clés privées dans ~/.ssh/, propose un choix si plusieurs.
+ *  - Lance ssh-add <clé> via passthru() (TTY natif) pour la saisie du mot de
+ *    passe une seule fois.
  */
 function ensureSshAgent(): void
 {
@@ -569,7 +574,7 @@ function ensureSshAgent(): void
 
     io()->section('🔐 Authentification SSH');
 
-    // Cas 2 : pas d'agent en cours → en démarrer un
+    // Cas 2 : pas d'agent en cours → en démarrer un (eval "$(ssh-agent -s)")
     if (empty(getenv('SSH_AUTH_SOCK'))) {
         io()->text('Démarrage de l\'agent SSH...');
 
@@ -579,7 +584,7 @@ function ensureSshAgent(): void
             return;
         }
 
-        // Injecter SSH_AUTH_SOCK et SSH_AGENT_PID dans l'environnement du processus
+        // Injecter SSH_AUTH_SOCK et SSH_AGENT_PID pour les sous-processus
         if (preg_match('/SSH_AUTH_SOCK=([^;]+);/', $agentOutput, $m)) {
             putenv("SSH_AUTH_SOCK={$m[1]}");
         }
@@ -587,7 +592,6 @@ function ensureSshAgent(): void
             $agentPid = (int) $m[1];
             putenv("SSH_AGENT_PID={$agentPid}");
 
-            // Tuer l'agent proprement à la fin du script
             register_shutdown_function(static function () use ($agentPid): void {
                 exec("kill {$agentPid} 2>/dev/null");
             });
@@ -599,15 +603,55 @@ function ensureSshAgent(): void
         }
     }
 
-    // Charger la clé (demande le mot de passe une seule fois)
-    io()->text('Entrez le mot de passe de votre clé SSH :');
-    $addCode = exit_code(['ssh-add']);
+    // Détecter les clés privées disponibles dans ~/.ssh/
+    $keyPath = pickSshKey();
+    if (null === $keyPath) {
+        io()->warning('Aucune clé SSH privée trouvée dans ~/.ssh/. Le mot de passe SSH pourra être demandé plusieurs fois.');
+        return;
+    }
 
-    if (0 !== $addCode) {
+    // ssh-add via passthru() pour connecter le TTY natif (saisie du mot de passe)
+    io()->text("Chargement de la clé <info>{$keyPath}</info>...");
+    passthru('ssh-add ' . escapeshellarg($keyPath), $returnCode);
+
+    if (0 !== $returnCode) {
         io()->warning('ssh-add a échoué. Le mot de passe SSH pourra être demandé plusieurs fois.');
     } else {
         io()->success('Clé SSH chargée. Aucune demande supplémentaire pendant la cascade.');
     }
+}
+
+/**
+ * Détecte les clés SSH privées dans ~/.ssh/ et demande à l'utilisateur
+ * laquelle utiliser si plusieurs sont disponibles.
+ */
+function pickSshKey(): ?string
+{
+    $sshDir = rtrim((string) (getenv('HOME') ?: (getenv('USERPROFILE') ?: '')), '/') . '/.ssh';
+
+    if (!is_dir($sshDir)) {
+        return null;
+    }
+
+    /** @var string[] $keys */
+    $keys = [];
+    foreach ((array) scandir($sshDir) as $file) {
+        $fullPath = $sshDir . '/' . $file;
+        // Une clé privée a un fichier .pub correspondant
+        if (is_file($fullPath) && file_exists($fullPath . '.pub')) {
+            $keys[] = $fullPath;
+        }
+    }
+
+    if ([] === $keys) {
+        return null;
+    }
+
+    if (1 === count($keys)) {
+        return $keys[0];
+    }
+
+    return io()->choice('Plusieurs clés SSH trouvées. Laquelle utiliser ?', $keys, $keys[0]);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
