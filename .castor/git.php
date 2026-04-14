@@ -123,7 +123,8 @@ function gitMergeUpwards(
         return;
     }
 
-    // 5. Persistance + exécution
+    // 5. Agent SSH + persistance + exécution
+    ensureSshAgent();
     saveUpwardsState(['steps' => $steps, 'index' => 0]);
     runUpwardsCascade();
 }
@@ -176,6 +177,8 @@ function resumeUpwardsCascade(): void
         io()->error('Aucune cascade en cours. Relancez sans --continue.');
         return;
     }
+
+    ensureSshAgent();
 
     $step = $state['steps'][$state['index']];
     $dir  = $step['dir'];
@@ -540,6 +543,71 @@ function buildRepoMap(string $option): array
     }
 
     return $available;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Agent SSH
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * S'assure qu'un agent SSH est actif et que la clé est chargée.
+ *
+ * Comportement :
+ *  - Si l'agent courant a déjà des clés (ssh-add -l = 0) → rien à faire.
+ *  - Si SSH_AUTH_SOCK est absent → démarre un nouvel agent et injecte ses
+ *    variables via putenv() pour que tous les sous-processus les héritent.
+ *  - Lance ensuite ssh-add pour charger la clé (demande le mot de passe une
+ *    seule fois) puis enregistre un handler de fin de script pour tuer l'agent.
+ */
+function ensureSshAgent(): void
+{
+    // Cas 1 : agent déjà actif avec des clés chargées → rien à faire
+    exec('ssh-add -l 2>/dev/null', $ignored, $listCode);
+    if (0 === $listCode) {
+        return;
+    }
+
+    io()->section('🔐 Authentification SSH');
+
+    // Cas 2 : pas d'agent en cours → en démarrer un
+    if (empty(getenv('SSH_AUTH_SOCK'))) {
+        io()->text('Démarrage de l\'agent SSH...');
+
+        $agentOutput = shell_exec('ssh-agent -s 2>/dev/null');
+        if (null === $agentOutput) {
+            io()->warning('Impossible de démarrer ssh-agent. Le mot de passe SSH pourra être demandé plusieurs fois.');
+            return;
+        }
+
+        // Injecter SSH_AUTH_SOCK et SSH_AGENT_PID dans l'environnement du processus
+        if (preg_match('/SSH_AUTH_SOCK=([^;]+);/', $agentOutput, $m)) {
+            putenv("SSH_AUTH_SOCK={$m[1]}");
+        }
+        if (preg_match('/SSH_AGENT_PID=(\d+);/', $agentOutput, $m)) {
+            $agentPid = (int) $m[1];
+            putenv("SSH_AGENT_PID={$agentPid}");
+
+            // Tuer l'agent proprement à la fin du script
+            register_shutdown_function(static function () use ($agentPid): void {
+                exec("kill {$agentPid} 2>/dev/null");
+            });
+        }
+
+        if (empty(getenv('SSH_AUTH_SOCK'))) {
+            io()->warning('Agent SSH démarré mais SSH_AUTH_SOCK non détecté. Le mot de passe SSH pourra être demandé plusieurs fois.');
+            return;
+        }
+    }
+
+    // Charger la clé (demande le mot de passe une seule fois)
+    io()->text('Entrez le mot de passe de votre clé SSH :');
+    $addCode = exit_code(['ssh-add']);
+
+    if (0 !== $addCode) {
+        io()->warning('ssh-add a échoué. Le mot de passe SSH pourra être demandé plusieurs fois.');
+    } else {
+        io()->success('Clé SSH chargée. Aucune demande supplémentaire pendant la cascade.');
+    }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
