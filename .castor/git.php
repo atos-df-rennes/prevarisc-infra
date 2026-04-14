@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Castor\Attribute\AsTask;
 use Castor\Attribute\ASOption;
 use Symfony\Component\Console\Input\InputOption;
+use function Castor\context;
 use function Castor\exit_code;
 use function Castor\io;
 use function Castor\run;
@@ -561,8 +562,8 @@ function buildRepoMap(string $option): array
  *    sous-processus git les héritent. Enregistre un shutdown handler pour
  *    tuer l'agent proprement en fin de script.
  *  - Détecte les clés privées dans ~/.ssh/, propose un choix si plusieurs.
- *  - Lance ssh-add <clé> via passthru() (TTY natif) pour la saisie du mot de
- *    passe une seule fois.
+ *  - Lance ssh-add <clé> via run() avec context()->withTty(true) pour la saisie
+ *    du mot de passe une seule fois.
  */
 function ensureSshAgent(): void
 {
@@ -610,11 +611,11 @@ function ensureSshAgent(): void
         return;
     }
 
-    // ssh-add via passthru() pour connecter le TTY natif (saisie du mot de passe)
+    // ssh-add via run() avec TTY activé pour la saisie interactive du mot de passe
     io()->text("Chargement de la clé <info>{$keyPath}</info>...");
-    passthru('ssh-add ' . escapeshellarg($keyPath), $returnCode);
+    $addCode = exit_code(['ssh-add', $keyPath], context: context()->withTty(true));
 
-    if (0 !== $returnCode) {
+    if (0 !== $addCode) {
         io()->warning('ssh-add a échoué. Le mot de passe SSH pourra être demandé plusieurs fois.');
     } else {
         io()->success('Clé SSH chargée. Aucune demande supplémentaire pendant la cascade.');
