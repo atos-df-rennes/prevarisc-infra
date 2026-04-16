@@ -1,0 +1,98 @@
+name: "🚀 Migration — Feature"
+description: "Porter une fonctionnalité complète (plusieurs controllers / services / templates)"
+title: "feat(migration): [nom de la fonctionnalité]"
+labels:
+    - "migration"
+    - "needs-scoping"
+assignees: []
+
+body:
+    - type: markdown
+      attributes:
+          value: |
+              ## ⚠️ Ce template est pour les features de plus grande envergure
+
+              > Les features complexes nécessitent un découpage avant de passer à l'agent.
+              > Remplir la section "Décomposition" avant d'ajouter le label `agent-ready`.
+              > Si le scope tient dans un seul controller, utiliser le template **Migration — Controller**.
+
+    - type: textarea
+      id: description
+      attributes:
+          label: "Description de la fonctionnalité"
+          description: "Ce que fait la fonctionnalité dans le legacy, comment elle est accessible"
+          placeholder: |
+              La page de gestion des prescriptions permet à l'utilisateur de :
+              - Lister les prescriptions d'un dossier
+              - Ajouter / modifier / supprimer une prescription
+              Accessible via : /dossier/prescriptions/id/{id}
+      validations:
+          required: true
+
+    - type: textarea
+      id: fichiers-legacy
+      attributes:
+          label: "Fichiers legacy impliqués"
+          description: "Controllers, modèles, vues, helpers concernés"
+          placeholder: |
+              Controllers :
+              - prevarisc/application/controllers/DossierController.php (prescriptionsAction)
+
+              Modèles :
+              - prevarisc/application/models/DbTable/Prescription.php
+
+              Vues :
+              - prevarisc/application/views/scripts/dossier/prescriptions.phtml
+      validations:
+          required: true
+
+    - type: textarea
+      id: decomposition
+      attributes:
+          label: "Décomposition en sous-tâches"
+          description: "Découper en issues atomiques de type 'Migration — Controller'. Chaque sous-tâche doit tenir en un seul PR."
+          placeholder: |
+              - [ ] #XX — Porter DossierPrescriptionController (liste + suppression)
+              - [ ] #XX — Porter DossierPrescriptionEditController (ajout + édition)
+              - [ ] #XX — Créer PrescriptionRepository avec requêtes existantes
+              - [ ] #XX — Templates Twig : liste et formulaire
+      validations:
+          required: false
+
+    - type: textarea
+      id: dependances
+      attributes:
+          label: "Dépendances entre sous-tâches"
+          description: "Indiquer si certaines sous-tâches doivent être réalisées avant d'autres"
+          placeholder: |
+              - PrescriptionRepository doit exister avant les controllers
+              - Les templates peuvent être faits en parallèle des controllers
+      validations:
+          required: false
+
+    - type: textarea
+      id: points-attention
+      attributes:
+          label: "Points d'attention / Logique complexe"
+          description: "Algorithmes, cas limites, comportements non-triviaux à reproduire fidèlement"
+          placeholder: |
+              - La numérotation des prescriptions est auto-incrémentée par type
+              - Le statut change automatiquement si toutes les prescriptions sont levées
+      validations:
+          required: false
+
+    - type: checkboxes
+      id: criteres-acceptation
+      attributes:
+          label: "Critères d'acceptation (feature complète)"
+          options:
+              - label: "Toutes les sous-tâches sont mergées"
+                required: true
+              - label: "`castor symfony:analyse` → 0 erreur PHPStan niveau 10"
+                required: true
+              - label: "`castor symfony:cs --dry-run` → 0 erreur de style"
+                required: true
+              - label: "`castor symfony:test` → 100% des tests passent"
+                required: true
+              - label: "Rapport d'écarts global fourni"
+                required: true

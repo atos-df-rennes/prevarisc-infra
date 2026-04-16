@@ -1,0 +1,20 @@
+# Ce fichier est intentionnellement vide.
+#
+# Le setup de l'environnement Copilot agent est défini dans le dépôt
+# prevarisc-migration, qui est le dépôt cible des tâches de migration :
+#
+#   https://github.com/atos-df-rennes/prevarisc-migration/blob/develop/.github/workflows/copilot-setup-steps.yml
+#
+# Les tâches de l'agent (issues) doivent être créées dans prevarisc-migration,
+# pas dans prevarisc-infra.
+name: "Copilot Setup Steps — voir prevarisc-migration"
+on:
+    workflow_dispatch:
+jobs:
+    copilot-setup-steps:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Ce setup est dans prevarisc-migration
+              run: |
+                  echo "Le copilot-setup-steps.yml actif est dans prevarisc-migration."
+                  echo "Voir : https://github.com/atos-df-rennes/prevarisc-migration/blob/develop/.github/workflows/copilot-setup-steps.yml"

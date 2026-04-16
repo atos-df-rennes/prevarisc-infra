@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+    - name: "📚 État de la migration"
+      url: https://github.com/atos-df-rennes/prevarisc-infra/blob/develop/docs/tech/REPRENDRE_ICI.md
+      about: "Consulter l'état d'avancement de la migration avant de créer une issue."
+    - name: "🗺️ Mapping Zend → Symfony"
+      url: https://github.com/atos-df-rennes/prevarisc-infra/blob/develop/docs/tech/migration/MAPPING_LEGACY_REFERENCE.md
+      about: "Référence technique complète pour le portage."

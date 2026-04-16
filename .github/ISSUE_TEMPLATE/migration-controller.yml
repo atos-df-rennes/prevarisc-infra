@@ -1,0 +1,108 @@
+name: "🔄 Migration — Controller"
+description: "Porter un controller Zend vers Symfony (port direct, scope limité à un controller)"
+title: "feat(migration): porter [NomController] vers Symfony"
+labels:
+    - "migration"
+    - "agent-ready"
+assignees: []
+
+body:
+    - type: markdown
+      attributes:
+          value: |
+              ## Instructions pour l'agent
+
+              > Ce ticket est conçu pour être traité en autonomie par le Copilot coding agent.
+              > Lire attentivement le scope et les critères d'acceptation avant de commencer.
+
+    - type: input
+      id: controller-legacy
+      attributes:
+          label: "Fichier legacy (lecture seule)"
+          description: "Chemin relatif dans prevarisc/"
+          placeholder: "prevarisc/application/controllers/NomController.php"
+      validations:
+          required: true
+
+    - type: input
+      id: controller-cible
+      attributes:
+          label: "Fichier cible Symfony"
+          description: "Chemin relatif dans prevarisc-migration/"
+          placeholder: "prevarisc-migration/src/Controller/NomController.php"
+      validations:
+          required: true
+
+    - type: textarea
+      id: actions
+      attributes:
+          label: "Actions à migrer"
+          description: "Liste des actions Zend à porter (une par ligne)"
+          placeholder: |
+              - indexAction → index()
+              - voirAction → voir()
+              - modifierAction → modifier()
+      validations:
+          required: true
+
+    - type: textarea
+      id: contexte
+      attributes:
+          label: "Contexte et particularités"
+          description: "Spécificités du controller, dépendances connues, comportements à préserver"
+          placeholder: |
+              - Utilise le modèle Application_Model_DbTable_Xxx
+              - Paramètre `id` transmis via GET
+              - Redirection conditionnelle après POST
+      validations:
+          required: false
+
+    - type: textarea
+      id: fichiers-lies
+      attributes:
+          label: "Fichiers liés à créer / modifier"
+          description: "Templates, entités, repositories, services impactés"
+          placeholder: |
+              - templates/nom/index.html.twig
+              - templates/nom/voir.html.twig
+              - src/Repository/NomRepository.php (si inexistant)
+      validations:
+          required: false
+
+    - type: markdown
+      attributes:
+          value: |
+              ## Stratégie obligatoire : Port direct
+
+              **Reproduire le code legacy tel quel.** Ne pas refactoriser, ne pas réorganiser.
+
+              ### Mapping mécanique autorisé
+              | Zend | Symfony |
+              |------|---------|
+              | `$this->view->x = $y` | `return $this->render('...', ['x' => $y])` |
+              | `$this->_getParam('id')` | `$request->get('id')` |
+              | `$this->_redirect('/...')` | `return $this->redirectToRoute('...')` |
+              | `.phtml` Bootstrap 2 | `.html.twig` Bootstrap 3 |
+              | `Zend_Db_Table` query | QueryBuilder à structure identique |
+
+              ### Ce qui est INTERDIT sans validation explicite
+              - Extraire de la logique dans un service si elle est inline dans le legacy
+              - Modifier l'ordre des opérations
+              - Ajouter des validations absentes du legacy
+
+    - type: checkboxes
+      id: criteres-acceptation
+      attributes:
+          label: "Critères d'acceptation"
+          description: "L'agent doit valider tous ces points avant de soumettre la PR."
+          options:
+              - label: "`castor symfony:analyse` → 0 erreur PHPStan niveau 10"
+                required: true
+              - label: "`castor symfony:cs --dry-run` → 0 erreur de style"
+                required: true
+              - label: "`castor symfony:test` → 100% des tests passent"
+                required: true
+              - label: "Rapport d'écarts fourni dans la description de la PR"
+                required: true
+              - label: "PHP 7.1 strict : DocBlocks sur toutes les propriétés et méthodes, pas de propriétés typées"
+                required: true
