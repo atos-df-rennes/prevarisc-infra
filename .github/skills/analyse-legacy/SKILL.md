@@ -78,6 +78,26 @@ Pour chaque template, identifier :
 | Date format | `date('d/m/Y', strtotime($var))` | `{{ var|date('d/m/Y') }}` |
 | Truncate | `mb_substr($str, 0, 100)` | `{{ str|slice(0, 100) }}` |
 
+### 3b. Détecter les patterns Bootstrap 2 dans les templates
+
+**Étape obligatoire** : avant de migrer un template, lancer ce grep pour inventorier tous les patterns BS2 à convertir en BS3 :
+
+```bash
+grep -n "span[0-9]\|row-fluid\|icon-[a-z]\|btn-small\|btn-large\|btn-mini\|btn-inverse\|alert-error\|alert-block\|control-group\|controls\b\|input-prepend\|input-append\|modal hide\|tabs-left\|tabs-right\|tabbable\|navbar-inner\|offset[0-9]\|hero-unit" \
+  prevarisc/application/views/scripts/[module]/[action].phtml
+```
+
+Construire un inventaire des patterns trouvés avant de coder le template Twig. Chaque pattern doit être converti selon le mapping du fichier agent `symfony-migration.agent.md`.
+
+**Points d'attention critiques lors de l'analyse :**
+
+| Pattern BS2 détecté | Impact sur la migration |
+|---------------------|------------------------|
+| `class="modal hide fade"` | Structure modale complètement différente en BS3 (2 wrappers à ajouter) |
+| `tabs-left` / `tabs-right` | Pas d'équivalent BS3 natif → CSS custom nécessaire |
+| `input-prepend` / `input-append` | Refactoring complet en `input-group` |
+| `control-group` + `controls` | Remplacer par `form-group` + supprimer le div `controls` |
+
 ### 4. Analyser un modèle Zend_Db_Table
 
 Pour chaque méthode de modèle, identifier :
@@ -153,3 +173,4 @@ grep -r "_helper->" prevarisc/application/controllers/NomController.php
 4. ✅ Logique métier non triviale identifiée (→ niveau 🔴 dans le rapport d'écarts)
 5. ✅ Entités Doctrine existantes vérifiées (éviter les doublons)
 6. ✅ Routes cibles définies
+7. ✅ **Patterns Bootstrap 2 inventoriés** dans tous les templates `.phtml` concernés (grep obligatoire — cf. étape 3b)

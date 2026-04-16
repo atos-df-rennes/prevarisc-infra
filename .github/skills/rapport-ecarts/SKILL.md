@@ -86,6 +86,9 @@ Niveau de confiance global : ✅ / ⚠️ / 🔴
 - Gestion des sessions
 - Formulaires (Zend_Form → AbstractType)
 - Formatage de dates, nombres si comportement edge-case possible
+- **Conversion Bootstrap 2 → 3** : toujours lister les classes converties dans le template (grid `span[N]`, icônes `icon-*`, boutons `btn-small/large`, alertes `alert-error`, etc.)
+- **Structure des modales** si présentes (`modal hide fade` → structure BS3 avec `modal-dialog`/`modal-content`)
+- **Formulaires BS2** si présents (`control-group`/`controls` → `form-group`)
 
 ### Ce qui mérite 🔴 Logique complexe
 - Réorganisation de blocs conditionnels imbriqués
