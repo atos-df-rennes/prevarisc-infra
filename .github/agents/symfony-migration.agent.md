@@ -302,5 +302,7 @@ fix(dossier): correction affichage date commission
 4. Porter le code dans `prevarisc-migration/`
 5. Vérifier l'absence de patterns BS2 résiduels avec le grep de validation
 6. Valider : `castor symfony:analyse && castor symfony:cs && castor symfony:test`
-7. Fournir le rapport d'écarts
-8. Suggérer le commit
+7. **Mettre à jour `docs/tech/migration/MANIFEST.yaml`** : passer la tâche à `done` et ajouter les routes créées
+8. Vérifier la cohérence manifest ↔ code : `castor migration:progress`
+9. Fournir le rapport d'écarts
+10. Suggérer le commit (inclure la mise à jour du manifest dans le même commit)
