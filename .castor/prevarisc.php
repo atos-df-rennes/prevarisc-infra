@@ -249,8 +249,10 @@ function makeDump(): void
 }
 
 #[AsTask(namespace: 'prevarisc', description: 'Load Prevarisc dump')]
-function loadDump(): void
-{
+function loadDump(
+    #[ASOption(name: 'container', description: 'Nom du conteneur MySQL cible')]
+    string $container = 'prevarisc-infra-db-1'
+): void {
     io()->title('Loading Prevarisc dump.');
 
     io()->text('Searching dump files (ordered by modification time, newest first).');
@@ -272,8 +274,8 @@ function loadDump(): void
 
     io()->info('Loading dump file: '.$dumpName);
 
-    run(['docker', 'cp', $dumpName, 'prevarisc-infra-db-1:/'.$dumpName]);
-    run('docker exec -w / -i prevarisc-infra-db-1 mysql -u root -p"planmusique" PRV_prevarisc_v2 < '.$dumpName);
+    run(['docker', 'cp', $dumpName, $container.':/'.$dumpName]);
+    run('docker exec -w / -i '.$container.' mysql -u root -p"planmusique" PRV_prevarisc_v2 < '.$dumpName);
 
     io()->success('Dump loaded successfully.');
 }

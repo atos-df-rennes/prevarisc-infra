@@ -148,37 +148,60 @@ Les worktrees sont des répertoires **temporaires** : ils disparaissent après l
 
 ---
 
-## Validation fonctionnelle sur un worktree
+## Validation fonctionnelle en parallèle
 
-Le conteneur Docker monte `./prevarisc` et `./prevarisc-migration` en bind mount, résolu **au démarrage du conteneur**. Pour tester un worktree dans l'application, il faut donc redémarrer le conteneur `app` en pointant vers le bon répertoire.
+La stack worktree est **entièrement isolée** de la stack principale : conteneurs, réseau et base de données séparés. Les deux environnements tournent simultanément.
 
-Un fichier `compose.worktree.yaml` est fourni à cet effet.
+| Stack | URL | Port DB | Mailpit |
+|-------|-----|---------|---------|
+| Principale (`compose.dev.yaml`) | http://localhost:7080 | 33061 | http://localhost:8025 |
+| Worktree (`compose.worktree-standalone.yaml`) | http://localhost:7081 | 33062 | http://localhost:8026 |
 
-### Basculer vers le worktree
-
-```bash
-PREVARISC_DIR=prevarisc-worktree-<feature> \
-PREVARISC_MIGRATION_DIR=prevarisc-migration-worktree-<feature> \
-docker compose -f compose.dev.yaml -f compose.worktree.yaml up -d --no-deps app
-```
-
-> `--no-deps` redémarre uniquement le conteneur `app`, sans toucher à `db`, `mailpit` ni `platau`.  
-> Si les deux worktrees ne sont pas nécessaires, omettre la variable inutile — le fallback reprend le dépôt principal.
-
-### Revenir au dépôt principal
+### Démarrer la stack worktree
 
 ```bash
-docker compose -f compose.dev.yaml up -d --no-deps app
+castor worktree:start
 ```
+
+Le wizard guide les étapes :
+1. Sélection du worktree existant
+2. Copie des fichiers de configuration
+3. Démarrage des conteneurs isolés (`worktree-app-1`, `worktree-db-1`, `worktree-mailpit-1`)
+4. Seeding de la DB depuis un dump (optionnel)
+5. Installation des dépendances Composer
+
+### Seeding de la base de données
+
+Le seeding charge un dump SQL dans la DB du worktree (`worktree-db-1`) pour partir d'un état connu.
+
+```bash
+# Créer d'abord un dump frais de la DB principale
+castor prevarisc:make-dump
+
+# Ou charger directement un dump existant dans la DB du worktree
+castor prevarisc:load-dump --container worktree-db-1
+```
+
+### Arrêter la stack worktree
+
+```bash
+castor worktree:stop
+```
+
+La stack principale n'est pas affectée.
 
 ### Exemple concret — Bloc "Dossiers incomplets"
 
 ```bash
-# Basculer
-PREVARISC_DIR=prevarisc-worktree-incomplete-dossiers \
-PREVARISC_MIGRATION_DIR=prevarisc-migration-worktree-incomplete-dossiers \
-docker compose -f compose.dev.yaml -f compose.worktree.yaml up -d --no-deps app
+# 1. Créer le worktree
+castor worktree:create
+# → type: fix, nom: dossiers-incomplets
 
-# Valider dans le navigateur, puis revenir
-docker compose -f compose.dev.yaml up -d --no-deps app
+# 2. Démarrer la stack isolée (ou répondre "oui" à la question pendant le create)
+castor worktree:start
+
+# 3. Tester sur http://localhost:7081 pendant que http://localhost:7080 reste opérationnel
+
+# 4. Arrêter la stack worktree une fois validé
+castor worktree:stop
 ```

@@ -13,6 +13,11 @@ use function Castor\parallel;
 use function Castor\run;
 use function Castor\wait_for_docker_container;
 
+const WORKTREE_PROJECT = 'worktree';
+const WORKTREE_COMPOSE_FILE = 'compose.worktree-standalone.yaml';
+const WORKTREE_APP_CONTAINER = 'worktree-app-1';
+const WORKTREE_DB_CONTAINER = 'worktree-db-1';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Tâches publiques
 // ─────────────────────────────────────────────────────────────────────────────
@@ -44,6 +49,46 @@ function worktreeCreate(): void
 {
     io()->title('Création d\'un nouveau worktree');
 
+    $mode = io()->choice(
+        'Objectif',
+        ['Nouvelle branche (développement)', 'Branche existante (relecture)'],
+        'Nouvelle branche (développement)'
+    );
+
+    $repos = io()->choice(
+        'Dépôts concernés',
+        ['Les deux (prevarisc + prevarisc-migration)', 'prevarisc uniquement', 'prevarisc-migration uniquement'],
+        'Les deux (prevarisc + prevarisc-migration)'
+    );
+
+    $createPrevarisc = 'prevarisc-migration uniquement' !== $repos;
+    $createMigration = 'prevarisc uniquement' !== $repos;
+
+    if ('Branche existante (relecture)' === $mode) {
+        [$branch, $createPrevarisc, $createMigration] = selectReviewBranch($createPrevarisc, $createMigration);
+
+        // Dérive un nom de répertoire valide depuis le nom de la branche (ex: feat/mon-fix → feat-mon-fix).
+        $name = trim(preg_replace('/[^a-z0-9]+/', '-', strtolower($branch)), '-');
+
+        if ($createPrevarisc) {
+            io()->section('Création du worktree prevarisc.');
+            run(['git', '-C', 'prevarisc', 'worktree', 'add', '../prevarisc-worktree-'.$name, 'origin/'.$branch]);
+        }
+
+        if ($createMigration) {
+            io()->section('Création du worktree prevarisc-migration.');
+            run(['git', '-C', 'prevarisc-migration', 'worktree', 'add', '../prevarisc-migration-worktree-'.$name, 'origin/'.$branch]);
+        }
+
+        io()->success(sprintf('Worktree de relecture "%s" créé sur la branche "%s".', $name, $branch));
+
+        if (io()->confirm('Démarrer la stack Docker du worktree maintenant ?', true)) {
+            doWorktreeSetup($name);
+        }
+
+        return;
+    }
+
     $type = io()->choice(
         'Type de modification',
         ['feat', 'fix', 'refactor', 'docs', 'chore', 'test'],
@@ -65,15 +110,6 @@ function worktreeCreate(): void
         }
     );
 
-    $repos = io()->choice(
-        'Dépôts concernés',
-        ['Les deux (prevarisc + prevarisc-migration)', 'prevarisc uniquement', 'prevarisc-migration uniquement'],
-        'Les deux (prevarisc + prevarisc-migration)'
-    );
-
-    $createPrevarisc = 'prevarisc-migration uniquement' !== $repos;
-    $createMigration = 'prevarisc uniquement' !== $repos;
-
     [$baseBranch, $createPrevarisc, $createMigration] = selectBaseBranch($createPrevarisc, $createMigration);
 
     $branch = $type.'/'.$name;
@@ -90,41 +126,36 @@ function worktreeCreate(): void
 
     io()->success(sprintf('Worktree(s) créé(s) sur la branche "%s".', $branch));
 
-    if (io()->confirm('Basculer vers ce worktree maintenant ?', true)) {
+    if (io()->confirm('Démarrer la stack Docker du worktree maintenant ?', true)) {
         doWorktreeSetup($name);
     }
 }
 
-#[AsTask(name: 'switch', namespace: 'worktree', description: 'Bascule le conteneur entre le dépôt principal et un worktree existant')]
-function worktreeSwitch(): void
+#[AsTask(name: 'start', namespace: 'worktree', description: 'Démarre la stack Docker isolée pour un worktree existant')]
+function worktreeStart(): void
 {
-    io()->title('Basculer vers un worktree ou le dépôt principal');
+    io()->title('Démarrage de la stack worktree.');
 
     $sessions = getWorktreeSessions();
-    $mainLabel = 'Dépôt principal (prevarisc + prevarisc-migration)';
-    $choices = [$mainLabel];
 
-    foreach ($sessions as $s) {
-        $repos = getSessionRepoLabels($s);
-        $choices[] = sprintf('Worktree : %s (%s)', $s['name'], implode(' + ', $repos));
-    }
-
-    $choice = io()->choice('Vers quoi souhaitez-vous basculer ?', $choices, 0);
-
-    if ($choice === $mainLabel) {
-        switchContainer(null, null);
-        io()->success('Basculé vers le dépôt principal.');
+    if ([] === $sessions) {
+        io()->warning('Aucun worktree actif. Utilisez "castor worktree:create" pour en créer un.');
 
         return;
     }
 
-    foreach ($sessions as $s) {
-        if (str_contains($choice, $s['name'])) {
-            doWorktreeSetup($s['name']);
+    $session = selectWorktreeSession($sessions);
+    doWorktreeSetup($session['name']);
+}
 
-            return;
-        }
-    }
+#[AsTask(name: 'stop', namespace: 'worktree', description: 'Arrête la stack Docker isolée du worktree')]
+function worktreeStop(): void
+{
+    io()->title('Arrêt de la stack worktree.');
+
+    exit_code(['docker', 'compose', '--project-name', WORKTREE_PROJECT, '--file', WORKTREE_COMPOSE_FILE, 'down']);
+
+    io()->success('Stack worktree arrêtée.');
 }
 
 #[AsTask(name: 'remove', namespace: 'worktree', description: 'Nettoie un worktree et supprime la branche associée')]
@@ -164,7 +195,9 @@ function worktreeRemove(
 
     io()->success(sprintf('Worktree "%s" supprimé.', $name));
 
-    askAndSwitch($name);
+    if (io()->confirm('Arrêter la stack worktree si elle est en cours d\'exécution ?', true)) {
+        exit_code(['docker', 'compose', '--project-name', WORKTREE_PROJECT, '--file', WORKTREE_COMPOSE_FILE, 'down']);
+    }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -173,7 +206,7 @@ function worktreeRemove(
 
 /**
  * Configure un worktree (copie des fichiers, installation des dépendances)
- * et bascule le conteneur applicatif vers celui-ci.
+ * et démarre la stack Docker isolée pour ce worktree.
  */
 function doWorktreeSetup(string $name): void
 {
@@ -218,21 +251,26 @@ function doWorktreeSetup(string $name): void
     $prevarisc = $session['prevarisc'] ? 'prevarisc-worktree-'.$name : null;
     $migration = $session['migration'] ? 'prevarisc-migration-worktree-'.$name : null;
 
-    switchContainer($prevarisc, $migration);
+    startWorktreeStack($prevarisc, $migration);
+
+    if (io()->confirm('Seeder la base de données du worktree depuis un dump ?', true)) {
+        seedWorktreeDb();
+    }
 
     io()->section('Installation des dépendances Composer.');
 
+    $composeArgs = ['docker', 'compose', '--project-name', WORKTREE_PROJECT, '--file', WORKTREE_COMPOSE_FILE];
     $tasks = [];
 
     if ($session['prevarisc']) {
-        $tasks[] = static function () {
-            run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc', 'app', 'composer', 'install']);
+        $tasks[] = static function () use ($composeArgs): void {
+            run([...$composeArgs, 'exec', '-w', '/var/www/html/prevarisc', 'app', 'composer', 'install']);
         };
     }
 
     if ($session['migration']) {
-        $tasks[] = static function () {
-            run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'composer', 'install']);
+        $tasks[] = static function () use ($composeArgs): void {
+            run([...$composeArgs, 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'composer', 'install']);
         };
     }
 
@@ -242,84 +280,47 @@ function doWorktreeSetup(string $name): void
         ($tasks[0])();
     }
 
-    io()->success(sprintf('Worktree "%s" configuré et actif.', $name));
+    io()->success(sprintf('Worktree "%s" démarré → http://localhost:7081', $name));
 }
 
 /**
- * Redémarre le conteneur applicatif en le pointant vers le(s) répertoire(s) voulu(s).
- * Passer null pour les deux paramètres revient au dépôt principal.
+ * Démarre la stack Docker isolée du worktree.
  */
-function switchContainer(?string $prevarisc, ?string $migration): void
+function startWorktreeStack(?string $prevarisc, ?string $migration): void
 {
-    io()->section('Redémarrage du conteneur applicatif.');
+    io()->section('Démarrage de la stack worktree isolée.');
 
     $env = [];
-    $files = ['--file', 'compose.dev.yaml'];
 
-    if (null !== $prevarisc || null !== $migration) {
-        array_push($files, '--file', 'compose.worktree.yaml');
-        if (null !== $prevarisc) {
-            $env['PREVARISC_DIR'] = $prevarisc;
-        }
-        if (null !== $migration) {
-            $env['PREVARISC_MIGRATION_DIR'] = $migration;
-        }
+    if (null !== $prevarisc) {
+        $env['PREVARISC_DIR'] = $prevarisc;
+    }
+
+    if (null !== $migration) {
+        $env['PREVARISC_MIGRATION_DIR'] = $migration;
     }
 
     $ctx = [] !== $env ? context()->withEnvironment($env) : null;
-    exit_code(['docker', 'compose', ...$files, 'up', '-d', '--no-deps', 'app'], $ctx);
+    exit_code(['docker', 'compose', '--project-name', WORKTREE_PROJECT, '--file', WORKTREE_COMPOSE_FILE, 'up', '-d'], $ctx);
 
     wait_for_docker_container(
-        containerName: 'prevarisc-infra-app-1',
-        message: 'Attente du démarrage du conteneur applicatif.'
+        containerName: WORKTREE_APP_CONTAINER,
+        message: 'Attente du démarrage du conteneur applicatif du worktree.'
     );
 }
 
 /**
- * Propose à l'utilisateur de basculer vers le dépôt principal ou un autre worktree disponible.
- * Appelé en fin de tâche pour améliorer la DX.
+ * Propose de créer un dump frais puis le charge dans la DB du worktree.
  */
-function askAndSwitch(string $excludeName): void
+function seedWorktreeDb(): void
 {
-    $sessions = getWorktreeSessions();
-    $remaining = array_values(array_filter($sessions, static fn (array $s) => $s['name'] !== $excludeName));
+    io()->section('Seeding de la base de données du worktree.');
 
-    $mainLabel = 'Dépôt principal (prevarisc + prevarisc-migration)';
-    $choices = [$mainLabel];
-
-    foreach ($remaining as $s) {
-        $repos = getSessionRepoLabels($s);
-        $choices[] = sprintf('Worktree : %s (%s)', $s['name'], implode(' + ', $repos));
+    if (io()->confirm('Créer un nouveau dump depuis la DB principale d\'abord ?', false)) {
+        makeDump();
     }
 
-    if (1 === count($choices)) {
-        io()->text('Retour automatique au dépôt principal.');
-        switchContainer(null, null);
-        io()->success('Basculé vers le dépôt principal.');
-
-        return;
-    }
-
-    $choice = io()->choice('Où souhaitez-vous basculer ?', $choices, 0);
-
-    if ($choice === $mainLabel) {
-        switchContainer(null, null);
-        io()->success('Basculé vers le dépôt principal.');
-
-        return;
-    }
-
-    foreach ($remaining as $s) {
-        if (str_contains($choice, $s['name'])) {
-            switchContainer(
-                $s['prevarisc'] ? 'prevarisc-worktree-'.$s['name'] : null,
-                $s['migration'] ? 'prevarisc-migration-worktree-'.$s['name'] : null
-            );
-            io()->success(sprintf('Basculé vers le worktree "%s".', $s['name']));
-
-            return;
-        }
-    }
+    loadDump(WORKTREE_DB_CONTAINER);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -576,4 +577,89 @@ function getFilteredRemoteBranches(string $repoDir): array
     }
 
     return $branches;
+}
+
+/**
+ * Retourne toutes les branches distantes d'un dépôt après un fetch.
+ *
+ * @return string[]
+ */
+function getAllRemoteBranches(string $repoDir): array
+{
+    exec('git -C '.escapeshellarg($repoDir).' fetch --quiet origin 2>/dev/null');
+
+    $output = [];
+    exec('git -C '.escapeshellarg($repoDir).' branch -r 2>/dev/null', $output);
+
+    $branches = [];
+    foreach ($output as $line) {
+        $branch = trim(preg_replace('/^origin\//', '', trim($line)) ?? '');
+        if (str_starts_with($branch, 'HEAD')) {
+            continue;
+        }
+        $branches[] = $branch;
+    }
+
+    sort($branches);
+
+    return $branches;
+}
+
+/**
+ * Récupère toutes les branches distantes des dépôts concernés, propose une sélection
+ * et retourne la branche choisie ainsi que les flags de création ajustés.
+ *
+ * @return array{0: string, 1: bool, 2: bool}  [branche, createPrevarisc, createMigration]
+ */
+function selectReviewBranch(bool $createPrevarisc, bool $createMigration): array
+{
+    io()->text('Récupération des branches distantes (fetch en cours)...');
+
+    $prevarisc = $createPrevarisc ? getAllRemoteBranches('prevarisc') : [];
+    $migration = $createMigration ? getAllRemoteBranches('prevarisc-migration') : [];
+
+    /** @var array<string, array{prevarisc: bool, migration: bool}> $catalog */
+    $catalog = [];
+    foreach ($prevarisc as $branch) {
+        $catalog[$branch] = ['prevarisc' => true, 'migration' => false];
+    }
+    foreach ($migration as $branch) {
+        if (!isset($catalog[$branch])) {
+            $catalog[$branch] = ['prevarisc' => false, 'migration' => false];
+        }
+        $catalog[$branch]['migration'] = true;
+    }
+
+    if ([] === $catalog) {
+        throw new \RuntimeException('Aucune branche distante trouvée.');
+    }
+
+    $both = $createPrevarisc && $createMigration;
+
+    $labels = [];
+    foreach ($catalog as $branch => $info) {
+        if ($both && $info['prevarisc'] !== $info['migration']) {
+            $only = $info['prevarisc'] ? 'prevarisc uniquement' : 'migration uniquement';
+            $labels[] = sprintf('%s  (%s)', $branch, $only);
+        } else {
+            $labels[] = $branch;
+        }
+    }
+
+    $branchKeys = array_keys($catalog);
+    $choice = io()->choice('Branche à relire', $labels);
+    $index = array_search($choice, $labels, true);
+    $selectedBranch = $branchKeys[$index];
+
+    $availability = $catalog[$selectedBranch];
+    if ($createPrevarisc && !$availability['prevarisc']) {
+        io()->warning(sprintf('La branche "%s" est absente de prevarisc : le worktree prevarisc ne sera pas créé.', $selectedBranch));
+        $createPrevarisc = false;
+    }
+    if ($createMigration && !$availability['migration']) {
+        io()->warning(sprintf('La branche "%s" est absente de prevarisc-migration : le worktree migration ne sera pas créé.', $selectedBranch));
+        $createMigration = false;
+    }
+
+    return [$selectedBranch, $createPrevarisc, $createMigration];
 }
