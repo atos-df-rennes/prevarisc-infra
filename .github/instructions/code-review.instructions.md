@@ -1,8 +1,10 @@
 ---
-applyTo: "**"
+applyTo: "prevarisc-migration/src/**,prevarisc-migration/templates/**"
 ---
 
 # Revue de code - Migration Prevarisc
+
+> Pour une revue approfondie (Opus), utiliser l'agent `code-review`.
 
 Lors d'une revue de code, vérifie les points suivants et génère un rapport `REVIEW_REPORT.md` à la racine du projet.
 

@@ -1,198 +1,79 @@
-# Instructions Copilot - Migration Prevarisc
+# Instructions Copilot — Migration Prevarisc
 
-**Contexte :** Migration Zend 1.12 → Symfony 4.4 | **PHP 7.1.33**
+**Contexte :** Migration Zend 1.12 → Symfony 4.4 | PHP 7.1.33
 
----
+## Répertoires
 
-## 🎯 Mission
+| Rôle | Répertoire |
+|------|-----------|
+| Legacy (lecture seule) | `prevarisc/` |
+| Code migré | `prevarisc-migration/` |
+| API Plat'AU | `prevarisc-passerelle-platau/` |
 
-Migrer l'application Prevarisc de Zend vers Symfony en respectant **100% l'iso-fonctionnalité** du legacy.
+## Stack technique
 
-**Répertoires :**
-- Legacy (lecture seule) : `prevarisc/`
-- Code migré : `prevarisc-migration/`
-- API Plat'AU : `prevarisc-passerelle-platau/`
+| PHP | Symfony | Doctrine | Twig | PHPStan |
+|-----|---------|----------|------|---------|
+| 7.1.33 | 4.4 LTS | 2.14 | 2.x | Niveau 10 |
 
----
+## Commandes Castor (depuis l'hôte)
 
-## ⚙️ Stack technique
-
-| Techno | Version | Contrainte |
-|--------|---------|------------|
-| PHP | **7.1.33** | Pas de propriétés typées, pas de void, DocBlocks obligatoires |
-| Symfony | 4.4 LTS | Framework cible |
-| Zend | 1.12 | Framework legacy |
-| Doctrine | 2.14 | ORM |
-| Twig | 2.x | Templates (Bootstrap 3) |
-| PHPStan | Niveau 10 | Qualité code |
-
-**PHP 7.1 - Exemple valide :**
-```php
-class MyService {
-    /** @var LoggerInterface */
-    private $logger;
-    
-    /** @return string[] */
-    public function getItems(): array { return []; }
-}
-```
-
----
-
-## 🔄 Mapping Zend → Symfony (synthèse)
-
-**Templates :** `.phtml` → `.html.twig` | Bootstrap 2 → Bootstrap 3  
-**Controllers :** `Zend_Controller_Action` → `AbstractController`  
-**Forms :** `Zend_Form` → `AbstractType` (FormType)  
-**Models :** `DbTable` → `Entity` (Doctrine)  
-**Routing :** `/module/controller/action` → Annotations `@Route`
-
-**Détails complets :** Voir `docs/tech/migration/MAPPING_LEGACY_REFERENCE.md`
-
----
-
-## 🛠️ Environnement
-
-**Docker :** `prevarisc-infra-app-1` (PHP), `prevarisc-infra-mysql-1` (DB)
-
-**Commandes (depuis l'hôte) :**
 ```bash
-castor symfony:analyse  # PHPStan niveau 10
-castor symfony:cs       # Code Style
-castor symfony:test     # Tests PHPUnit
+castor symfony:analyse    # PHPStan niveau 10
+castor symfony:cs         # Code Style
+castor symfony:test       # Tests PHPUnit
+castor symfony:validate   # Validation Doctrine
+castor migration:progress # Avancement migration
 ```
 
----
+## PHP 7.1 — Règles strictes
 
-## 🚦 Stratégie de migration : Port direct par défaut
+- ❌ Propriétés typées (`private string $name`) → PHP 7.4+
+- ❌ Attributs PHP 8 (`#[Route]`) → utiliser `@Route`
+- ❌ Union types, named arguments → PHP 8+
+- ✅ DocBlocks obligatoires (`@var`, `@param`, `@return`)
 
-### Règle fondamentale
-
-**Reproduire le code legacy tel quel.** Ne pas refactoriser, ne pas réorganiser, ne pas améliorer — sauf si le code Zend est techniquement impossible à porter tel quel.
-
-**Raison :** Tout écart par rapport au legacy, même mineur, introduit un risque de régression que le développeur doit vérifier manuellement. Un port direct donne une garantie structurelle : même logique = même comportement.
-
-### Ce qui est mécanique (adapter sans risque)
-- Syntaxe Zend → Symfony (routing, DI, Twig, Doctrine)
-- `$this->view->x` → `return $this->render(..., ['x' => ...])`
-- `$this->_getParam()` → `$request->get()`
-- `$this->_redirect()` → `return $this->redirectToRoute()`
-- Requêtes SQL brutes → QueryBuilder **à structure identique**
-
-### Ce qui est interdit sans validation explicite
-- Extraire de la logique dans un service si elle est inline dans le legacy
-- Modifier l'ordre des opérations (même si "plus propre")
-- Changer la gestion des cas null/vide/0
-- Ajouter des validations absentes du legacy
-- Fusionner ou découper des blocs conditionnels
-
-### Livraison obligatoire : rapport d'écarts
-
-À chaque livraison, fournir systématiquement le bloc suivant (même si vide) :
-
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-RAPPORT D'ÉCARTS PAR RAPPORT AU LEGACY
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Niveau de confiance global : ✅ / ⚠️ / 🔴
-
-✅ PORT DIRECT — aucune vérification nécessaire sur ces points :
-- [liste des parties portées mécaniquement]
-
-⚠️ ADAPTATIONS — vérifier ces points précis :
-- [Fichier:ligne] Ce qui a changé → Tester : [action UI précise]
-
-🔴 LOGIQUE COMPLEXE — vérification approfondie recommandée :
-- [Fichier:ligne] Ce qui est incertain → Scénarios à tester : [liste]
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
-
-**Interdiction d'écrire "iso-fonctionnalité 100%"** sans ce rapport détaillé.
-
-### Niveaux de confiance
-
-| Niveau | Signification | Action requise |
-|--------|--------------|----------------|
-| ✅ **Port direct** | Code legacy reproduit tel quel | Aucune vérification logique |
-| ⚠️ **Adaptation** | Glue Symfony nécessaire, logique inchangée | Vérifier les points listés |
-| 🔴 **Logique modifiée** | Réorganisation inévitable | Tester les scénarios listés |
-
----
-
-## ✅ Workflow développement
-
-### 1. Analyser le legacy
-```bash
-grep -r "DATEVISITE" prevarisc/application/
-find prevarisc/application/controllers/ -name "*Dossier*"
-```
-
-### 2. Implémenter (port direct)
-1. Porter le legacy mécaniquement (controller → template → JS)
-2. Identifier et documenter les écarts inévitables
-3. Valider : `castor symfony:analyse && castor symfony:cs && castor symfony:test`
-4. Commiter : `feat(scope): description`
-5. Mettre à jour `docs/tech/REPRENDRE_ICI.md`
-
-### 3. Validation avant commit (obligatoire)
-- ✅ PHPStan 0 erreur
-- ✅ CS 0 erreur
-- ✅ Tests 100% passent
-- ✅ Rapport d'écarts fourni
-
----
-
-## 📚 Documentation par tâche
-
-| Tâche | Fichiers à consulter |
-|-------|---------------------|
-| **Édition dossiers** | `.github/edition-dossier.md`<br>`docs/tech/dossier/PLAN_MIGRATION_EDITION_DOSSIER.md` |
-| **Affichage dossiers** | `docs/tech/dossier/migration-affichage-dossiers.md` |
-| **Mapping champs** | `docs/tech/dossier/MAPPING_CHAMPS_DOSSIER.md` |
-| **État avancement** | `docs/tech/REPRENDRE_ICI.md` |
-
-## 🧩 Instructions spécialisées (activer via `/instructions`)
-
-| Domaine | Fichier | Auto-activé sur |
-|---------|---------|-----------------|
-| **Tests** | `.github/instructions/testing.instructions.md` | `tests/**`, `*Test.php` |
-| **Revue de code** | `.github/instructions/code-review.instructions.md` | Manuel ou `/review` |
-
----
-
-## 🎯 Règles absolues
+## Règles absolues
 
 **INTERDIT ❌**
 - `findAll()` sans pagination sur les listes
-- Modifier le legacy sans autorisation explicite
+- Modifier `prevarisc/` (lecture seule)
 - Fonctionnalités PHP > 7.1
-- Requêtes N+1 **si déjà résolues dans le legacy** (porter la même optimisation)
-- Écrire "iso-fonctionnalité 100%" sans rapport d'écarts détaillé
+- Extraire de la logique inline du legacy sans validation explicite
+- Écrire "iso-fonctionnalité 100%" sans rapport d'écarts
 
 **REQUIS ✅**
-- Type hints + DocBlocks PHP 7.1
-- PHPStan niveau 10 + CS sans erreur
-- Rapport d'écarts à chaque livraison
 - Port direct comme point de départ systématique
+- PHPStan niveau 10 + CS sans erreur avant commit
+- Rapport d'écarts à chaque livraison
+- Mettre à jour `docs/tech/migration/MANIFEST.yaml` dans chaque commit
 
-**Optionnel (ne pas imposer sauf demande explicite) :**
-- Extraction en service (seulement si le legacy est déjà structuré ainsi)
-- QueryBuilder custom (seulement si requête complexe existante dans le legacy)
-- Tests unitaires (seulement sur logique métier non triviale)
+**Optionnel (seulement si demandé explicitement) :**
+- Extraction en service, QueryBuilder custom, tests unitaires
 
----
+## Format des commits
 
-## 📝 Commits
-
-**Format :** `<type>(<scope>): <description>`
-
-**Exemples :**
 ```
-feat(dossier): ajout nature 21 - Phase 3
-fix(dossier): correction affichage date commission
-docs(dossier): mise à jour REPRENDRE_ICI.md
+feat(scope): description
+fix(scope): description
+docs(scope): description
+
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
 ```
 
----
+## Outils spécialisés
 
-**Version :** 4.0 port-direct | **Dernière màj :** 8 avril 2026
+| Besoin | Outil |
+|--------|-------|
+| Pipeline complet de migration | Skill `migrate-feature` |
+| Explorer le legacy | Skill `analyse-legacy` |
+| Migrer du code | Agent `symfony-migration` |
+| État de la migration | Skill `migration-status` |
+| Corriger PHPStan | Skill `phpstan-fix` |
+| Rapport d'écarts | Skill `rapport-ecarts` |
+| Revue de code (Opus) | Agent `code-review` |
+| Audit sécurité | Agent `security-review` |
+| Audit performance | Agent `performance-review` |
+| Audit accessibilité | Agent `rgaa-review` |
+
+**Version :** 5.0 optimisé | **Dernière màj :** 20 avril 2026

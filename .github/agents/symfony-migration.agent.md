@@ -32,6 +32,22 @@ Tu es un expert de la migration du projet Prevarisc de Zend Framework 1.12 vers 
 - Ajouter des validations absentes du legacy
 - Fusionner ou découper des blocs conditionnels
 
+### Optimisations légères autorisées (sans validation)
+
+Ces corrections améliorent le code sans changer le comportement :
+
+**Sécurité (obligatoire si détecté) :**
+- Concaténation SQL → `setParameter()` Doctrine
+- `echo json_encode(...)` → `JsonResponse`
+
+**Patterns Symfony :**
+- `$this->getDoctrine()->getManager()` → injection `EntityManagerInterface`
+- Variables non initialisées → initialiser à `null` ou `[]`
+- DocBlocks manquants → ajouter `@var`, `@param`, `@return`
+
+**Twig :**
+- `{{ var|raw }}` sur données utilisateur → supprimer `|raw`
+
 ## Mapping Zend → Symfony
 
 ### Controllers
@@ -296,13 +312,17 @@ fix(dossier): correction affichage date commission
 
 ## Workflow
 
-1. Lire le legacy dans `prevarisc/` (grep/read)
+> **Pour le pipeline complet (analyse → port → lint → revue), utiliser le skill `migrate-feature`.**
+
+1. **Analyser le legacy** avec le skill `analyse-legacy` si pas encore fait (grep/read)
 2. **Inventorier les patterns Bootstrap 2** dans les templates `.phtml` (grep étape 3b du skill analyse-legacy)
 3. Identifier le mapping mécanique
 4. Porter le code dans `prevarisc-migration/`
-5. Vérifier l'absence de patterns BS2 résiduels avec le grep de validation
-6. Valider : `castor symfony:analyse && castor symfony:cs && castor symfony:test`
-7. **Mettre à jour `docs/tech/migration/MANIFEST.yaml`** : passer la tâche à `done` et ajouter les routes créées
-8. Vérifier la cohérence manifest ↔ code : `castor migration:progress`
-9. Fournir le rapport d'écarts
-10. Suggérer le commit (inclure la mise à jour du manifest dans le même commit)
+5. Appliquer les **optimisations légères** autorisées (cf. skill `migrate-feature` §Phase 3)
+6. Vérifier l'absence de patterns BS2 résiduels avec le grep de validation
+7. Valider : `castor symfony:analyse && castor symfony:cs && castor symfony:test && castor symfony:validate`
+8. **Mettre à jour `docs/tech/migration/MANIFEST.yaml`** : passer la tâche à `done` et ajouter les routes créées
+9. Vérifier la cohérence manifest ↔ code : `castor migration:progress`
+10. Fournir le rapport d'écarts (skill `rapport-ecarts`)
+11. Suggérer le commit (inclure la mise à jour du manifest dans le même commit)
+12. **Proposer la revue Opus** : "Pour une revue approfondie, utiliser l'agent `code-review`."
