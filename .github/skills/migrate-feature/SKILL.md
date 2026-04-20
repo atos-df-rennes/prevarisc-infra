@@ -1,6 +1,6 @@
 ---
 name: migrate-feature
-description: Orchestre le pipeline complet de migration d'une fonctionnalité Zend vers Symfony dans le projet Prevarisc. À utiliser pour démarrer une migration de zéro : exploration legacy → port direct → optimisations légères → lint → revue. Guide étape par étape avec les outils à invoquer à chaque phase.
+description: "Orchestre le pipeline complet de migration d'une fonctionnalité Zend vers Symfony dans le projet Prevarisc. À utiliser pour démarrer une migration de zéro : exploration legacy → port direct → optimisations légères → lint → revue. Guide étape par étape avec les outils à invoquer à chaque phase."
 ---
 
 # Skill : Pipeline de migration — Prevarisc
