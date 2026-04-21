@@ -441,6 +441,15 @@ tasks:
       - Suppression float:left sur <ul> Bootstrap 3 (layout cassé)
       - show_footer conditionnel sur form_date.html.twig (évite doublon boutons)
       - Validation @Assert\Callback sur CommissionDatesDto (dateFin si withPeriodicite)
+      Corrections cycle 2 (pipeline complet) :
+      - supp_dateCom : retourne Response('ok') sur succès (JS vérifiait !== '')
+      - addDateS : try/catch avec <div class="alert alert-danger"> sur exception
+      - form_date.html.twig : ajout #addReapeat, #planification (display:none), id="repeat"
+      - calendrier-commissions.js : .attr('checked') → .prop('checked') sur #repeat
+      - calendrier-commissions.js : buttonHide/Show masquent aussi .add-collection-widget
+      - calendrier-commissions.js : listener collection:item-added pour masquer #addReapeat
+      - _date_linked.html.twig : null safety sur heureDebut/heureFin (fallback 09:00/18:00)
+      - IDs dateFin/periodicite mis à jour vers Symfony naming (commission_dates_*)
       Les fonctionnalités suivantes sont encore TODO :
       - Gestion ODJ (drop, resize, affectation dossiers)
       - Génération documents (convocations, ODJ, PV, comptes rendus)
