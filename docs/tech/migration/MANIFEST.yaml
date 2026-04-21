@@ -1,0 +1,735 @@
+# Migration manifest — Zend 1.12 → Symfony 4.4
+# Source de vérité pour le suivi de la migration.
+#
+# RÈGLE : Mettre à jour ce fichier dans le même commit que la migration.
+#
+# Statuts :
+#   done    → Entièrement migré, validé PHPStan + CS + tests
+#   partial → Partiellement migré (certaines actions manquantes)
+#   todo    → Pas encore commencé
+#   skip    → Hors scope (volontairement non migré)
+#
+# Complexité :
+#   low    → Port mécanique, peu de logique métier
+#   medium → Logique métier modérée, quelques cas edge
+#   high   → Logique complexe, beaucoup de dépendances, génération de docs, etc.
+#
+# Entités : Doctrine entities concernées (pour analyse de parallélisation)
+#   Deux tâches sont parallélisables si elles n'ont pas d'entités en commun.
+
+version: 1
+
+tasks:
+
+  # ─────────────────────────────────────────────────────────────────
+  # AUTHENTIFICATION
+  # ─────────────────────────────────────────────────────────────────
+
+  - id: auth
+    description: "Connexion / déconnexion"
+    status: done
+    priority: 1
+    complexity: low
+    entities: [User]
+    legacy:
+      - "SessionController#loginAction"
+      - "SessionController#logoutAction"
+    routes: []
+    notes: "Géré par le système de sécurité Symfony (security.yaml + LegacySessionAuthenticator), pas via @Route."
+
+  # ─────────────────────────────────────────────────────────────────
+  # DASHBOARD / ACCUEIL
+  # ─────────────────────────────────────────────────────────────────
+
+  - id: dashboard
+    description: "Page d'accueil — blocs dynamiques (dossiers, commissions, établissements)"
+    status: done
+    priority: 2
+    complexity: medium
+    entities: [Dossier, Etablissement, Commission]
+    legacy:
+      - "IndexController#indexAction"
+      - "IndexController#addMessageAction"
+      - "IndexController#deleteMessageAction"
+      - "IndexController#blocAction"
+    routes:
+      - accueil_index
+      - accueil_bloc
+      - accueil_add_message
+      - accueil_delete_message
+      - accueil_platau_healthcheck
+      - api_utilisateur_preferences
+
+  # ─────────────────────────────────────────────────────────────────
+  # DOSSIER
+  # ─────────────────────────────────────────────────────────────────
+
+  - id: dossier-fiche
+    description: "Fiche dossier — informations générales, ajout, édition, verrouillage, suppression"
+    status: done
+    priority: 1
+    complexity: medium
+    entities: [Dossier, Etablissement, Nature]
+    legacy:
+      - "DossierController#indexAction"
+      - "DossierController#addAction"
+      - "DossierController#savenewAction"
+      - "DossierController#editAction"
+      - "DossierController#saveAction"
+      - "DossierController#shownatureAction"
+      - "DossierController#showchampsAction"
+      - "DossierController#selectionabreviationAction"
+      - "DossierController#selectionetabAction"
+      - "DossierController#verrouAction"
+      - "DossierController#deverrouAction"
+      - "DossierController#deleteAction"
+    routes:
+      - dossier_index
+      - dossier_new
+      - dossier_edit
+      - dossier_verrouiller
+      - dossier_deverrouiller
+
+  - id: dossier-contacts
+    description: "Contacts du dossier"
+    status: done
+    priority: 2
+    complexity: low
+    entities: [Dossier, Contact]
+    legacy:
+      - "DossierController#contactAction"
+    routes:
+      - dossier_contacts
+      - dossier_contacts_add
+      - dossier_contacts_delete
+
+  - id: dossier-liees
+    description: "Entités liées au dossier (dossiers liés, établissements liés, lien multiple)"
+    status: done
+    priority: 2
+    complexity: medium
+    entities: [Dossier, Etablissement]
+    legacy:
+      - "DossierController#lieesAction"
+      - "DossierController#lieesDossAction"
+      - "DossierController#addetablissementAction"
+      - "DossierController#deleteetablissementAction"
+      - "DossierController#deleteliendossierAction"
+      - "DossierController#lienmultipleAction"
+    routes:
+      - dossier_liees
+      - dossier_liees_doss
+      - dossier_liees_etab_ajouter
+      - dossier_liees_etab_supprimer
+      - dossier_liees_supprimer
+      - dossier_liste_enfants
+
+  - id: dossier-prescriptions
+    description: "Prescriptions du dossier — liste, ajout, édition, suppression, reprise, réordonnancement"
+    status: done
+    priority: 1
+    complexity: high
+    entities: [Dossier, Prescription, PrescriptionType, Texte, Article]
+    legacy:
+      - "DossierController#prescriptionAction"
+      - "DossierController#prescriptionwordsearchAction"
+      - "DossierController#prescriptionAddAction"
+      - "DossierController#prescriptiontypeformAction"
+      - "DossierController#showprescriptionTypeAction"
+      - "DossierController#prescriptionEditAction"
+      - "DossierController#prescriptionshowemplacementAction"
+      - "DossierController#prescriptionaddtypeAction"
+      - "DossierController#prescriptionchangeposAction"
+      - "DossierController#formrecupprescriptionAction"
+      - "DossierController#recupprescriptionAction"
+    routes:
+      - dossier_prescriptions
+      - dossier_prescriptions_ajouter
+      - dossier_prescriptions_modifier
+      - dossier_prescriptions_supprimer
+      - dossier_prescriptions_reordonner
+      - dossier_prescriptions_modal_reprise
+      - dossier_prescriptions_reprendre
+      - dossier_prescriptions_modal_type
+      - dossier_prescriptions_recherche_mots_cles
+      - dossier_prescriptions_recherche_classement
+      - dossier_prescriptions_ajouter_type
+
+  - id: dossier-textes-applicables
+    description: "Textes applicables du dossier"
+    status: done
+    priority: 2
+    complexity: low
+    entities: [Dossier, TexteApplicable]
+    legacy:
+      - "DossierController#textesApplicablesAction"
+      - "DossierController#editTextesApplicablesAction"
+    routes:
+      - dossier_textes_applicables
+      - dossier_textes_applicables_edit
+
+  - id: dossier-descriptifs
+    description: "Formulaires personnalisés dossier — vérifications techniques, effectifs/dégagements, avis/dérogations (affichage + édition)"
+    status: done
+    priority: 1
+    complexity: high
+    entities: [Dossier, CapsuleRubrique, Valeur]
+    legacy:
+      - "DossierController#descriptifsAction"
+      - "DossierController#descriptifAction"
+      - "DossierController#effectifsDegagementsDossierAction"
+      - "DossierController#effectifsDegagementsDossierEditAction"
+      - "DossierController#verificationsTechniquesAction"
+      - "DossierController#editVerificationsTechniquesAction"
+      - "DossierController#avisEtDerogationsAction"
+      - "DossierController#avisEtDerogationsEditAction"
+      - "DossierController#avisEtDerogationsDeleteAction"
+      - "DossierController#formrecupeffectifsdegagementsAction"
+      - "DossierController#recupeffectifsdegagementsAction"
+      - "DossierController#copierEffectifsDegagementsEtablissementAction"
+      - "DossierController#recupererEffectifsDegagementsEtablissementAction"
+    routes:
+      - dossier_descriptif
+      - dossier_descriptif_edit
+      - dossier_effectifs_degagements
+      - dossier_effectifs_degagements_edit
+      - dossier_verifications_techniques
+      - dossier_verifications_techniques_edit
+
+  - id: dossier-documents-consultes
+    description: "Documents consultés (liste + ajout de dossiers au suivi)"
+    status: done
+    priority: 3
+    complexity: low
+    entities: [Dossier]
+    legacy:
+      - "DossierController#docconsulteAction"
+    routes:
+      - dossier_documents_consultes
+
+  - id: dossier-pieces-jointes
+    description: "Pièces jointes du dossier — upload, consultation, suppression, ZIP"
+    status: partial
+    priority: 2
+    complexity: medium
+    entities: [Dossier, PieceJointe]
+    legacy:
+      - "DossierController#pieceJointeAction"
+      - "DossierController#ajoutdocAction"
+      - "DossierController#ajoutdocvalidAction"
+      - "DossierController#validdocAction"
+      - "DossierController#suppdocAction"
+      - "DossierController#formdocmanquantAction"
+      - "DossierController#getZipAllPjAction"
+      - "PieceJointeController#getPieceJointeAction"
+      - "PieceJointeController#addPieceJointeAction"
+    routes: []
+    notes: >
+      PieceJointeController existe côté Symfony mais sans routes @Route visibles.
+      Vérifier si la gestion PJ dossier est complètement couverte ou partiellement.
+
+  - id: dossier-odj
+    description: "Affectation d'un dossier à l'ordre du jour d'une commission"
+    status: todo
+    priority: 3
+    complexity: medium
+    entities: [Dossier, Commission, Odj]
+    legacy:
+      - "DossierController#affectationodjAction"
+      - "DossierController#dialogcommshowAction"
+    routes: []
+    notes: "Dépend de la migration du calendrier des commissions."
+
+  - id: dossier-rapport
+    description: "Génération du rapport de visite (PDF)"
+    status: todo
+    priority: 3
+    complexity: high
+    entities: [Dossier]
+    legacy:
+      - "DossierController#rapportAction"
+      - "DossierController#generationrapportAction"
+      - "DossierController#creationdocAction"
+      - "DossierController#emplacementAction"
+    routes: []
+    notes: >
+      Génération de documents Word/PDF. Fonctionnalité complexe avec dépendances
+      sur templates de documents. À traiter avec la génération docs commission.
+
+  # ─────────────────────────────────────────────────────────────────
+  # ÉTABLISSEMENT
+  # ─────────────────────────────────────────────────────────────────
+
+  - id: etablissement-fiche
+    description: "Fiche établissement — informations, ajout, édition, historique, suppression, liste dossiers"
+    status: done
+    priority: 1
+    complexity: medium
+    entities: [Etablissement, Adresse, Groupement]
+    legacy:
+      - "EtablissementController#indexAction"
+      - "EtablissementController#editAction"
+      - "EtablissementController#addAction"
+      - "EtablissementController#deleteAction"
+      - "EtablissementController#updateAdresseAction"
+      - "EtablissementController#historiqueAction"
+      - "EtablissementController#dossiersAction"
+      - "EtablissementController#getDossiersAfterNAction"
+      - "EtablissementController#retablirEtablissementAction"
+    routes:
+      - etablissement_informations
+      - etablissement_apres_modification
+      - etablissement_historique
+      - etablissement_dossiers
+      - etablissement_get_dossiers_after_n
+
+  - id: etablissement-contacts
+    description: "Contacts de l'établissement"
+    status: done
+    priority: 2
+    complexity: low
+    entities: [Etablissement, Contact]
+    legacy:
+      - "EtablissementController#contactsAction"
+      - "EtablissementController#editContactsAction"
+      - "EtablissementController#addContactAction"
+      - "EtablissementController#addContactExistantAction"
+      - "EtablissementController#deleteContactAction"
+    routes:
+      - etablissement_contacts
+      - etablissement_contacts_add
+      - etablissement_contacts_add_existing
+      - etablissement_contacts_delete
+
+  - id: etablissement-pieces-jointes
+    description: "Pièces jointes de l'établissement"
+    status: done
+    priority: 2
+    complexity: medium
+    entities: [Etablissement, PieceJointe]
+    legacy:
+      - "EtablissementController#piecesJointesAction"
+      - "EtablissementController#getPieceJointeAction"
+      - "EtablissementController#editPiecesJointesAction"
+      - "EtablissementController#addPieceJointeAction"
+      - "EtablissementController#deletePieceJointeAction"
+    routes:
+      - etablissement_pieces_jointes
+
+  - id: etablissement-textes-applicables
+    description: "Textes applicables de l'établissement"
+    status: done
+    priority: 2
+    complexity: low
+    entities: [Etablissement, TexteApplicable]
+    legacy:
+      - "EtablissementController#textesApplicablesAction"
+      - "EtablissementController#editTextesApplicablesAction"
+    routes:
+      - etablissement_textes_applicables
+      - etablissement_textes_applicables_edit
+
+  - id: etablissement-descriptif
+    description: "Formulaires personnalisés établissement — descriptif, effectifs/dégagements, avis/dérogations"
+    status: done
+    priority: 1
+    complexity: high
+    entities: [Etablissement, CapsuleRubrique, Valeur]
+    legacy:
+      - "EtablissementController#descriptifAction"
+      - "EtablissementController#descriptifPersonnaliseAction"
+      - "EtablissementController#editDescriptifAction"
+      - "EtablissementController#editDescriptifPersonnaliseAction"
+      - "EtablissementController#effectifsDegagementsEtablissementAction"
+      - "EtablissementController#effectifsDegagementsEtablissementEditAction"
+      - "EtablissementController#avisDerogationsEtablissementAction"
+    routes:
+      - etablissement_descriptif
+      - etablissement_descriptif_original
+      - etablissement_descriptif_modifier
+      - etablissement_effectifs_degagements
+      - etablissement_effectifs_degagements_edit
+      - etablissement_avis_derogations
+
+  # ─────────────────────────────────────────────────────────────────
+  # COMMISSIONS
+  # ─────────────────────────────────────────────────────────────────
+
+  - id: commission-gestion-admin
+    description: "CRUD commissions (admin) — création, membres, contacts, documents, compétences"
+    status: done
+    priority: 2
+    complexity: medium
+    entities: [Commission, User, Contact]
+    legacy:
+      - "CommissionController#indexAction"
+      - "CommissionController#formAction"
+      - "CommissionController#saveAction"
+      - "CommissionController#addMembreAction"
+      - "CommissionController#addContactAction"
+      - "GestionDesCommissionsController#*"
+    routes:
+      - admin_commissions_index
+      - admin_commissions_manage
+      - admin_commissions_show
+      - admin_commissions_membres
+      - admin_commissions_contacts
+      - admin_commissions_contacts_add
+      - admin_commissions_contacts_add_existing
+      - admin_commissions_contacts_delete
+      - admin_commissions_documents
+      - admin_commissions_documents_delete
+      - admin_commissions_courriers
+      - admin_commissions_courriers_upload
+      - admin_commissions_courriers_delete
+      - admin_commissions_competences
+      - admin_commissions_apply_regles
+
+  - id: calendrier-commissions
+    description: "Calendrier des commissions — affichage, gestion dates, ODJ, génération convocations/PV/CR/comptes rendus"
+    status: partial
+    priority: 2
+    complexity: high
+    entities: [Commission, Dossier, Odj]
+    legacy:
+      - "CalendrierDesCommissionsController#indexAction"
+      - "CalendrierDesCommissionsController#recupdatelieeAction"
+      - "CalendrierDesCommissionsController#gestionodjAction"
+      - "CalendrierDesCommissionsController#resizeodjAction"
+      - "CalendrierDesCommissionsController#dropodjAction"
+      - "CalendrierDesCommissionsController#commissionselectionAction"
+      - "CalendrierDesCommissionsController#recupevenementAction"
+      - "CalendrierDesCommissionsController#recupevenementodjAction"
+      - "CalendrierDesCommissionsController#affectedossodjAction"
+      - "CalendrierDesCommissionsController#dialogcommAction"
+      - "CalendrierDesCommissionsController#adddatecommAction"
+      - "CalendrierDesCommissionsController#adddatedialogcommAction"
+      - "CalendrierDesCommissionsController#adddatesAction"
+      - "CalendrierDesCommissionsController#deplacecommissiondateAction"
+      - "CalendrierDesCommissionsController#resizecommissiondateAction"
+      - "CalendrierDesCommissionsController#gestionheuresAction"
+      - "CalendrierDesCommissionsController#changementordreAction"
+      - "CalendrierDesCommissionsController#generationconvocAction"
+      - "CalendrierDesCommissionsController#generationodjAction"
+      - "CalendrierDesCommissionsController#generationpvAction"
+      - "CalendrierDesCommissionsController#generationcompterenduAction"
+      - "CalendrierDesCommissionsController#alertsuppressionAction"
+      - "CalendrierDesCommissionsController#validsuppressionAction"
+      - "CalendrierDesCommissionsController#exportoutlookAction"
+      - "CalendrierDesCommissionsController#exportoutlookmoisAction"
+    routes:
+      - calendrier_des_commissions_creer_date
+      - calendrier_des_commissions_deplacer_date
+      - calendrier_des_commissions_recuperer_dates_liees
+      - calendrier_des_commissions_recuperer_evenements
+      - calendrier_des_commissions_redimensionner_date
+      # Phase A — ajoutées
+      - calendrier_des_commissions_index
+      - calendrier_des_commissions_commissionselection
+      - calendrier_des_commissions_dialog_edit
+      - calendrier_des_commissions_alertsuppression
+      - calendrier_des_commissions_validsuppression
+    notes: >
+      Phase A migrée (7 actions affichage calendrier) : index, commissionselection,
+      dialogcomm (mega-switch), alertsuppression, validsuppression.
+      JS séparé dans public/js/calendrier-commissions.js.
+      Corrections post-migration (pipeline complet) :
+      - Ajout cas newComm dans dialogComm (manquant → "Erreur mauvais choix")
+      - Format ISO 8601 pour dateD/dateF (start.toISOString())
+      - Suppression eval() + renderEvent legacy → refetchEvents + result.success
+      - Ajout btn-default sur bouton Fermer
+      - Suppression float:left sur <ul> Bootstrap 3 (layout cassé)
+      - show_footer conditionnel sur form_date.html.twig (évite doublon boutons)
+      - Validation @Assert\Callback sur CommissionDatesDto (dateFin si withPeriodicite)
+      Les fonctionnalités suivantes sont encore TODO :
+      - Gestion ODJ (drop, resize, affectation dossiers)
+      - Génération documents (convocations, ODJ, PV, comptes rendus)
+      - Export Outlook (route exportoutlookmois référencée dans JS → '#' temporaire)
+      Tâche prioritaire car très utilisée en production.
+
+  - id: generation-documents-commission
+    description: "Génération documents commission (convocations, ODJ, PV, comptes rendus) — Word/PDF"
+    status: todo
+    priority: 2
+    complexity: high
+    entities: [Commission, Dossier, Odj]
+    legacy:
+      - "CalendrierDesCommissionsController#generationconvocAction"
+      - "CalendrierDesCommissionsController#generationodjAction"
+      - "CalendrierDesCommissionsController#generationpvAction"
+      - "CalendrierDesCommissionsController#generationcompterenduAction"
+    routes: []
+    notes: "Dépend de la migration du calendrier des commissions (même scope)."
+
+  # ─────────────────────────────────────────────────────────────────
+  # RECHERCHE
+  # ─────────────────────────────────────────────────────────────────
+
+  - id: search
+    description: "Recherche établissements et dossiers — formulaire, résultats, export Calc"
+    status: done
+    priority: 2
+    complexity: medium
+    entities: [Etablissement, Dossier]
+    legacy:
+      - "SearchController#indexAction"
+      - "SearchController#etablissementAction"
+      - "SearchController#dossierAction"
+      - "SearchController#displayAjaxSearchEtablissementAction"
+      - "SearchController#displayAjaxSearchDossierAction"
+    routes:
+      - search_etablissement
+      - search_dossier
+      - search_ajax_etablissement
+    notes: >
+      Export Calc intégré directement dans search_etablissement et search_dossier
+      (privileges export_ets id=200 et export_doss id=210).
+      La recherche utilisateur (SearchController#utilisateurAction) est disponible
+      via api_utilisateurs_search mais sans route de page dédiée ni lien dans la navigation.
+      À vérifier si une page /rechercher/utilisateur est nécessaire.
+
+  - id: export-calc
+    description: "Export Calc établissements et dossiers (privileges 200/210)"
+    status: done
+    priority: 3
+    complexity: medium
+    entities: [Etablissement, Dossier]
+    legacy:
+      - "SearchController#exportAction"
+    routes: []
+    notes: "Intégré dans search_etablissement et search_dossier. Pas de routes séparées."
+
+  # ─────────────────────────────────────────────────────────────────
+  # ADMINISTRATION — PRESCRIPTIONS
+  # ─────────────────────────────────────────────────────────────────
+
+  - id: admin-gestion-prescriptions
+    description: "Admin — gestion types de prescriptions (catégories, textes, articles, rappels réglementaires)"
+    status: done
+    priority: 2
+    complexity: high
+    entities: [PrescriptionType, Texte, Article, RappelReglementaire]
+    legacy:
+      - "GestionPrescriptionsController#*"
+    routes:
+      - admin_prescriptions
+      - admin_prescriptions_types_ajouter
+      - admin_prescriptions_types_modifier
+      - admin_prescriptions_types_supprimer
+      - admin_prescriptions_types_changement_ordre
+      - admin_prescriptions_types_categorie_ajouter
+      - admin_prescriptions_types_textes_ajouter
+      - admin_prescriptions_types_textes_modifier
+      - admin_prescriptions_types_textes_voir
+      - admin_prescriptions_types_texte_voir_articles
+      - admin_prescriptions_types_texte_voir_article_contenu
+      - admin_prescriptions_types_article_ajouter
+      - admin_prescriptions_types_articles_modifier
+      - admin_prescriptions_types_prescriptions_ajouter
+      - admin_prescriptions_types_prescriptions_modifier
+      - admin_prescriptions_types_prescriptions_supprimer
+      - admin_prescriptions_types_prescriptions_textes_ajouter
+      - admin_prescriptions_types_prescriptions_texte_modifier
+      - admin_prescriptions_types_prescriptions_texte_supprimer
+      - admin_prescriptions_articles
+      - admin_prescriptions_articles_add
+      - admin_prescriptions_articles_edit
+      - admin_prescriptions_articles_suppression
+      - admin_prescriptions_textes
+      - admin_prescriptions_textes_add
+      - admin_prescriptions_textes_edit
+      - admin_prescriptions_textes_suppression
+      - admin_prescriptions_rappels
+      - admin_prescriptions_rappels_add
+      - admin_prescriptions_rappels_edit
+
+  - id: admin-textes-applicables
+    description: "Admin — gestion des textes applicables (liste, ajout, édition, réordonnancement)"
+    status: done
+    priority: 3
+    complexity: low
+    entities: [TexteApplicable]
+    legacy:
+      - "GestionTextesApplicablesController#*"
+    routes:
+      - admin_textes_applicables
+      - admin_textes_applicables_add
+      - admin_textes_applicables_edit
+      - admin_textes_applicables_updateorder
+
+  - id: admin-formulaires
+    description: "Admin — gestion formulaires personnalisés (CapsuleRubrique, Champ)"
+    status: done
+    priority: 3
+    complexity: medium
+    entities: [CapsuleRubrique, Champ]
+    legacy:
+      - "FormulaireController#*"
+    routes:
+      - admin_formulaires_index_rubrique
+      - admin_formulaires_edit_rubrique
+      - admin_formulaires_delete_rubrique
+      - admin_formulaires_edit_capsule_rubrique_nom
+      - admin_formulaires_index_champ
+      - admin_formulaires_edit_champ
+      - admin_formulaires_delete_champ
+      - admin_formulaires_export
+
+  - id: admin-gestion-documents
+    description: "Admin — gestion des documents de commission"
+    status: done
+    priority: 3
+    complexity: low
+    entities: [Commission]
+    legacy:
+      - "GestionDesDocumentsController#*"
+    routes:
+      - admin_commissions_documents
+      - admin_commissions_documents_delete
+
+  - id: admin-gestion-communes
+    description: "Admin — gestion des communes (rattachement, affichage infos)"
+    status: done
+    priority: 4
+    complexity: low
+    entities: [Commune, Groupement]
+    legacy:
+      - "GestionDesCommunesController#indexAction"
+      - "GestionDesCommunesController#displayAction"
+      - "GestionDesCommunesController#saveAction"
+    routes:
+      - admin_communes
+      - admin_commune_infos
+
+  # ─────────────────────────────────────────────────────────────────
+  # UTILISATEURS
+  # ─────────────────────────────────────────────────────────────────
+
+  - id: utilisateurs
+    description: "Gestion des utilisateurs — liste, ajout, édition, préférences, ressources spécialisées"
+    status: partial
+    priority: 3
+    complexity: medium
+    entities: [User, Privilege]
+    legacy:
+      - "UsersController#indexAction"
+      - "UsersController#editAction"
+      - "UsersController#addAction"
+    routes:
+      - admin_utilisateurs_index
+      - admin_utilisateurs_add
+      - admin_utilisateurs_edit
+      - api_utilisateurs_search
+      - api_utilisateur_preferences
+    notes: >
+      CRUD admin migré. Vérifier la couverture de : préférences utilisateur,
+      ressources spécialisées, gestion des droits (ACL/privileges).
+
+  # ─────────────────────────────────────────────────────────────────
+  # STATISTIQUES
+  # ─────────────────────────────────────────────────────────────────
+
+  - id: statistiques
+    description: "Statistiques — listes ERP, prochaines visites, avis défavorables"
+    status: skip
+    priority: 4
+    complexity: medium
+    entities: [Etablissement, Dossier]
+    legacy:
+      - "StatistiquesController#*"
+    routes: []
+    notes: "Module abandonné — non migré volontairement."
+
+  # ─────────────────────────────────────────────────────────────────
+  # DIVERS
+  # ─────────────────────────────────────────────────────────────────
+
+  - id: groupement
+    description: "Gestion des groupements d'établissements"
+    status: done
+    priority: 3
+    complexity: low
+    entities: [Groupement, Etablissement]
+    legacy:
+      - "GroupementController#*"
+    routes:
+      - admin_groupement
+      - admin_groupement_creation
+      - admin_groupement_contacts
+      - admin_groupement_contacts_add
+      - admin_groupement_contacts_add_existing
+      - admin_groupement_contacts_delete
+      - admin_groupement_delete
+      - admin_groupement_form_scope
+
+  - id: contact
+    description: "Gestion des contacts (CRUD)"
+    status: done
+    priority: 3
+    complexity: low
+    entities: [Contact]
+    legacy:
+      - "ContactController#*"
+    routes:
+      - contact_autocomplete
+      - contact_edit
+
+  - id: tableau-periodicites
+    description: "Tableau des périodicités ERP"
+    status: done
+    priority: 4
+    complexity: low
+    entities: []
+    legacy:
+      - "TableauDesPeriodicitesController#*"
+    routes:
+      - admin_tableau_des_periodicites
+      - admin_tableau_des_periodicites_apply
+      - admin_tableau_des_periodicites_save
+
+  - id: about
+    description: "Pages À propos et changelog"
+    status: done
+    priority: 5
+    complexity: low
+    entities: []
+    legacy:
+      - "AboutController#*"
+    routes:
+      - about
+
+  - id: couches-cartographiques
+    description: "Gestion des couches cartographiques IGN"
+    status: done
+    priority: 4
+    complexity: low
+    entities: []
+    legacy:
+      - "CouchesCartographiquesController#*"
+    routes:
+      - couches_cartographiques
+      - couches_cartographiques_add
+      - couches_cartographiques_add_IGN
+      - couches_cartographiques_order
+
+  - id: fusion-communes
+    description: "Fusion de communes"
+    status: done
+    priority: 4
+    complexity: low
+    entities: [Commune]
+    legacy:
+      - "FusionDesCommunesController#*"
+    routes:
+      - admin_fusion_des_communes
+
+  - id: retablir
+    description: "Rétablissement d'entités supprimées (corbeille)"
+    status: todo
+    priority: 4
+    complexity: low
+    entities: [Dossier, Etablissement]
+    legacy:
+      - "RetablirController#indexAction"
+    routes: []
+    notes: "À vérifier si la fonctionnalité est déjà couverte via les routes dossier_retablir et etablissement_retablir."
