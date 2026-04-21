@@ -71,9 +71,10 @@ Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
 | État de la migration | Skill `migration-status` |
 | Corriger PHPStan | Skill `phpstan-fix` |
 | Rapport d'écarts | Skill `rapport-ecarts` |
+| Tâche dans le worktree | Skill `worktree-task` |
 | Revue de code (Opus) | Agent `code-review` |
 | Audit sécurité | Agent `security-review` |
 | Audit performance | Agent `performance-review` |
 | Audit accessibilité | Agent `rgaa-review` |
 
-**Version :** 5.0 optimisé | **Dernière màj :** 20 avril 2026
+**Version :** 5.1 optimisé | **Dernière màj :** 21 avril 2026

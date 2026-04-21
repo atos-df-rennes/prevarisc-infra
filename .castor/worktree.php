@@ -17,6 +17,7 @@ const WORKTREE_PROJECT = 'worktree';
 const WORKTREE_COMPOSE_FILE = 'compose.worktree-standalone.yaml';
 const WORKTREE_APP_CONTAINER = 'worktree-app-1';
 const WORKTREE_DB_CONTAINER = 'worktree-db-1';
+const WORKTREE_PLATAU_CONTAINER = 'worktree-platau-1';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Tâches publiques
@@ -198,6 +199,93 @@ function worktreeRemove(
     if (io()->confirm('Arrêter la stack worktree si elle est en cours d\'exécution ?', true)) {
         exit_code(['docker', 'compose', '--project-name', WORKTREE_PROJECT, '--file', WORKTREE_COMPOSE_FILE, 'down']);
     }
+}
+
+#[AsTask(name: 'analyse', namespace: 'worktree', description: 'Lance PHPStan sur le worktree actif')]
+function worktreeAnalyse(): void
+{
+    io()->title('Analysing worktree application');
+
+    $composeArgs = ['docker', 'compose', '--project-name', WORKTREE_PROJECT, '--file', WORKTREE_COMPOSE_FILE];
+
+    io()->section('Executing PHPStan');
+    run([...$composeArgs, 'exec', '-w', '/var/www/html/prevarisc-migration', 'platau', 'tools/vendor/bin/phpstan', '--memory-limit=-1']);
+}
+
+#[AsTask(name: 'cs', namespace: 'worktree', description: 'Corrige le style de code du worktree actif (Rector + PHP-CS-Fixer + Twig-CS-Fixer)')]
+function worktreeCs(
+    #[ASOption(name: 'dry-run', mode: InputOption::VALUE_NONE, description: 'Lance les linters sans modifications')]
+    bool $dryRun
+): void {
+    io()->title('Checking coding style for worktree application');
+
+    $composeArgs = ['docker', 'compose', '--project-name', WORKTREE_PROJECT, '--file', WORKTREE_COMPOSE_FILE];
+    $options = [];
+    $rectorTitle = 'Executing Rector';
+    $phpCsFixerTitle = 'Executing PHP-CS-FIXER';
+    $twigCsFixerTitle = 'Executing TWIG-CS-FIXER';
+    $optionsTwigCsFixer = ['fix'];
+
+    if (true === $dryRun) {
+        $options = ['--dry-run'];
+        $rectorTitle .= ' with '.implode(', ', $options);
+        $phpCsFixerTitle .= ' with '.implode(', ', $options);
+        $twigCsFixerTitle .= ' with '.implode(', ', $options);
+        $optionsTwigCsFixer = ['check'];
+    }
+
+    io()->section($rectorTitle);
+    exit_code([...$composeArgs, 'exec', '-w', '/var/www/html/prevarisc-migration', 'platau', 'tools/vendor/bin/rector', ...$options]);
+
+    io()->section($phpCsFixerTitle);
+    exit_code([...$composeArgs, 'exec', '-w', '/var/www/html/prevarisc-migration', 'platau', 'tools/vendor/bin/php-cs-fixer', 'fix', ...$options]);
+
+    io()->section($twigCsFixerTitle);
+    exit_code([...$composeArgs, 'exec', '-w', '/var/www/html/prevarisc-migration', 'platau', 'tools/vendor/bin/twig-cs-fixer', ...$optionsTwigCsFixer]);
+}
+
+#[AsTask(name: 'test', namespace: 'worktree', description: 'Exécute les tests PHPUnit sur le worktree actif')]
+function worktreeTest(
+    #[ASOption(name: 'all', mode: InputOption::VALUE_NONE, description: 'Lance la suite complète de tests incluant les tests fonctionnels')]
+    bool $all
+): void {
+    io()->title('Testing worktree application');
+
+    $composeArgs = ['docker', 'compose', '--project-name', WORKTREE_PROJECT, '--file', WORKTREE_COMPOSE_FILE];
+
+    io()->section('Executing PHPUnit');
+
+    $options = [];
+    if (false === $all) {
+        $options = ['--exclude-group', 'functional'];
+    }
+
+    run([...$composeArgs, 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'php', 'bin/phpunit', '--testdox', ...$options]);
+}
+
+#[AsTask(name: 'validate', namespace: 'worktree', description: "Validation complète du worktree (PHPStan + CS dry-run + tests) — s'arrête au premier échec")]
+function worktreeValidate(): void
+{
+    io()->title('Validating worktree application');
+
+    $composeArgs = ['docker', 'compose', '--project-name', WORKTREE_PROJECT, '--file', WORKTREE_COMPOSE_FILE];
+
+    io()->section('Step 1/3 — PHPStan');
+    run([...$composeArgs, 'exec', '-w', '/var/www/html/prevarisc-migration', 'platau', 'tools/vendor/bin/phpstan', '--memory-limit=-1']);
+
+    io()->section('Step 2/3 — Rector (dry-run)');
+    run([...$composeArgs, 'exec', '-w', '/var/www/html/prevarisc-migration', 'platau', 'tools/vendor/bin/rector', '--dry-run']);
+
+    io()->section('Step 2/3 — PHP-CS-Fixer (dry-run)');
+    run([...$composeArgs, 'exec', '-w', '/var/www/html/prevarisc-migration', 'platau', 'tools/vendor/bin/php-cs-fixer', 'fix', '--dry-run']);
+
+    io()->section('Step 2/3 — Twig-CS-Fixer (check)');
+    run([...$composeArgs, 'exec', '-w', '/var/www/html/prevarisc-migration', 'platau', 'tools/vendor/bin/twig-cs-fixer', 'check']);
+
+    io()->section('Step 3/3 — PHPUnit');
+    run([...$composeArgs, 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'php', 'bin/phpunit', '--testdox', '--exclude-group', 'functional']);
+
+    io()->success('All checks passed!');
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

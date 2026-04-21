@@ -341,6 +341,51 @@ Propose de basculer vers un autre worktree ou le dépôt principal après suppre
 
 ---
 
+### `castor worktree:validate` ⭐
+**Validation complète du worktree avant un commit — s'arrête au premier échec.**
+
+```bash
+castor worktree:validate
+```
+
+Équivalent de `castor symfony:validate` mais pour la stack worktree isolée. Exécute dans l'ordre :
+1. **PHPStan** (niveau 10) — via `worktree-platau-1`
+2. **Rector** (dry-run) — via `worktree-platau-1`
+3. **PHP-CS-Fixer** (dry-run) — via `worktree-platau-1`
+4. **Twig-CS-Fixer** (check) — via `worktree-platau-1`
+5. **PHPUnit** (hors `@group functional`) — via `worktree-app-1`
+
+---
+
+### `castor worktree:analyse`
+**Lance PHPStan sur le worktree actif.**
+
+```bash
+castor worktree:analyse
+```
+
+---
+
+### `castor worktree:cs [--dry-run]`
+**Corrige le style de code du worktree (Rector + PHP-CS-Fixer + Twig-CS-Fixer).**
+
+```bash
+castor worktree:cs            # corrige les fichiers
+castor worktree:cs --dry-run  # vérifie sans modifier
+```
+
+---
+
+### `castor worktree:test [--all]`
+**Exécute les tests PHPUnit sur le worktree actif.**
+
+```bash
+castor worktree:test       # tests unitaires et d'intégration (exclut @group functional)
+castor worktree:test --all # inclut les tests fonctionnels
+```
+
+---
+
 ## `zend:*` — Application Zend (legacy)
 
 Commandes de vérification du code legacy `prevarisc/`.

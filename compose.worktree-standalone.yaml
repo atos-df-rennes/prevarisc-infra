@@ -53,6 +53,21 @@ services:
       MYSQL_USER: prevarisc
       MYSQL_PASSWORD: planmusique
 
+  # Conteneur PHP 8.1 dédié aux outils de développement (PHPStan, Rector, PHP-CS-Fixer, Twig-CS-Fixer).
+  # Miroir du service platau de compose.dev.yaml, ciblant les répertoires worktree.
+  platau:
+    build:
+      args:
+        user: prv
+        uid: 1000
+      dockerfile: php/prevarisc-passerelle-platau/Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ./prevarisc-passerelle-platau:/var/www/html/prevarisc-passerelle-platau
+      - ./php/prevarisc-passerelle-platau/php.ini:/usr/local/etc/php/php.ini
+      - ./${PREVARISC_DIR:-prevarisc}:/var/www/html/prevarisc
+      - ./${PREVARISC_MIGRATION_DIR:-prevarisc-migration}:/var/www/html/prevarisc-migration
+
   mailpit:
     image: axllent/mailpit:latest
     restart: unless-stopped

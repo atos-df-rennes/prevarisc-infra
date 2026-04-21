@@ -148,7 +148,7 @@ Les worktrees sont des répertoires **temporaires** : ils disparaissent après l
 
 ---
 
-## Validation fonctionnelle en parallèle
+### Validation fonctionnelle en parallèle
 
 La stack worktree est **entièrement isolée** de la stack principale : conteneurs, réseau et base de données séparés. Les deux environnements tournent simultanément.
 
@@ -166,9 +166,23 @@ castor worktree:start
 Le wizard guide les étapes :
 1. Sélection du worktree existant
 2. Copie des fichiers de configuration
-3. Démarrage des conteneurs isolés (`worktree-app-1`, `worktree-db-1`, `worktree-mailpit-1`)
+3. Démarrage des conteneurs isolés (`worktree-app-1`, `worktree-platau-1`, `worktree-db-1`, `worktree-mailpit-1`)
 4. Seeding de la DB depuis un dump (optionnel)
 5. Installation des dépendances Composer
+
+### Lint et validation du code worktree
+
+La stack worktree dispose de commandes Castor dédiées, équivalentes aux `castor symfony:*` :
+
+```bash
+castor worktree:validate   # ⭐ Validation complète avant commit
+castor worktree:analyse    # PHPStan uniquement
+castor worktree:cs         # Correction du style (Rector + PHP-CS-Fixer + Twig-CS-Fixer)
+castor worktree:cs --dry-run  # Vérification sans modification
+castor worktree:test       # Tests PHPUnit
+```
+
+> Ne **pas** utiliser `castor symfony:*` pour le code du worktree : ces commandes ciblent la stack principale.
 
 ### Seeding de la base de données
 
