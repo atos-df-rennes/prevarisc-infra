@@ -84,7 +84,23 @@ docker compose --project-name worktree --file compose.worktree-standalone.yaml \
 
 ---
 
-## Étape 5 — Commit
+## Étape 5 — Mettre à jour RAPPORT_MODERNISATION.md
+
+**Obligation** : après chaque commit réussi (lint ✅), mettre à jour le fichier
+`prevarisc-migration-worktree-<nom>/docs/RAPPORT_MODERNISATION.md` **sans attendre
+de second prompt**.
+
+1. Ajouter une ligne dans le tableau `## Suivi d'avancement` :
+
+```markdown
+| XX-N | Description courte de la tâche | ✅ Fait | `<sha_court>` |
+```
+
+2. Mettre à jour la ligne `> **Worktree actif :**` en bas du tableau si nécessaire.
+
+---
+
+## Étape 6 — Commit
 
 ```bash
 # Dans prevarisc-worktree-<nom>/ (si legacy modifié)
