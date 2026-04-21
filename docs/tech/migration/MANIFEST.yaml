@@ -450,6 +450,15 @@ tasks:
       - calendrier-commissions.js : listener collection:item-added pour masquer #addReapeat
       - _date_linked.html.twig : null safety sur heureDebut/heureFin (fallback 09:00/18:00)
       - IDs dateFin/periodicite mis à jour vers Symfony naming (commission_dates_*)
+      Corrections cycle 3 :
+      - form_date.html.twig : fix {id:'repeat'} au lieu de {attr:{id:'repeat'}} → override vars.id
+      - form_date.html.twig : #addReapeat masqué si form.dates|length > 1 (iso legacy)
+      - form_label withPeriodicite : ajout {id:'repeat'} pour aligner l'attribut for du label
+      - add-collection-widget.js : dispatch collection:item-removed sur suppression d'item
+      - calendrier-commissions.js : listener collection:item-removed re-affiche #addReapeat
+      - calendrier-commissions.js : showToast() helper Bootstrap 3 (fixed-position, 4s)
+      - calendrier-commissions.js : toasts sur creerDate, moveCommissionDate, resizeCommissionDate
+      - calendrier-commissions.js : eventDrop/eventResize → event.start/end.toISOString()
       Les fonctionnalités suivantes sont encore TODO :
       - Gestion ODJ (drop, resize, affectation dossiers)
       - Génération documents (convocations, ODJ, PV, comptes rendus)
