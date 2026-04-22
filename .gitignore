@@ -9,3 +9,5 @@ prevarisc-migration/
 /*.sql
 /.merge-upwards-state.json
 /.copilot-conflict-context.txt
+# Worktrees de migration (repos git imbriqués)
+prevarisc-migration-worktree-*/
