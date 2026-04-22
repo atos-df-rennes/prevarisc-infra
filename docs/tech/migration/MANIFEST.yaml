@@ -386,10 +386,11 @@ tasks:
       - admin_commissions_apply_regles
 
   - id: calendrier-commissions
-    description: "Calendrier des commissions — affichage, gestion dates, ODJ, génération convocations/PV/CR/comptes rendus"
-    status: partial
+    description: "Calendrier des commissions — affichage, gestion dates, ODJ, export Outlook/iCalendar"
+    status: done
     priority: 2
     complexity: high
+    updated_at: "2026-04-22"
     entities: [Commission, Dossier, Odj]
     legacy:
       - "CalendrierDesCommissionsController#indexAction"
@@ -409,61 +410,48 @@ tasks:
       - "CalendrierDesCommissionsController#resizecommissiondateAction"
       - "CalendrierDesCommissionsController#gestionheuresAction"
       - "CalendrierDesCommissionsController#changementordreAction"
-      - "CalendrierDesCommissionsController#generationconvocAction"
-      - "CalendrierDesCommissionsController#generationodjAction"
-      - "CalendrierDesCommissionsController#generationpvAction"
-      - "CalendrierDesCommissionsController#generationcompterenduAction"
       - "CalendrierDesCommissionsController#alertsuppressionAction"
       - "CalendrierDesCommissionsController#validsuppressionAction"
       - "CalendrierDesCommissionsController#exportoutlookAction"
       - "CalendrierDesCommissionsController#exportoutlookmoisAction"
+      - "Api_CalendarController#indexAction"
+      - "Api_Service_Calendar#sync"
     routes:
-      - calendrier_des_commissions_creer_date
-      - calendrier_des_commissions_deplacer_date
-      - calendrier_des_commissions_recuperer_dates_liees
-      - calendrier_des_commissions_recuperer_evenements
-      - calendrier_des_commissions_redimensionner_date
-      # Phase A — ajoutées
+      # Phase A — Affichage calendrier
       - calendrier_des_commissions_index
       - calendrier_des_commissions_commissionselection
       - calendrier_des_commissions_dialog_edit
       - calendrier_des_commissions_alertsuppression
       - calendrier_des_commissions_validsuppression
+      - calendrier_des_commissions_creer_date
+      - calendrier_des_commissions_deplacer_date
+      - calendrier_des_commissions_recuperer_dates_liees
+      - calendrier_des_commissions_recuperer_evenements
+      - calendrier_des_commissions_redimensionner_date
+      # Phase B — Gestion ODJ
+      - calendrier_des_commissions_gestion_odj
+      - calendrier_des_commissions_recup_evenement_odj
+      - calendrier_des_commissions_affecte_doss_odj
+      - calendrier_des_commissions_resize_odj
+      - calendrier_des_commissions_drop_odj
+      - calendrier_des_commissions_gestion_heures
+      - calendrier_des_commissions_changement_ordre
+      # Phase D — Export Outlook / iCalendar
+      - calendrier_des_commissions_export_outlook
+      - calendrier_des_commissions_export_outlook_mois
+      - api_icalendar_sync
     notes: >
-      Phase A migrée (7 actions affichage calendrier) : index, commissionselection,
-      dialogcomm (mega-switch), alertsuppression, validsuppression.
-      JS séparé dans public/js/calendrier-commissions.js.
-      Corrections post-migration (pipeline complet) :
-      - Ajout cas newComm dans dialogComm (manquant → "Erreur mauvais choix")
-      - Format ISO 8601 pour dateD/dateF (start.toISOString())
-      - Suppression eval() + renderEvent legacy → refetchEvents + result.success
-      - Ajout btn-default sur bouton Fermer
-      - Suppression float:left sur <ul> Bootstrap 3 (layout cassé)
-      - show_footer conditionnel sur form_date.html.twig (évite doublon boutons)
-      - Validation @Assert\Callback sur CommissionDatesDto (dateFin si withPeriodicite)
-      Corrections cycle 2 (pipeline complet) :
-      - supp_dateCom : retourne Response('ok') sur succès (JS vérifiait !== '')
-      - addDateS : try/catch avec <div class="alert alert-danger"> sur exception
-      - form_date.html.twig : ajout #addReapeat, #planification (display:none), id="repeat"
-      - calendrier-commissions.js : .attr('checked') → .prop('checked') sur #repeat
-      - calendrier-commissions.js : buttonHide/Show masquent aussi .add-collection-widget
-      - calendrier-commissions.js : listener collection:item-added pour masquer #addReapeat
-      - _date_linked.html.twig : null safety sur heureDebut/heureFin (fallback 09:00/18:00)
-      - IDs dateFin/periodicite mis à jour vers Symfony naming (commission_dates_*)
-      Corrections cycle 3 :
-      - form_date.html.twig : fix {id:'repeat'} au lieu de {attr:{id:'repeat'}} → override vars.id
-      - form_date.html.twig : #addReapeat masqué si form.dates|length > 1 (iso legacy)
-      - form_label withPeriodicite : ajout {id:'repeat'} pour aligner l'attribut for du label
-      - add-collection-widget.js : dispatch collection:item-removed sur suppression d'item
-      - calendrier-commissions.js : listener collection:item-removed re-affiche #addReapeat
-      - calendrier-commissions.js : showToast() helper Bootstrap 3 (fixed-position, 4s)
-      - calendrier-commissions.js : toasts sur creerDate, moveCommissionDate, resizeCommissionDate
-      - calendrier-commissions.js : eventDrop/eventResize → event.start/end.toISOString()
-      Les fonctionnalités suivantes sont encore TODO :
-      - Gestion ODJ (drop, resize, affectation dossiers)
-      - Génération documents (convocations, ODJ, PV, comptes rendus)
-      - Export Outlook (route exportoutlookmois référencée dans JS → '#' temporaire)
-      Tâche prioritaire car très utilisée en production.
+      Phases A, B et D migrées (21 actions sur 25). Phase C (génération documents) trackée
+      séparément dans la tâche generation-documents-commission.
+      Phase D — Export Outlook / iCalendar (2026-04-22) :
+      - exportoutlookAction → exportOutlook() : ICS date unique (bug l.1539 legacy non reproduit)
+      - exportoutlookmoisAction → exportOutlookMois() : ICS mensuel avec ODJ en DESCRIPTION
+      - Api_Service_Calendar::sync → IcalendarController + IcalendarSyncService :
+        flux webcal /api/commissions/icalendar, auth par PREVARISC_SECURITY_KEY,
+        une VEVENT par DateCommission (simplification vs legacy par dossier).
+      - sabre/vobject ^4.3 installé (+ sabre/uri ^2.1, sabre/xml ^2.1 — compatibles PHP 7.1).
+      - url_webcal générée via router Symfony (generateUrl) sans &commission (le JS l'ajoute).
+      - Route exposée (FOSJsRoutingBundle) : calendrier_des_commissions_export_outlook_mois.
 
   - id: generation-documents-commission
     description: "Génération documents commission (convocations, ODJ, PV, comptes rendus) — Word/PDF"
