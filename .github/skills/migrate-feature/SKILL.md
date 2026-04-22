@@ -1,21 +1,83 @@
 ---
 name: migrate-feature
-description: "Orchestre le pipeline complet de migration d'une fonctionnalité Zend vers Symfony dans le projet Prevarisc. À utiliser pour démarrer une migration de zéro : exploration legacy → port direct → optimisations légères → lint → revue. Guide étape par étape avec les outils à invoquer à chaque phase."
+description: "Orchestre le pipeline complet de migration d'une fonctionnalité Zend vers Symfony dans le projet Prevarisc. À utiliser pour démarrer une migration de zéro : analyse fonctionnelle → exploration legacy → port direct → optimisations légères → lint → revue. Guide étape par étape avec les outils à invoquer à chaque phase."
 ---
 
 # Skill : Pipeline de migration — Prevarisc
 
-Ce skill orchestre les 5 phases d'une migration de fonctionnalité complète, en indiquant quel outil invoquer à chaque étape.
+Ce skill orchestre les 6 phases d'une migration de fonctionnalité complète, en indiquant quel outil invoquer à chaque étape.
 
 ## Vue d'ensemble du pipeline
 
 ```
-Phase 1 : ANALYSE        → Skill analyse-legacy
-Phase 2 : PORT DIRECT    → Agent symfony-migration
-Phase 3 : OPTIMISATIONS  → Inline (suggestions légères)
-Phase 4 : LINT           → castor symfony:analyse + cs + test
-Phase 5 : REVUE          → Agent code-review (Opus)
+Phase 0 : ANALYSE FONCTIONNELLE → Documentation specs (docs/specs/MOD-XX.md)
+Phase 1 : ANALYSE TECHNIQUE     → Skill analyse-legacy
+Phase 2 : PORT DIRECT           → Agent symfony-migration
+Phase 3 : OPTIMISATIONS         → Inline (suggestions légères)
+Phase 4 : LINT                  → castor symfony:analyse + cs + test
+Phase 5 : REVUE                 → Agent code-review (Opus)
 ```
+
+---
+
+## Phase 0 — Analyse fonctionnelle
+
+**Outil :** Lecture du legacy + documentation dans `docs/specs/`
+
+Avant toute analyse technique, documenter **ce que fait la fonctionnalité** du point de vue utilisateur. Cette phase permet de :
+
+- Établir un **contrat fonctionnel** avant d'écrire du code (évite les régressions silencieuses)
+- Fournir une **base pour le rapport d'écarts** (on sait exactement quoi comparer)
+- Identifier les **cas limites et règles métier** qui deviendront des cas de test
+- Conserver une **trace des décisions** lorsque le comportement legacy est discutable
+
+**Vérifier d'abord si la documentation existe déjà :**
+
+```bash
+# Trouver le fichier de specs du module concerné
+ls prevarisc-migration/docs/specs/
+cat prevarisc-migration/docs/specs/MOD-XX-NOM.md
+```
+
+**Si la section correspondante existe** (ex : section 4.5 pour l'ordre du jour dans MOD-03) :
+→ La lire attentivement, elle constitue le contrat fonctionnel. Passer à la Phase 1.
+
+**Si la documentation est absente ou incomplète** :
+→ L'enrichir en analysant le legacy (controller + vues + modèles) et en documentant :
+
+| Élément à documenter | Description |
+|----------------------|-------------|
+| **Objectif** | Ce que fait la page/fonctionnalité en une phrase |
+| **Accès** | Chemin de navigation pour atteindre la fonctionnalité |
+| **Données affichées** | Quelles données sont présentées, depuis quelles tables |
+| **Actions utilisateur** | Ce que l'utilisateur peut faire (boutons, formulaires, interactions) |
+| **Règles métier** | Conditions, filtres, calculs, validations |
+| **Droits d'accès** | ACL/privilèges requis |
+| **Comportements spéciaux** | AJAX, téléchargements, redirections, messages flash |
+
+**Format de documentation :**
+
+```markdown
+### 4.X Nom de la fonctionnalité
+
+**Accès :** Chemin de navigation
+
+Description courte de la fonctionnalité.
+
+**Données affichées :**
+- ...
+
+**Actions possibles :**
+1. L'utilisateur clique sur X
+2. Le système fait Y
+3. ...
+
+**Règles métier :**
+- RG-MOD-XXX — Description de la règle
+```
+
+**Livrable de cette phase :**
+- Section dans `docs/specs/MOD-XX.md` couvrant la fonctionnalité à migrer, validée comme contrat fonctionnel
 
 ---
 
@@ -163,6 +225,7 @@ Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
 
 ## Checklist finale avant livraison
 
+- [ ] Phase 0 : Analyse fonctionnelle documentée dans `docs/specs/` (contrat fonctionnel établi)
 - [ ] Phase 1 : Legacy exploré et compris (skill analyse-legacy)
 - [ ] Phase 2 : Code porté (agent symfony-migration), manifest mis à jour
 - [ ] Phase 3 : Optimisations légères appliquées
