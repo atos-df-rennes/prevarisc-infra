@@ -360,9 +360,13 @@ function doWorktreeSetup(string $name): void
         $tasks[] = static function () use ($composeArgs): void {
             run([...$composeArgs, 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'composer', 'install']);
         };
+
+        $tasks[] = static function () use ($composeArgs): void {
+            run([...$composeArgs, 'exec', '-w', '/var/www/html/prevarisc-migration/tools', 'platau', 'composer', 'install']);
+        };
     }
 
-    if (2 === count($tasks)) {
+    if (count($tasks) > 1) {
         parallel(...$tasks);
     } elseif (1 === count($tasks)) {
         ($tasks[0])();
