@@ -81,15 +81,38 @@ Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
 
 Quand une PR existe, toujours suivre ce flux **avant** d'invoquer l'agent `code-review` :
 
-1. **Fetch des reviews GitHub** via les outils MCP :
-   ```
-   github-mcp-server-pull_request_read → get_reviews
-   github-mcp-server-pull_request_read → get_review_comments
-   github-mcp-server-pull_request_read → get_comments
-   ```
-2. **Invoquer l'agent `code-review`** en passant les reviews formatées dans le prompt
-3. L'agent produit un `REVIEW_REPORT.md` **agrégé** (🐙 Copilot + 👤 utilisateur + 🤖 CLI Agent)
+### Étape 1 — Identifier le bon repo et le bon numéro de PR
 
-> Le `REVIEW_REPORT.md` est généré dans le répertoire du worktree concerné.
+Les PRs de migration sont dans **`atos-df-rennes/prevarisc-migration`**.
 
-**Version :** 5.2 | **Dernière màj :** 23 avril 2026
+Si le numéro de PR fourni ne correspond pas, **rechercher par nom de branche** :
+```
+github-mcp-server-list_pull_requests → owner: atos-df-rennes, repo: prevarisc-migration, state: open
+```
+→ Filtrer sur `head.ref` correspondant au nom de branche.
+
+### Étape 2 — Fetch des reviews GitHub (en parallèle)
+
+```
+github-mcp-server-pull_request_read → get_reviews          (reviews formelles)
+github-mcp-server-pull_request_read → get_review_comments  (commentaires inline)
+github-mcp-server-pull_request_read → get_comments         (commentaires généraux)
+```
+
+Si les trois retournent vide, le noter dans le rapport (pas de reviews externes).
+
+### Étape 3 — Invoquer l'agent `code-review`
+
+Passer dans le prompt :
+- Le diff complet (`git diff origin/develop...origin/BRANCHE` dans `prevarisc-migration/`)
+- Les reviews GitHub formatées (ou "aucune review externe" si vide)
+- Le contexte métier de la fonctionnalité
+
+### Étape 4 — Rapport agrégé
+
+L'agent produit un `REVIEW_REPORT.md` dans `prevarisc-migration/`, avec les marqueurs :
+- 🐙 Copilot (reviews GitHub Copilot bot)
+- 👤 Utilisateur (reviews humaines GitHub)
+- 🤖 CLI Agent (analyse de cet agent)
+
+**Version :** 5.3 | **Dernière màj :** 23 avril 2026
