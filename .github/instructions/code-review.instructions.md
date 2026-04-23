@@ -6,7 +6,9 @@ applyTo: "prevarisc-migration/src/**,prevarisc-migration/templates/**"
 
 > Pour une revue approfondie (Opus), utiliser l'agent `code-review`.
 
-Lors d'une revue de code, vérifie les points suivants et génère un rapport `REVIEW_REPORT.md` à la racine du projet.
+Lors d'une revue de code, vérifie les points suivants et génère un rapport `REVIEW_REPORT.md` **à la racine du projet**.
+
+> ⚠️ `REVIEW_REPORT.md` est un fichier **temporaire, local uniquement** — il ne doit **pas être commité**. Il est listé dans `.gitignore` et sert uniquement pendant la session de relecture.
 
 ---
 

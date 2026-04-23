@@ -120,6 +120,8 @@ Et mettre à jour la ligne `> **Worktree actif :**` si nécessaire.
 
 ## Étape 6 — Commit
 
+> ⚠️ **Ne jamais commiter `REVIEW_REPORT.md`** — ce fichier est temporaire, généré pendant la relecture uniquement. Il est dans `.gitignore` et doit être supprimé une fois la revue terminée.
+
 ```bash
 # Dans prevarisc-worktree-<nom>/ (si legacy modifié)
 git -C prevarisc-worktree-<nom> add .
