@@ -84,64 +84,37 @@ docker compose --project-name worktree --file compose.worktree-standalone.yaml \
 
 ---
 
-## Étape 5 — Mettre à jour le rapport de suivi du worktree
+## Étape 5 — Mettre à jour le rapport de suivi
 
-**Obligation** : après chaque commit réussi (lint ✅), mettre à jour le rapport de suivi
+**Obligation** : après chaque commit réussi (lint ✅), mettre à jour le rapport permanent
 **sans attendre de second prompt**.
 
 ### Quel fichier mettre à jour ?
 
-Les rapports de suivi sont stockés dans `docs/worktrees/` (fichiers temporaires, supprimés à la clôture du worktree) :
+| Type de tâche | Fichier à mettre à jour |
+|---------------|------------------------|
+| Refactor Symfony (REF-*) | `docs/RAPPORT_SYMFONY.md` — colonne **Statut** du tableau de synthèse (§10) |
+| Modernisation de dépendances/outillage | `docs/RAPPORT_MODERNISATION.md` — tableau `## Suivi d'avancement` |
 
-```
-prevarisc-migration-worktree-<nom>/
-  docs/
-    worktrees/
-      <nom>.md     ← suivi spécifique à ce worktree (ex: repositories-qb.md)
-    RAPPORT_SYMFONY.md        ← audit global des opportunités de refactor
-    RAPPORT_MODERNISATION.md  ← suivi des modernisations de dépendances
-```
+### Mise à jour dans `RAPPORT_SYMFONY.md`
 
-**Règle de sélection :**
-
-1. Chercher `docs/worktrees/<nom>.md` — si présent, c'est le fichier à mettre à jour
-2. Sinon, chercher `docs/RAPPORT_SYMFONY.md` — si présent et que la tâche est un refactor Symfony
-3. Sinon, utiliser `docs/RAPPORT_MODERNISATION.md` pour les modernisations de dépendances/outillage
-
-> Si `docs/worktrees/<nom>.md` n'existe pas encore, le **créer** avec la structure minimale ci-dessous avant de l'alimenter.
-
-### Structure minimale de `docs/worktrees/<nom>.md`
+Modifier la colonne **Statut** de la ligne correspondante dans le tableau de synthèse :
 
 ```markdown
-# Suivi worktree — `<type>/<nom>`
-
-> **Référence audit :** `RAPPORT_SYMFONY.md` — item REF-XXX (ou N/A)
-> **Périmètre :** Description courte
-> **Branche :** `<type>/<nom>`
-> **Cible :** `release/2.8`
-
-## Suivi d'avancement
-
-| # | Action | Statut | Commit | PR |
-|---|--------|--------|--------|----|
-
-## Reste à faire
-
-- ...
-
-> 🗑️ Ce fichier est supprimé à la clôture du worktree (merge de la PR).
+| REF-XXX | ... | 🔄 En cours — `MonRepository` ✅ PR#NNN · `AutreRepository` ⏳ |
 ```
 
-### Mise à jour après chaque commit
+Statuts disponibles : `✅ Validé` · `🔄 En cours` · `⏳ À faire` · `⚠️ À analyser` · `❌ N/A`
 
-1. Ajouter une ligne dans le tableau `## Suivi d'avancement` :
+### Mise à jour dans `RAPPORT_MODERNISATION.md`
+
+Ajouter une ligne dans le tableau `## Suivi d'avancement` :
 
 ```markdown
-| XX-N | Description courte de la tâche | ✅ Fait | `<sha_court>` | #<PR> |
+| XX-N | Description courte de la tâche | ✅ Fait | `<sha_court>` |
 ```
 
-2. Dans `RAPPORT_MODERNISATION.md`, mettre à jour la ligne `> **Worktree actif :**`
-   pour pointer vers `docs/worktrees/<nom>.md` (au lieu de lister les items directement).
+Et mettre à jour la ligne `> **Worktree actif :**` si nécessaire.
 
 ---
 
