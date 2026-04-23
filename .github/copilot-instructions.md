@@ -77,4 +77,19 @@ Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
 | Audit performance | Agent `performance-review` |
 | Audit accessibilité | Agent `rgaa-review` |
 
-**Version :** 5.1 optimisé | **Dernière màj :** 21 avril 2026
+## Flux de revue de code agrégée (PR)
+
+Quand une PR existe, toujours suivre ce flux **avant** d'invoquer l'agent `code-review` :
+
+1. **Fetch des reviews GitHub** via les outils MCP :
+   ```
+   github-mcp-server-pull_request_read → get_reviews
+   github-mcp-server-pull_request_read → get_review_comments
+   github-mcp-server-pull_request_read → get_comments
+   ```
+2. **Invoquer l'agent `code-review`** en passant les reviews formatées dans le prompt
+3. L'agent produit un `REVIEW_REPORT.md` **agrégé** (🐙 Copilot + 👤 utilisateur + 🤖 CLI Agent)
+
+> Le `REVIEW_REPORT.md` est généré dans le répertoire du worktree concerné.
+
+**Version :** 5.2 | **Dernière màj :** 23 avril 2026

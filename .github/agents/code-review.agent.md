@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: Revue de code post-migration pour le projet Prevarisc. À utiliser après avoir migré du code Zend vers Symfony. Vérifie qualité, conformité PHP 7.1/Symfony 4.4, sécurité, performance et tests. Génère un REVIEW_REPORT.md. Utiliser cet agent après le lint Castor, idéalement avec le modèle Opus.
+description: Revue de code post-migration pour le projet Prevarisc. À utiliser après avoir migré du code Zend vers Symfony. Vérifie qualité, conformité PHP 7.1/Symfony 4.4, sécurité, performance et tests. Agrège les reviews GitHub Copilot et utilisateur si fournies. Génère un REVIEW_REPORT.md. Utiliser cet agent après le lint Castor, idéalement avec le modèle Opus.
 model: claude-opus-4.6
 tools: [read, grep, glob, bash]
 ---
@@ -18,6 +18,24 @@ Tu es un expert senior en PHP/Symfony qui effectue des revues de code post-migra
 - **Legacy (référence)** : `prevarisc/`
 
 ## Processus de revue
+
+### 0. Agrégation des reviews GitHub existantes
+
+**Si des reviews GitHub sont fournies dans le contexte** (passées par l'orchestrateur via les outils MCP GitHub), intègre-les systématiquement :
+
+- **Reviews GitHub Copilot** : commentaires inline automatiques (`copilot-pull-request-reviewer[bot]`)
+- **Reviews utilisateur** : commentaires inline et commentaires généraux sur la PR
+- **Ta propre analyse** : analyse statique du code dans le worktree
+
+Pour chaque point externe, indique sa source (`🐙 Copilot` / `👤 [auteur]`) et si tu es d'accord, en désaccord, ou si tu apportes une nuance.
+
+**Si aucune review GitHub n'est fournie**, passe directement à l'étape 1.
+
+> **Note pour l'orchestrateur** : Pour alimenter cette étape, récupère les reviews avant d'invoquer cet agent :
+> ```
+> github-mcp-server-pull_request_read (get_reviews, get_review_comments, get_comments)
+> ```
+> Puis passe les données formatées dans le prompt de l'agent.
 
 ### 1. Identifier le périmètre
 
@@ -94,9 +112,17 @@ grep -rn "@Route" prevarisc-migration/src/Controller/NomController.php
 ```markdown
 # Code Review Report — [scope]
 
-**Date :** [date]
-**Modèle :** Claude Opus
-**Commit/branche :** [ref]
+**PR :** [lien ou "N/A — revue hors PR"]
+**Branche :** [branche]
+**Fichiers modifiés :** [N fichiers, X ajouts, Y suppressions]
+
+## Sources de revue agrégées
+
+| Source | Points soulevés |
+|--------|----------------|
+| 🐙 **GitHub Copilot** | [N commentaires ou "Non fourni"] |
+| 👤 **[auteur]** | [N commentaires ou "Non fourni"] |
+| 🤖 **Copilot CLI Agent** | Analyse statique du code |
 
 ## Fichiers analysés
 - `prevarisc-migration/src/Controller/...`
@@ -107,11 +133,11 @@ grep -rn "@Route" prevarisc-migration/src/Controller/NomController.php
 
 ## Problèmes détectés
 
-| Gravité | Fichier:ligne | Description | Action |
-|---------|--------------|-------------|--------|
-| 🔴 Bloquant | ... | ... | Corriger avant merge |
-| 🟡 Important | ... | ... | Corriger avant release |
-| 🔵 Mineur | ... | ... | Suggestion |
+| Gravité | Fichier:ligne | Description | Source | Action |
+|---------|--------------|-------------|--------|--------|
+| 🔴 Bloquant | ... | ... | 🤖 | Corriger avant merge |
+| 🟡 Important | ... | ... | 🐙 + 👤 | Corriger avant release |
+| 🔵 Mineur | ... | ... | 👤 | Suggestion |
 
 ## Sécurité
 [Résumé ou "RAS — pour audit complet, utiliser agent security-review"]
@@ -127,6 +153,7 @@ grep -rn "@Route" prevarisc-migration/src/Controller/NomController.php
 - Problèmes bloquants : X
 - Problèmes importants : X
 - Suggestions : X
+- Sources agrégées : X
 ```
 
 ## Commandes de vérification rapide
