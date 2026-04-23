@@ -84,19 +84,64 @@ docker compose --project-name worktree --file compose.worktree-standalone.yaml \
 
 ---
 
-## Étape 5 — Mettre à jour RAPPORT_MODERNISATION.md
+## Étape 5 — Mettre à jour le rapport de suivi du worktree
 
-**Obligation** : après chaque commit réussi (lint ✅), mettre à jour le fichier
-`prevarisc-migration-worktree-<nom>/docs/RAPPORT_MODERNISATION.md` **sans attendre
-de second prompt**.
+**Obligation** : après chaque commit réussi (lint ✅), mettre à jour le rapport de suivi
+**sans attendre de second prompt**.
+
+### Quel fichier mettre à jour ?
+
+Les rapports de suivi sont stockés dans `docs/worktrees/` (fichiers temporaires, supprimés à la clôture du worktree) :
+
+```
+prevarisc-migration-worktree-<nom>/
+  docs/
+    worktrees/
+      <nom>.md     ← suivi spécifique à ce worktree (ex: repositories-qb.md)
+    RAPPORT_SYMFONY.md        ← audit global des opportunités de refactor
+    RAPPORT_MODERNISATION.md  ← suivi des modernisations de dépendances
+```
+
+**Règle de sélection :**
+
+1. Chercher `docs/worktrees/<nom>.md` — si présent, c'est le fichier à mettre à jour
+2. Sinon, chercher `docs/RAPPORT_SYMFONY.md` — si présent et que la tâche est un refactor Symfony
+3. Sinon, utiliser `docs/RAPPORT_MODERNISATION.md` pour les modernisations de dépendances/outillage
+
+> Si `docs/worktrees/<nom>.md` n'existe pas encore, le **créer** avec la structure minimale ci-dessous avant de l'alimenter.
+
+### Structure minimale de `docs/worktrees/<nom>.md`
+
+```markdown
+# Suivi worktree — `<type>/<nom>`
+
+> **Référence audit :** `RAPPORT_SYMFONY.md` — item REF-XXX (ou N/A)
+> **Périmètre :** Description courte
+> **Branche :** `<type>/<nom>`
+> **Cible :** `release/2.8`
+
+## Suivi d'avancement
+
+| # | Action | Statut | Commit | PR |
+|---|--------|--------|--------|----|
+
+## Reste à faire
+
+- ...
+
+> 🗑️ Ce fichier est supprimé à la clôture du worktree (merge de la PR).
+```
+
+### Mise à jour après chaque commit
 
 1. Ajouter une ligne dans le tableau `## Suivi d'avancement` :
 
 ```markdown
-| XX-N | Description courte de la tâche | ✅ Fait | `<sha_court>` |
+| XX-N | Description courte de la tâche | ✅ Fait | `<sha_court>` | #<PR> |
 ```
 
-2. Mettre à jour la ligne `> **Worktree actif :**` en bas du tableau si nécessaire.
+2. Dans `RAPPORT_MODERNISATION.md`, mettre à jour la ligne `> **Worktree actif :**`
+   pour pointer vers `docs/worktrees/<nom>.md` (au lieu de lister les items directement).
 
 ---
 
