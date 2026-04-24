@@ -445,6 +445,27 @@ Chaque étape fait : `fetch` + `checkout` + `pull` + `merge --no-ff` + `push ori
 
 ---
 
+### `castor git:set-first-release`
+**Configure la première branche release supportée pour les cascades depuis `main`/`master`.**
+
+Par défaut, un hotfix appliqué sur `main` cascade vers _toutes_ les branches `release/*` existantes dans l'ordre croissant. Lorsqu'une branche devient non maintenue (ex : `release/2.8` après la livraison de `v2.9.0`), il faut indiquer à la commande quelle est la nouvelle première branche à cibler.
+
+```bash
+castor git:set-first-release
+```
+
+La commande détecte les branches `release/*` disponibles, affiche la configuration actuelle et propose un choix interactif. La valeur est sauvegardée dans `.merge-upwards-config.json`.
+
+**Exemple — passage de `release/2.8` à `release/2.9` comme première branche supportée :**
+```
+Avant (release/2.8 encore maintenue) :  main → release/2.8 → release/2.9 → develop
+Après (release/2.8 supprimée)        :  main → release/2.9 → develop
+```
+
+> `.merge-upwards-config.json` est un choix d'équipe : **ce fichier doit être commité** après chaque changement de première release supportée, afin que tous les développeurs bénéficient automatiquement de la bonne configuration.
+
+---
+
 ## Aide-mémoire rapide
 
 ```bash
@@ -470,6 +491,9 @@ castor prevarisc:shell
 # Propagation d'un fix (merge upwards)
 castor git:merge-upwards
 castor git:merge-upwards --continue   # après résolution de conflit
+
+# Configuration de la première release supportée (à faire lors du passage de version)
+castor git:set-first-release
 
 # Worktrees (travail en parallèle)
 castor worktree:create

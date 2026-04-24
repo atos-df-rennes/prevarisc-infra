@@ -145,6 +145,7 @@ Le correctif part de la branche de maintenance et est propagé en cascade vers l
 > **Note :** La cascade peut se faire immédiatement après chaque correctif, ou être regroupée avant chaque livraison de patch selon le rythme de l'équipe.
 
 > **Fin de vie :** Une fois `v2.9.0` livré à l'ensemble des clients en production, `release/2.8` est supprimée. Les correctifs ne sont plus backportés sur cette branche.
+> À ce moment, exécuter **`castor git:set-first-release`** pour indiquer que `release/2.9` est désormais la première branche supportée. Les hotfixes depuis `main` cascaderont directement vers `release/2.9` (et non plus vers l'ancienne `release/2.8`). Commiter le fichier `.merge-upwards-config.json` généré pour partager la configuration avec toute l'équipe.
 
 ### Hotfix urgent en production (ex: `v2.8.1`)
 
@@ -165,18 +166,13 @@ Réservé aux bugs critiques nécessitant une correction immédiate, sans passer
    # Le tag est généré via conventional-changelog (voir section dédiée)
    git tag v2.8.1
 
-4. Cascader vers toutes les branches release actives (ordre croissant)
-   git checkout release/2.8
-   git merge --no-ff hotfix/2.8.1
+4. Cascader vers toutes les branches release actives puis develop
+   castor git:merge-upwards --from main
+   # Cascade automatique : main → release/2.8 → release/2.9 → develop
+   # (ou main → release/2.9 → develop si release/2.8 n'est plus maintenue,
+   #  voir castor git:set-first-release)
 
-   git checkout release/2.9
-   git merge --no-ff hotfix/2.8.1   # ou merger depuis release/2.8
-
-5. Répercuter sur develop
-   git checkout develop
-   git merge --no-ff hotfix/2.8.1
-
-6. Supprimer la branche hotfix
+5. Supprimer la branche hotfix
    git branch -d hotfix/2.8.1
 ```
 
