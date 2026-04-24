@@ -20,7 +20,10 @@ const MERGE_UPWARDS_STATE_FILE    = '.merge-upwards-state.json';
 /** Fichier de contexte généré pour Copilot lors d'un conflit. */
 const MERGE_UPWARDS_COPILOT_FILE  = '.copilot-conflict-context.txt';
 
-/** Fichier de configuration persistée (première branche release supportée, etc.). */
+/**
+ * Fichier de configuration partagée (première branche release supportée, etc.).
+ * Ce fichier doit être commité : c'est un choix d'équipe, pas un état local.
+ */
 const MERGE_UPWARDS_CONFIG_FILE   = '.merge-upwards-config.json';
 
 /** @var array<string, string> Clé de dépôt → répertoire. */
@@ -72,6 +75,11 @@ function gitSetFirstRelease(): void
     saveUpwardsConfig(array_merge($config, ['first_supported_release' => $choice]));
     io()->success("Première branche supportée enregistrée : {$choice}");
     io()->text('Les prochaines cascades depuis <info>main</info>/<info>master</info> démarreront à partir de cette branche.');
+    io()->newLine();
+    io()->note([
+        'Ce fichier est partagé par toute l\'équipe.',
+        'Pensez à le commiter : git add ' . MERGE_UPWARDS_CONFIG_FILE . ' && git commit -m "chore(git): première release supportée = ' . $choice . '"',
+    ]);
 }
 
 #[AsTask(
