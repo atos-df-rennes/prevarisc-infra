@@ -20,6 +20,9 @@ const MERGE_UPWARDS_STATE_FILE    = '.merge-upwards-state.json';
 /** Fichier de contexte généré pour Copilot lors d'un conflit. */
 const MERGE_UPWARDS_COPILOT_FILE  = '.copilot-conflict-context.txt';
 
+/** Fichier de configuration persistée (première branche release supportée, etc.). */
+const MERGE_UPWARDS_CONFIG_FILE   = '.merge-upwards-config.json';
+
 /** @var array<string, string> Clé de dépôt → répertoire. */
 const MERGE_UPWARDS_REPOS = [
     'prevarisc' => 'prevarisc',
@@ -27,8 +30,49 @@ const MERGE_UPWARDS_REPOS = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Tâche publique
+// Tâches publiques
 // ─────────────────────────────────────────────────────────────────────────────
+
+#[AsTask(
+    name: 'set-first-release',
+    namespace: 'git',
+    description: 'Configure la première branche release supportée pour les cascades depuis main/master'
+)]
+function gitSetFirstRelease(): void
+{
+    io()->title('Configuration — première branche release supportée');
+
+    $config = loadUpwardsConfig();
+    $current = $config['first_supported_release'] ?? null;
+
+    if (null !== $current) {
+        io()->text("Configuration actuelle : <info>{$current}</info>");
+    }
+
+    // Détection des releases disponibles depuis le premier dépôt trouvé
+    $repoDirs = array_values(array_filter(MERGE_UPWARDS_REPOS, static fn (string $dir): bool => is_dir($dir)));
+    $releases = [];
+
+    if ([] !== $repoDirs) {
+        $hierarchy = buildBranchHierarchy($repoDirs[0]);
+        $releases  = array_values(array_filter($hierarchy, static fn (string $b): bool => str_starts_with($b, 'release/')));
+    }
+
+    if ([] === $releases) {
+        io()->error('Aucune branche release détectée. Vérifiez que les dépôts sont accessibles.');
+        return;
+    }
+
+    $choice = io()->choice(
+        'Quelle est la première branche release encore supportée (point de départ des cascades depuis main/master) ?',
+        $releases,
+        $current ?? $releases[0]
+    );
+
+    saveUpwardsConfig(array_merge($config, ['first_supported_release' => $choice]));
+    io()->success("Première branche supportée enregistrée : {$choice}");
+    io()->text('Les prochaines cascades depuis <info>main</info>/<info>master</info> démarreront à partir de cette branche.');
+}
 
 #[AsTask(
     name: 'merge-upwards',
@@ -408,6 +452,11 @@ function generateCopilotContext(array $step, array $conflictedFiles): void
  * Retourne la chaîne de branches à partir de $fromBranch (incluse) vers le sommet.
  * Exemple pour from=release/2.8 : ['release/2.8', 'release/2.9', 'develop']
  *
+ * Quand la source est une branche de base (main/master) et qu'une première
+ * branche release supportée est configurée, les releases antérieures sont
+ * exclues de la cascade.
+ * Exemple : from=main, first_supported=release/2.9 → ['main', 'release/2.9', 'develop']
+ *
  * @return string[]
  */
 function buildCascadeChain(string $repoDir, string $fromBranch): array
@@ -419,7 +468,22 @@ function buildCascadeChain(string $repoDir, string $fromBranch): array
         return [];
     }
 
-    return array_values(array_slice($hierarchy, (int) $index));
+    $chain = array_values(array_slice($hierarchy, (int) $index));
+
+    // Si la source est une branche de base et qu'une première release supportée
+    // est configurée, on retire les releases non supportées de la cascade.
+    $config = loadUpwardsConfig();
+    $firstSupported = $config['first_supported_release'] ?? null;
+
+    if (null !== $firstSupported && \in_array($fromBranch, ['master', 'main'], true)) {
+        $supportedIndex = array_search($firstSupported, $chain, true);
+        if (false !== $supportedIndex && $supportedIndex > 1) {
+            // Conserver la branche de base + tout à partir de la première supportée
+            $chain = array_merge([$fromBranch], array_values(array_slice($chain, (int) $supportedIndex)));
+        }
+    }
+
+    return $chain;
 }
 
 /**
@@ -694,4 +758,36 @@ function clearUpwardsState(): void
             unlink($file);
         }
     }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Persistance de la configuration
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * @return array<string, mixed>
+ */
+function loadUpwardsConfig(): array
+{
+    if (!file_exists(MERGE_UPWARDS_CONFIG_FILE)) {
+        return [];
+    }
+
+    $content = file_get_contents(MERGE_UPWARDS_CONFIG_FILE);
+    if (false === $content) {
+        return [];
+    }
+
+    /** @var array<string, mixed>|null $decoded */
+    $decoded = json_decode($content, true);
+
+    return \is_array($decoded) ? $decoded : [];
+}
+
+/**
+ * @param array<string, mixed> $config
+ */
+function saveUpwardsConfig(array $config): void
+{
+    file_put_contents(MERGE_UPWARDS_CONFIG_FILE, json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 }
