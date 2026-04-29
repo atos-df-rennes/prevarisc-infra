@@ -176,8 +176,7 @@ function gitMergeUpwards(
         return;
     }
 
-    // 5. Agent SSH + persistance + exécution
-    ensureSshAgent();
+    // 5. Persistance + exécution
     saveUpwardsState(['steps' => $steps, 'index' => 0]);
     runUpwardsCascade();
 }
@@ -230,8 +229,6 @@ function resumeUpwardsCascade(): void
         io()->error('Aucune cascade en cours. Relancez sans --continue.');
         return;
     }
-
-    ensureSshAgent();
 
     $step = $state['steps'][$state['index']];
     $dir  = $step['dir'];
@@ -616,115 +613,6 @@ function buildRepoMap(string $option): array
     }
 
     return $available;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Agent SSH
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * S'assure qu'un agent SSH est actif et qu'une clé est chargée.
- *
- * Équivalent PHP de : eval "$(ssh-agent -s)" && ssh-add <clé>
- *
- * Comportement :
- *  - Si l'agent courant a déjà des clés (ssh-add -l = 0) → rien à faire.
- *  - Si SSH_AUTH_SOCK est absent → démarre un nouvel agent via ssh-agent -s,
- *    parse sa sortie et injecte les variables via putenv() pour que tous les
- *    sous-processus git les héritent. Enregistre un shutdown handler pour
- *    tuer l'agent proprement en fin de script.
- *  - Détecte les clés privées dans ~/.ssh/, propose un choix si plusieurs.
- *  - Lance ssh-add <clé> via run() avec context()->withTty(true) pour la saisie
- *    du mot de passe une seule fois.
- */
-function ensureSshAgent(): void
-{
-    // Cas 1 : agent déjà actif avec des clés chargées → rien à faire
-    exec('ssh-add -l 2>/dev/null', $ignored, $listCode);
-    if (0 === $listCode) {
-        return;
-    }
-
-    io()->section('🔐 Authentification SSH');
-
-    // Cas 2 : pas d'agent en cours → en démarrer un (eval "$(ssh-agent -s)")
-    if (empty(getenv('SSH_AUTH_SOCK'))) {
-        io()->text('Démarrage de l\'agent SSH...');
-
-        $agentOutput = shell_exec('ssh-agent -s 2>/dev/null');
-        if (null === $agentOutput) {
-            io()->warning('Impossible de démarrer ssh-agent. Le mot de passe SSH pourra être demandé plusieurs fois.');
-            return;
-        }
-
-        // Injecter SSH_AUTH_SOCK et SSH_AGENT_PID pour les sous-processus
-        if (preg_match('/SSH_AUTH_SOCK=([^;]+);/', $agentOutput, $m)) {
-            putenv("SSH_AUTH_SOCK={$m[1]}");
-        }
-        if (preg_match('/SSH_AGENT_PID=(\d+);/', $agentOutput, $m)) {
-            $agentPid = (int) $m[1];
-            putenv("SSH_AGENT_PID={$agentPid}");
-
-            register_shutdown_function(static function () use ($agentPid): void {
-                exec("kill {$agentPid} 2>/dev/null");
-            });
-        }
-
-        if (empty(getenv('SSH_AUTH_SOCK'))) {
-            io()->warning('Agent SSH démarré mais SSH_AUTH_SOCK non détecté. Le mot de passe SSH pourra être demandé plusieurs fois.');
-            return;
-        }
-    }
-
-    // Détecter les clés privées disponibles dans ~/.ssh/
-    $keyPath = pickSshKey();
-    if (null === $keyPath) {
-        io()->warning('Aucune clé SSH privée trouvée dans ~/.ssh/. Le mot de passe SSH pourra être demandé plusieurs fois.');
-        return;
-    }
-
-    // ssh-add via run() avec TTY activé pour la saisie interactive du mot de passe
-    io()->text("Chargement de la clé <info>{$keyPath}</info>...");
-    $addCode = exit_code(['ssh-add', $keyPath], context: context()->withTty(true));
-
-    if (0 !== $addCode) {
-        io()->warning('ssh-add a échoué. Le mot de passe SSH pourra être demandé plusieurs fois.');
-    } else {
-        io()->success('Clé SSH chargée. Aucune demande supplémentaire pendant la cascade.');
-    }
-}
-
-/**
- * Détecte les clés SSH privées dans ~/.ssh/ et demande à l'utilisateur
- * laquelle utiliser si plusieurs sont disponibles.
- */
-function pickSshKey(): ?string
-{
-    $sshDir = rtrim((string) (getenv('HOME') ?: (getenv('USERPROFILE') ?: '')), '/') . '/.ssh';
-
-    if (!is_dir($sshDir)) {
-        return null;
-    }
-
-    /** @var string[] $keys */
-    $keys = [];
-    foreach ((array) scandir($sshDir) as $file) {
-        $fullPath = $sshDir . '/' . $file;
-        // Une clé privée a un fichier .pub correspondant
-        if (is_file($fullPath) && file_exists($fullPath . '.pub')) {
-            $keys[] = $fullPath;
-        }
-    }
-
-    if ([] === $keys) {
-        return null;
-    }
-
-    if (1 === count($keys)) {
-        return $keys[0];
-    }
-
-    return io()->choice('Plusieurs clés SSH trouvées. Laquelle utiliser ?', $keys, $keys[0]);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
