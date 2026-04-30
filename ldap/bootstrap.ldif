@@ -1,0 +1,24 @@
+# Initialisation de l'annuaire LDAP de test pour Prévarisc.
+# Peuplé automatiquement au premier démarrage de osixia/openldap.
+#
+# Pré-requis DB : créer l'utilisateur testldap dans MySQL avant de tester :
+#   INSERT INTO UTILISATEUR (LOGIN, PASSWORD, ACTIF, SSO, PROFIL_ID) VALUES
+#     ('testldap', '', 1, 0, 1);
+
+# Unité organisationnelle des utilisateurs
+dn: ou=users,dc=prevarisc,dc=local
+objectClass: organizationalUnit
+ou: users
+
+# Utilisateur de test LDAP
+dn: uid=testldap,ou=users,dc=prevarisc,dc=local
+objectClass: inetOrgPerson
+objectClass: posixAccount
+cn: Test LDAP
+sn: LDAP
+uid: testldap
+mail: testldap@prevarisc.local
+uidNumber: 10001
+gidNumber: 10001
+homeDirectory: /home/testldap
+userPassword: Prevarisc2024

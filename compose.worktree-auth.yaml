@@ -1,0 +1,123 @@
+# Extension de compose.worktree-standalone.yaml pour tester les mécanismes d'authentification SSO.
+#
+# Usage (depuis la racine du repo) :
+#   PREVARISC_DIR=prevarisc-worktree-symfony-athentication \
+#   PREVARISC_MIGRATION_DIR=prevarisc-migration-worktree-symfony-athentication \
+#   docker compose --project-name worktree \
+#     -f compose.worktree-standalone.yaml \
+#     -f compose.worktree-auth.yaml \
+#     up -d
+#
+# Services ajoutés :
+#   ldap         — Serveur OpenLDAP avec un utilisateur de test (ldap://localhost:3893)
+#   phpldapadmin — Interface web LDAP (http://localhost:8089, login: cn=admin,dc=prevarisc,dc=local)
+#   cas          — Serveur CAS Apereo (http://localhost:8083/cas)
+#
+# Mécanisme d'authentification à tester :
+#   LDAP  → positionner PREVARISC_LDAP_ENABLED=1 dans l'environnement du service app (voir ci-dessous)
+#   CAS   → positionner PREVARISC_CAS_ENABLED=1
+#   NTLM  → monter httpd-auth-ntlm-test.conf (déjà fait) ; le fichier active PREVARISC_NTLM_ENABLED=1
+#
+# Pré-requis DB pour chaque mécanisme (à exécuter manuellement) :
+#   LDAP : INSERT INTO UTILISATEUR (LOGIN, PASSWORD, ACTIF, SSO, PROFIL_ID) VALUES ('testldap', '', 1, 0, 1);
+#   CAS  : INSERT INTO UTILISATEUR (LOGIN, PASSWORD, ACTIF, SSO, PROFIL_ID) VALUES ('testcas',  '', 1, 1, 1);
+#   NTLM : INSERT INTO UTILISATEUR (LOGIN, PASSWORD, ACTIF, SSO, PROFIL_ID) VALUES ('testntlm', '', 1, 1, 1);
+
+services:
+  app:
+    volumes:
+      # Simulation NTLM : positionne REMOTE_USER et active PREVARISC_NTLM_ENABLED via Apache.
+      # Inclus via IncludeOptional httpd-auth-*.conf dans apache.conf.
+      # Retirer ce volume pour désactiver la simulation NTLM.
+      - ./apache/httpd-auth-ntlm-test.conf:/etc/apache2/httpd-auth-ntlm-test.conf:ro
+    environment:
+      # --- Authentification formulaire Symfony (requis pour LDAP) ---
+      PREVARISC_SYMFONY_LOGIN: 1
+
+      # --- LDAP ---
+      # Passer à 1 pour activer l'authentification LDAP.
+      # Le service 'ldap' ci-dessous est pré-configuré et accessible depuis le conteneur app.
+      PREVARISC_LDAP_ENABLED: 0
+      PREVARISC_LDAP_HOST: ldap
+      PREVARISC_LDAP_PORT: 389
+      # Compte de service pour la recherche d'utilisateurs (bind en deux étapes)
+      PREVARISC_LDAP_USERNAME: cn=admin,dc=prevarisc,dc=local
+      PREVARISC_LDAP_PASSWORD: planmusique
+      PREVARISC_LDAP_BASEDN: ou=users,dc=prevarisc,dc=local
+
+      # --- CAS ---
+      # Passer à 1 pour activer l'authentification CAS.
+      # Le serveur CAS est accessible depuis navigateur ET app via host.docker.internal:8083.
+      PREVARISC_CAS_ENABLED: 0
+      PREVARISC_CAS_HOST: host.docker.internal
+      PREVARISC_CAS_PORT: 8083
+      PREVARISC_CAS_CONTEXT: cas
+      PREVARISC_CAS_NO_SERVER_VALIDATION: 1
+      PREVARISC_CAS_VERSION: "2.0"
+
+      # --- NTLM ---
+      # Activé automatiquement par httpd-auth-ntlm-test.conf via Apache SetEnv.
+      # Ne pas définir PREVARISC_NTLM_ENABLED ici si le fichier Apache est monté.
+
+  # Serveur OpenLDAP pour tests d'authentification LDAP.
+  # Domaine  : prevarisc.local
+  # Admin DN : cn=admin,dc=prevarisc,dc=local / mot de passe : planmusique
+  # Utilisateur test : uid=testldap,ou=users,dc=prevarisc,dc=local / Prevarisc2024
+  ldap:
+    image: osixia/openldap:1.5.0
+    restart: unless-stopped
+    ports:
+      - target: 389
+        published: 3893
+        protocol: tcp
+    volumes:
+      - ldap_data_worktree_auth:/var/lib/ldap
+      - ldap_config_worktree_auth:/etc/ldap/slapd.d
+      # Bootstrap LDIF : peuplé uniquement à la première initialisation du volume.
+      - ./ldap/bootstrap.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/50-bootstrap.ldif:ro
+    environment:
+      LDAP_ORGANISATION: Prévarisc
+      LDAP_DOMAIN: prevarisc.local
+      LDAP_ADMIN_PASSWORD: planmusique
+      LDAP_READONLY_USER: "true"
+      LDAP_READONLY_USER_USERNAME: readonly
+      LDAP_READONLY_USER_PASSWORD: planmusique
+    command: ["--copy-service", "--loglevel", "warning"]
+
+  # Interface web phpLDAPadmin pour gérer l'annuaire LDAP de test.
+  # Accès : http://localhost:8089
+  # Login DN : cn=admin,dc=prevarisc,dc=local
+  phpldapadmin:
+    image: osixia/phpldapadmin:0.9.0
+    restart: unless-stopped
+    ports:
+      - target: 80
+        published: 8089
+        protocol: tcp
+    environment:
+      PHPLDAPADMIN_LDAP_HOSTS: ldap
+      PHPLDAPADMIN_HTTPS: "false"
+    depends_on:
+      - ldap
+
+  # Serveur CAS Apereo pour tests d'authentification CAS (HTTP uniquement, dev).
+  # Interface : http://localhost:8083/cas
+  # Identifiants de test : testcas / Prevarisc2024
+  #
+  # Note : première pull ~700 Mo, démarrage ~30-60 s (JVM).
+  cas:
+    image: apereo/cas:6.6.14
+    restart: unless-stopped
+    ports:
+      - target: 8080
+        published: 8083
+        protocol: tcp
+    volumes:
+      - ./cas/config:/etc/cas/config:ro
+    environment:
+      # Désactiver SSL et forcer le port HTTP
+      CAS_OPTS: --server.ssl.enabled=false --server.port=8080
+
+volumes:
+  ldap_data_worktree_auth:
+  ldap_config_worktree_auth:
