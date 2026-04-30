@@ -116,3 +116,6 @@ SetEnv PREVARISC_API_ADRESSE 0
 
 # Utiliser l'affichage Bootstrap v3 plutôt que Boostrap v2
 SetEnv PREVARISC_BOOTSTRAP_3 0
+
+# Utiliser l'authentification via Symfony au lieu de Zend
+SetEnv PREVARISC_SYMFONY_LOGIN 1
