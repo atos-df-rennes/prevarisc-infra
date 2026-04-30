@@ -13,12 +13,12 @@
 #   phpldapadmin — Interface web LDAP (http://localhost:8089, login: cn=admin,dc=prevarisc,dc=local)
 #   cas          — Serveur CAS Apereo (http://localhost:8083/cas)
 #
-# Mécanisme d'authentification à tester :
-#   LDAP  → positionner PREVARISC_LDAP_ENABLED=1 dans l'environnement du service app (voir ci-dessous)
-#   CAS   → positionner PREVARISC_CAS_ENABLED=1
-#   NTLM  → monter httpd-auth-ntlm-test.conf (déjà fait) ; le fichier active PREVARISC_NTLM_ENABLED=1
+# CHOISIR UN SEUL mécanisme d'authentification à tester en décommentant
+# le volume Apache correspondant dans le service 'app' ci-dessous.
+# Les variables sont positionnées via Apache SetEnv (comme en production).
 #
-# Pré-requis DB pour chaque mécanisme (à exécuter manuellement) :
+# ⚠ Un compte local en base est OBLIGATOIRE pour tous les mécanismes (legacy et migration) :
+#   le lookup DB précède toujours la vérification SSO.
 #   LDAP : INSERT INTO UTILISATEUR (LOGIN, PASSWORD, ACTIF, SSO, PROFIL_ID) VALUES ('testldap', '', 1, 0, 1);
 #   CAS  : INSERT INTO UTILISATEUR (LOGIN, PASSWORD, ACTIF, SSO, PROFIL_ID) VALUES ('testcas',  '', 1, 1, 1);
 #   NTLM : INSERT INTO UTILISATEUR (LOGIN, PASSWORD, ACTIF, SSO, PROFIL_ID) VALUES ('testntlm', '', 1, 1, 1);
@@ -26,38 +26,15 @@
 services:
   app:
     volumes:
-      # Simulation NTLM : positionne REMOTE_USER et active PREVARISC_NTLM_ENABLED via Apache.
-      # Inclus via IncludeOptional httpd-auth-*.conf dans apache.conf.
-      # Retirer ce volume pour désactiver la simulation NTLM.
-      - ./apache/httpd-auth-ntlm-test.conf:/etc/apache2/httpd-auth-ntlm-test.conf:ro
-    environment:
-      # --- Authentification formulaire Symfony (requis pour LDAP) ---
-      PREVARISC_SYMFONY_LOGIN: 1
-
-      # --- LDAP ---
-      # Passer à 1 pour activer l'authentification LDAP.
-      # Le service 'ldap' ci-dessous est pré-configuré et accessible depuis le conteneur app.
-      PREVARISC_LDAP_ENABLED: 0
-      PREVARISC_LDAP_HOST: ldap
-      PREVARISC_LDAP_PORT: 389
-      # Compte de service pour la recherche d'utilisateurs (bind en deux étapes)
-      PREVARISC_LDAP_USERNAME: cn=admin,dc=prevarisc,dc=local
-      PREVARISC_LDAP_PASSWORD: planmusique
-      PREVARISC_LDAP_BASEDN: ou=users,dc=prevarisc,dc=local
-
-      # --- CAS ---
-      # Passer à 1 pour activer l'authentification CAS.
-      # Le serveur CAS est accessible depuis navigateur ET app via host.docker.internal:8083.
-      PREVARISC_CAS_ENABLED: 0
-      PREVARISC_CAS_HOST: host.docker.internal
-      PREVARISC_CAS_PORT: 8083
-      PREVARISC_CAS_CONTEXT: cas
-      PREVARISC_CAS_NO_SERVER_VALIDATION: 1
-      PREVARISC_CAS_VERSION: "2.0"
-
-      # --- NTLM ---
-      # Activé automatiquement par httpd-auth-ntlm-test.conf via Apache SetEnv.
-      # Ne pas définir PREVARISC_NTLM_ENABLED ici si le fichier Apache est monté.
+      # ── Décommenter UN SEUL fichier selon le mécanisme à tester ──────────────────────────────────
+      # Chaque fichier positionne les SetEnv Apache du mécanisme correspondant.
+      # IncludeOptional httpd-auth-*.conf dans apache.conf inclut automatiquement les fichiers montés.
+      # Monter plusieurs fichiers simultanément provoquerait des conflits de priorité.
+      #
+      - ./apache/httpd-auth-ldap.conf:/etc/apache2/httpd-auth-ldap.conf:ro              # LDAP  ← actif par défaut
+      # - ./apache/httpd-auth-cas.conf:/etc/apache2/httpd-auth-cas.conf:ro              # CAS   ← décommenter pour CAS
+      # - ./apache/httpd-auth-ntlm-test.conf:/etc/apache2/httpd-auth-ntlm-test.conf:ro # NTLM  ← décommenter pour NTLM
+      # ─────────────────────────────────────────────────────────────────────────────────────────────
 
   # Serveur OpenLDAP pour tests d'authentification LDAP.
   # Domaine  : prevarisc.local
