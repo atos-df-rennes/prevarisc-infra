@@ -51,6 +51,8 @@ services:
       - ldap_data_worktree_auth:/var/lib/ldap
       - ldap_config_worktree_auth:/etc/ldap/slapd.d
       # Bootstrap LDIF : peuplé uniquement à la première initialisation du volume.
+      # Ordre alphabétique : 30-schema chargé avant 50-bootstrap.
+      - ./ldap/schema-ad-compat.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/30-schema-ad-compat.ldif:ro
       - ./ldap/bootstrap.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/50-bootstrap.ldif:ro
     environment:
       LDAP_ORGANISATION: Prévarisc

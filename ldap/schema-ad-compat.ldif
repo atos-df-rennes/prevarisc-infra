@@ -1,0 +1,31 @@
+# Schéma LDAP minimal compatible Active Directory pour tests dev Prévarisc.
+#
+# Ajoute l'attribut sAMAccountName (OID Microsoft officiel) et une objectClass
+# auxiliaire adCompatUser pour simuler un annuaire AD avec osixia/openldap.
+#
+# Chargé automatiquement AVANT le bootstrap (ordre alphabétique : 30 < 50).
+# Nécessite la recréation des volumes ldap si déjà initialisés :
+#   docker volume rm worktree_ldap_data_worktree_auth worktree_ldap_config_worktree_auth
+
+dn: cn=ad-compat,cn=schema,cn=config
+objectClass: olcSchemaConfig
+cn: ad-compat
+olcAttributeTypes: ( 1.2.840.113556.1.4.221
+  NAME 'sAMAccountName'
+  DESC 'Microsoft SAM Account Name (Active Directory)'
+  EQUALITY caseIgnoreMatch
+  SUBSTR caseIgnoreSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{256}
+  SINGLE-VALUE )
+olcObjectClasses: ( 1.3.6.1.4.1.99999.1.1.1
+  NAME 'adCompatUser'
+  DESC 'Auxiliary objectClass pour attributs AD dans un annuaire OpenLDAP de test'
+  AUXILIARY
+  MAY ( sAMAccountName ) )
+# objectClass 'user' : simule la class AD que Zend_Ldap utilise dans son filtre par défaut
+# (&(objectClass=user)(sAMAccountName=%s)) quand bindRequiresDn=false.
+olcObjectClasses: ( 1.3.6.1.4.1.99999.1.1.2
+  NAME 'user'
+  DESC 'Simule objectClass user Active Directory pour le filtre Zend_Ldap par défaut'
+  AUXILIARY
+  MAY ( sAMAccountName ) )

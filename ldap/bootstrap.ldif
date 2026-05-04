@@ -11,12 +11,17 @@ objectClass: organizationalUnit
 ou: users
 
 # Utilisateur de test LDAP
+# Simule un compte AD avec sAMAccountName pour valider le filtre LDAP migré.
+# Connexion : testldap / Prevarisc2024
 dn: uid=testldap,ou=users,dc=prevarisc,dc=local
 objectClass: inetOrgPerson
 objectClass: posixAccount
+objectClass: adCompatUser
+objectClass: user
 cn: Test LDAP
 sn: LDAP
 uid: testldap
+sAMAccountName: testldap
 mail: testldap@prevarisc.local
 uidNumber: 10001
 gidNumber: 10001
