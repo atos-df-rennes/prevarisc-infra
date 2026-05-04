@@ -1,0 +1,11 @@
+{
+  "@class": "org.apereo.cas.services.RegexRegisteredService",
+  "serviceId": "^http://.*",
+  "name": "Prévarisc Dev (HTTP)",
+  "id": 10000001,
+  "description": "Autorise toutes les URLs HTTP pour les tests dev. NE PAS utiliser en production.",
+  "evaluationOrder": 1,
+  "attributeReleasePolicy": {
+    "@class": "org.apereo.cas.services.ReturnAllAttributeReleasePolicy"
+  }
+}
