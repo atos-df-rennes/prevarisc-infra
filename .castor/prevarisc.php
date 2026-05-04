@@ -238,12 +238,15 @@ function update(): void
 }
 
 #[AsTask(namespace: 'prevarisc', description: 'Make Prevarisc dump')]
-function makeDump(): void
+function makeDump(
+    #[ASOption(name: 'container', description: 'Nom du conteneur MySQL source')]
+    string $container = 'prevarisc-infra-db-1'
+): void
 {
     io()->title('Making Prevarisc dump.');
 
     $dumpName = 'prevarisc_'.date('Ymd').'.sql';
-    run('docker exec -w / -i prevarisc-infra-db-1 mysqldump -u root -p"planmusique" PRV_prevarisc_v2 > '.$dumpName);
+    run('docker exec -w / -i '.$container.' mysqldump -u root -p"planmusique" PRV_prevarisc_v2 > '.$dumpName);
 
     io()->success('Dump made successfully.');
 }
