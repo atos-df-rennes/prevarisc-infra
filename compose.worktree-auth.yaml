@@ -1,41 +1,20 @@
 # Extension de compose.worktree-standalone.yaml pour tester les mécanismes d'authentification SSO.
 #
-# Usage (depuis la racine du repo) :
-#   PREVARISC_DIR=prevarisc-worktree-symfony-athentication \
-#   PREVARISC_MIGRATION_DIR=prevarisc-migration-worktree-symfony-athentication \
-#   docker compose --project-name worktree \
-#     -f compose.worktree-standalone.yaml \
-#     -f compose.worktree-auth.yaml \
-#     up -d
+# Usage via Castor (recommandé) :
+#   castor authentification --mode=ldap --repo=migration
+#   castor authentification --mode=cas  --repo=legacy
 #
-# Services ajoutés :
-#   ldap         — Serveur OpenLDAP avec un utilisateur de test (ldap://localhost:3893)
-#   phpldapadmin — Interface web LDAP (http://localhost:8089, login: cn=admin,dc=prevarisc,dc=local)
-#   cas          — Serveur CAS Apereo (http://localhost:8083/cas)
+# La commande gère automatiquement :
+#   - la configuration Apache (httpd-auth-worktree.conf)
+#   - le flag PREVARISC_SYMFONY_LOGIN (httpd-prevarisc-config.conf)
+#   - le démarrage/arrêt des services SSO ci-dessous
+#   - la création de l'utilisateur de test en base
 #
-# CHOISIR UN SEUL mécanisme d'authentification à tester en décommentant
-# le volume Apache correspondant dans le service 'app' ci-dessous.
-# Les variables sont positionnées via Apache SetEnv (comme en production).
-#
-# ⚠ Un compte local en base est OBLIGATOIRE pour tous les mécanismes (legacy et migration) :
+# ⚠ Un compte local en base est OBLIGATOIRE pour tous les mécanismes :
 #   le lookup DB précède toujours la vérification SSO.
-#   LDAP : INSERT INTO UTILISATEUR (LOGIN, PASSWORD, ACTIF, SSO, PROFIL_ID) VALUES ('testldap', '', 1, 0, 1);
-#   CAS  : INSERT INTO UTILISATEUR (LOGIN, PASSWORD, ACTIF, SSO, PROFIL_ID) VALUES ('testcas',  '', 1, 1, 1);
-#   NTLM : INSERT INTO UTILISATEUR (LOGIN, PASSWORD, ACTIF, SSO, PROFIL_ID) VALUES ('testntlm', '', 1, 1, 1);
+#   La commande castor crée automatiquement les comptes de test manquants.
 
 services:
-  app:
-    volumes:
-      # ── Décommenter UN SEUL fichier selon le mécanisme à tester ──────────────────────────────────
-      # Chaque fichier positionne les SetEnv Apache du mécanisme correspondant.
-      # IncludeOptional httpd-auth-*.conf dans apache.conf inclut automatiquement les fichiers montés.
-      # Monter plusieurs fichiers simultanément provoquerait des conflits de priorité.
-      #
-      - ./apache/httpd-auth-ldap.conf:/etc/apache2/httpd-auth-ldap.conf:ro              # LDAP  ← actif par défaut
-      # - ./apache/httpd-auth-cas.conf:/etc/apache2/httpd-auth-cas.conf:ro              # CAS   ← décommenter pour CAS
-      # - ./apache/httpd-auth-ntlm-test.conf:/etc/apache2/httpd-auth-ntlm-test.conf:ro # NTLM  ← décommenter pour NTLM
-      # ─────────────────────────────────────────────────────────────────────────────────────────────
-
   # Serveur OpenLDAP pour tests d'authentification LDAP.
   # Domaine  : prevarisc.local
   # Admin DN : cn=admin,dc=prevarisc,dc=local / mot de passe : planmusique

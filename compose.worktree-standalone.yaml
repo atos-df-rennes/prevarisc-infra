@@ -26,6 +26,7 @@ services:
       - ./apache/httpd-prevarisc-config.conf:/etc/apache2/httpd-prevarisc-config.conf
       - ./${PREVARISC_MIGRATION_DIR:-prevarisc-migration}:/var/www/html/prevarisc-migration
       - ./prevarisc-passerelle-platau:/var/www/html/prevarisc-passerelle-platau
+      - ./apache/httpd-auth-worktree.conf:/etc/apache2/httpd-auth-worktree.conf:ro
     post_start:
       - command: chmod 775 /var/www/html/prevarisc/public
       - command: bash -c 'mkdir -p /var/www/html/prevarisc/public/data/uploads/{commission,dossier,etablissement,etablissement_miniature} && chown prv:prv /var/www/html/prevarisc/public/data/uploads/*'
