@@ -1,6 +1,6 @@
 {
   "@class": "org.apereo.cas.services.RegexRegisteredService",
-  "serviceId": "^http://.*",
+  "serviceId": "^http://localhost(:[0-9]+)?(/.*)?$",
   "name": "Prévarisc Dev (HTTP)",
   "id": 10000001,
   "description": "Autorise toutes les URLs HTTP pour les tests dev. NE PAS utiliser en production.",

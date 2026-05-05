@@ -20,7 +20,7 @@ SetEnv PREVARISC_CACHE_DIR "/home/prv/cache"
 
 # LDAP Configuration
 # PREVARISC_LDAP_ENABLED : non défini ici, vaut 0 par défaut (config/prevarisc.php).
-# Activé uniquement via httpd-auth-ldap.conf (compose.worktree-auth.yaml).
+# Activé uniquement via httpd-auth-worktree.conf ou httpd-auth-main.conf (castor authentification).
 SetEnv PREVARISC_LDAP_HOST ""
 SetEnv PREVARISC_LDAP_PORT "389"
 SetEnv PREVARISC_LDAP_USERNAME ""
@@ -62,7 +62,7 @@ SetEnv PREVARISC_IGN_AUTOCONF "/ign/prevarisc/customConfig.json"
 
 # CAS
 # PREVARISC_CAS_ENABLED : non défini ici, vaut 0 par défaut (config/prevarisc.php).
-# Activé uniquement via httpd-auth-cas.conf (compose.worktree-auth.yaml).
+# Activé uniquement via httpd-auth-worktree.conf ou httpd-auth-main.conf (castor authentification).
 SetEnv PREVARISC_CAS_HOST "rns090lv.rennes.si.fr.atosorigin.com"
 SetEnv PREVARISC_CAS_PORT "8080"
 SetEnv PREVARISC_CAS_CONTEXT "cas"
@@ -71,7 +71,7 @@ SetEnv PREVARISC_CAS_VERSION "2.0"
 
 # SSO NTLM
 # PREVARISC_NTLM_ENABLED : non défini ici, vaut 0 par défaut (config/prevarisc.php).
-# Activé uniquement via httpd-auth-ntlm-test.conf (compose.worktree-auth.yaml).
+# Activé uniquement via httpd-auth-worktree.conf ou httpd-auth-main.conf (castor authentification).
 
 # Parametres specifiques
 SetEnv PREVARISC_LOCAL_SOMMEIL_TYPES "1;5"

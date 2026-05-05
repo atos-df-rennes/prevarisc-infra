@@ -12,6 +12,7 @@ services:
       - ./apache/apache.conf:/etc/apache2/sites-available/000-default.conf
       - ./apache/httpd-prevarisc-version.conf:/etc/apache2/httpd-prevarisc-version.conf
       - ./apache/httpd-prevarisc-config.conf:/etc/apache2/httpd-prevarisc-config.conf
+      - ./apache/httpd-auth-main.conf:/etc/apache2/httpd-auth-main.conf:ro
       - ./prevarisc-migration:/var/www/html/prevarisc-migration
       # Passerelle Plat'AU montée pour que Prevarisc puisse faire un healthcheck.
       # Lorsque le code sera rapatrié dans l'application, ce montage ne sera plus nécessaire.

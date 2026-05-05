@@ -245,6 +245,12 @@ function makeDump(
 {
     io()->title('Making Prevarisc dump.');
 
+    if (!preg_match('/^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/', $container)) {
+        io()->error(sprintf('Nom de conteneur invalide : "%s". Seuls les caractères alphanumériques, tirets, underscores et points sont autorisés.', $container));
+
+        return;
+    }
+
     $dumpName = 'prevarisc_'.date('Ymd').'.sql';
     run('docker exec -w / -i '.$container.' mysqldump -u root -p"planmusique" PRV_prevarisc_v2 > '.$dumpName);
 

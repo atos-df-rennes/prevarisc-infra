@@ -1,12 +1,13 @@
 # Extension de compose.worktree-standalone.yaml pour tester les mécanismes d'authentification SSO.
+# Également utilisable avec la stack principale (compose.dev.yaml).
 #
 # Usage via Castor (recommandé) :
-#   castor authentification --mode=ldap --repo=migration
-#   castor authentification --mode=cas  --repo=legacy
+#   castor worktree:authentification    (stack worktree isolée)
+#   castor symfony:authentification     (stack principale)
 #
 # La commande gère automatiquement :
-#   - la configuration Apache (httpd-auth-worktree.conf)
-#   - le flag PREVARISC_SYMFONY_LOGIN (httpd-prevarisc-config.conf)
+#   - la configuration Apache (httpd-auth-worktree.conf ou httpd-auth-main.conf)
+#   - le flag PREVARISC_SYMFONY_LOGIN (inclus dans le fichier auth conf)
 #   - le démarrage/arrêt des services SSO ci-dessous
 #   - la création de l'utilisateur de test en base
 #
