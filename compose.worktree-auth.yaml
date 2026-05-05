@@ -1,0 +1,82 @@
+# Extension de compose.worktree-standalone.yaml pour tester les mécanismes d'authentification SSO.
+# Également utilisable avec la stack principale (compose.dev.yaml).
+#
+# Usage via Castor (recommandé) :
+#   castor worktree:authentification    (stack worktree isolée)
+#   castor symfony:authentification     (stack principale)
+#
+# La commande gère automatiquement :
+#   - la configuration Apache (httpd-auth-worktree.conf ou httpd-auth-main.conf)
+#   - le flag PREVARISC_SYMFONY_LOGIN (inclus dans le fichier auth conf)
+#   - le démarrage/arrêt des services SSO ci-dessous
+#   - la création de l'utilisateur de test en base
+#
+# ⚠ Un compte local en base est OBLIGATOIRE pour tous les mécanismes :
+#   le lookup DB précède toujours la vérification SSO.
+#   La commande castor crée automatiquement les comptes de test manquants.
+
+services:
+  # Serveur OpenLDAP pour tests d'authentification LDAP.
+  # Domaine  : prevarisc.local
+  # Admin DN : cn=admin,dc=prevarisc,dc=local / mot de passe : planmusique
+  # Utilisateur test : uid=testldap,ou=users,dc=prevarisc,dc=local / Prevarisc2024
+  ldap:
+    image: osixia/openldap:1.5.0
+    restart: unless-stopped
+    ports:
+      - target: 389
+        published: 3893
+        protocol: tcp
+    volumes:
+      - ldap_data_worktree_auth:/var/lib/ldap
+      - ldap_config_worktree_auth:/etc/ldap/slapd.d
+      # Bootstrap LDIF : peuplé uniquement à la première initialisation du volume.
+      # Ordre alphabétique : 30-schema chargé avant 50-bootstrap.
+      - ./ldap/schema-ad-compat.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/30-schema-ad-compat.ldif:ro
+      - ./ldap/bootstrap.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/50-bootstrap.ldif:ro
+    environment:
+      LDAP_ORGANISATION: Prévarisc
+      LDAP_DOMAIN: prevarisc.local
+      LDAP_ADMIN_PASSWORD: planmusique
+      LDAP_READONLY_USER: "true"
+      LDAP_READONLY_USER_USERNAME: readonly
+      LDAP_READONLY_USER_PASSWORD: planmusique
+    command: ["--copy-service", "--loglevel", "warning"]
+
+  # Interface web phpLDAPadmin pour gérer l'annuaire LDAP de test.
+  # Accès : http://localhost:8089
+  # Login DN : cn=admin,dc=prevarisc,dc=local
+  phpldapadmin:
+    image: osixia/phpldapadmin:0.9.0
+    restart: unless-stopped
+    ports:
+      - target: 80
+        published: 8089
+        protocol: tcp
+    environment:
+      PHPLDAPADMIN_LDAP_HOSTS: ldap
+      PHPLDAPADMIN_HTTPS: "false"
+    depends_on:
+      - ldap
+
+  # Serveur CAS Apereo pour tests d'authentification CAS (HTTP uniquement, dev).
+  # Interface : http://localhost:8083/cas
+  # Identifiants de test : testcas / Prevarisc2024
+  #
+  # Note : première pull ~700 Mo, démarrage ~30-60 s (JVM).
+  cas:
+    image: apereo/cas:6.6.14
+    restart: unless-stopped
+    ports:
+      - target: 8080
+        published: 8083
+        protocol: tcp
+    volumes:
+      - ./cas/config:/etc/cas/config:ro
+    environment:
+      # Désactiver SSL et forcer le port HTTP
+      CAS_OPTS: --server.ssl.enabled=false --server.port=8080
+
+volumes:
+  ldap_data_worktree_auth:
+  ldap_config_worktree_auth:

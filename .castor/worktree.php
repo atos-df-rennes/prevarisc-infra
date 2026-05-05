@@ -154,7 +154,7 @@ function worktreeStop(): void
 {
     io()->title('Arrêt de la stack worktree.');
 
-    exit_code(['docker', 'compose', '--project-name', WORKTREE_PROJECT, '--file', WORKTREE_COMPOSE_FILE, 'down']);
+    exit_code(['docker', 'compose', '--project-name', WORKTREE_PROJECT, '--file', WORKTREE_COMPOSE_FILE, '--file', AUTH_COMPOSE_AUTH_FILE, 'down']);
 
     io()->success('Stack worktree arrêtée.');
 }
@@ -197,7 +197,7 @@ function worktreeRemove(
     io()->success(sprintf('Worktree "%s" supprimé.', $name));
 
     if (io()->confirm('Arrêter la stack worktree si elle est en cours d\'exécution ?', true)) {
-        exit_code(['docker', 'compose', '--project-name', WORKTREE_PROJECT, '--file', WORKTREE_COMPOSE_FILE, 'down']);
+        exit_code(['docker', 'compose', '--project-name', WORKTREE_PROJECT, '--file', WORKTREE_COMPOSE_FILE, '--file', AUTH_COMPOSE_AUTH_FILE, 'down']);
     }
 }
 

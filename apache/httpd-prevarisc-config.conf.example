@@ -19,7 +19,8 @@ SetEnv PREVARISC_CACHE_ADAPTER "File"
 SetEnv PREVARISC_CACHE_DIR "/home/prv/cache"
 
 # LDAP Configuration
-SetEnv PREVARISC_LDAP_ENABLED 0
+# PREVARISC_LDAP_ENABLED : non défini ici, vaut 0 par défaut (config/prevarisc.php).
+# Activé uniquement via httpd-auth-worktree.conf ou httpd-auth-main.conf (castor authentification).
 SetEnv PREVARISC_LDAP_HOST ""
 SetEnv PREVARISC_LDAP_PORT "389"
 SetEnv PREVARISC_LDAP_USERNAME ""
@@ -60,7 +61,8 @@ SetEnv PREVARISC_IGN_AUTOCONF "/ign/prevarisc/customConfig.json"
 # SetEnv PREVARISC_THIRDPARTY_PLUGINS "Plugin_SDIS29;Plugin_LibelleDossierObservations;Plugin_LibelleDossierPrescriptions;Plugin_FacteurCriticite"
 
 # CAS
-SetEnv PREVARISC_CAS_ENABLED 0
+# PREVARISC_CAS_ENABLED : non défini ici, vaut 0 par défaut (config/prevarisc.php).
+# Activé uniquement via httpd-auth-worktree.conf ou httpd-auth-main.conf (castor authentification).
 SetEnv PREVARISC_CAS_HOST "rns090lv.rennes.si.fr.atosorigin.com"
 SetEnv PREVARISC_CAS_PORT "8080"
 SetEnv PREVARISC_CAS_CONTEXT "cas"
@@ -68,7 +70,8 @@ SetEnv PREVARISC_CAS_NO_SERVER_VALIDATION "1"
 SetEnv PREVARISC_CAS_VERSION "2.0"
 
 # SSO NTLM
-SetEnv PREVARISC_NTLM_ENABLED 0
+# PREVARISC_NTLM_ENABLED : non défini ici, vaut 0 par défaut (config/prevarisc.php).
+# Activé uniquement via httpd-auth-worktree.conf ou httpd-auth-main.conf (castor authentification).
 
 # Parametres specifiques
 SetEnv PREVARISC_LOCAL_SOMMEIL_TYPES "1;5"
@@ -116,3 +119,6 @@ SetEnv PREVARISC_API_ADRESSE 0
 
 # Utiliser l'affichage Bootstrap v3 plutôt que Boostrap v2
 SetEnv PREVARISC_BOOTSTRAP_3 0
+
+# Utiliser l'authentification via Symfony au lieu de Zend
+SetEnv PREVARISC_SYMFONY_LOGIN 1

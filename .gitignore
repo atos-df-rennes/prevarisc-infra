@@ -1,6 +1,8 @@
 .idea
 apache/httpd-prevarisc-config.conf
 apache/httpd-prevarisc-version.conf
+apache/httpd-auth-worktree.conf
+apache/httpd-auth-main.conf
 prevarisc/
 prevarisc-passerelle-platau/
 prevarisc-migration/
