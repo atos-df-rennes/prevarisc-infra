@@ -30,6 +30,7 @@ const MERGE_UPWARDS_CONFIG_FILE   = '.merge-upwards-config.json';
 const MERGE_UPWARDS_REPOS = [
     'prevarisc' => 'prevarisc',
     'migration' => 'prevarisc-migration',
+    'platau'    => 'prevarisc-passerelle-platau',
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -103,7 +104,7 @@ function gitMergeUpwards(
     #[ASOption(
         name: 'repos',
         mode: InputOption::VALUE_OPTIONAL,
-        description: 'Dépôts concernés : all, prevarisc, migration (défaut: auto-détection des deux).'
+        description: 'Dépôts concernés : all, prevarisc, migration, platau (défaut: auto-détection).'
     )]
     string $repos = 'auto'
 ): void {
@@ -127,7 +128,7 @@ function gitMergeUpwards(
     // 1. Dépôts
     $repoMap = buildRepoMap($repos);
     if ([] === $repoMap) {
-        io()->error('Aucun dépôt trouvé. Vérifiez que prevarisc/ et/ou prevarisc-migration/ existent.');
+        io()->error('Aucun dépôt trouvé. Vérifiez que prevarisc/, prevarisc-migration/ et/ou prevarisc-passerelle-platau/ existent.');
         return;
     }
 
@@ -610,6 +611,10 @@ function buildRepoMap(string $option): array
 
     if ('migration' === $option && isset($available['migration'])) {
         return ['migration' => $available['migration']];
+    }
+
+    if ('platau' === $option && isset($available['platau'])) {
+        return ['platau' => $available['platau']];
     }
 
     return $available;
