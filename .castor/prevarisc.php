@@ -231,10 +231,9 @@ function update(): void
         function () {
             composerInstallDev();
         },
-        function () {
-            symfonyMigrate();
-        },
     );
+
+    symfonyMigrate();
 }
 
 #[AsTask(namespace: 'prevarisc', description: 'Make Prevarisc dump')]
