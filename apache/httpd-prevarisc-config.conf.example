@@ -61,16 +61,9 @@ SetEnv PREVARISC_IGN_AUTOCONF "/ign/prevarisc/customConfig.json"
 # SetEnv PREVARISC_THIRDPARTY_PLUGINS "Plugin_SDIS29;Plugin_LibelleDossierObservations;Plugin_LibelleDossierPrescriptions;Plugin_FacteurCriticite"
 
 # CAS
-# PREVARISC_CAS_ENABLED : non défini ici, vaut 0 par défaut (config/prevarisc.php).
 # Activé uniquement via httpd-auth-worktree.conf ou httpd-auth-main.conf (castor authentification).
-SetEnv PREVARISC_CAS_HOST "rns090lv.rennes.si.fr.atosorigin.com"
-SetEnv PREVARISC_CAS_PORT "8080"
-SetEnv PREVARISC_CAS_CONTEXT "cas"
-SetEnv PREVARISC_CAS_NO_SERVER_VALIDATION "1"
-SetEnv PREVARISC_CAS_VERSION "2.0"
 
 # SSO NTLM
-# PREVARISC_NTLM_ENABLED : non défini ici, vaut 0 par défaut (config/prevarisc.php).
 # Activé uniquement via httpd-auth-worktree.conf ou httpd-auth-main.conf (castor authentification).
 
 # Parametres specifiques
@@ -88,10 +81,11 @@ SetEnv PREVARISC_DASHBOARD_COURRIER_SANS_REPONSE_DAYS 10
 
 # Proxy
 SetEnv PREVARISC_PROXY_ENABLED 0
-SetEnv PREVARISC_PROXY_PROTOCOL "HTTP"
-SetEnv PREVARISC_PROXY_PORT "8080"
-SetEnv PREVARISC_PROXY_HOST "127.0.0.1"
+SetEnv PREVARISC_PROXY_PROTOCOL 0
+SetEnv PREVARISC_PROXY_PORT 8888
+SetEnv PREVARISC_PROXY_HOST "tinyproxy"
 SetEnv PREVARISC_PROXY_USERNAME ""
+SetEnv PREVARISC_PROXY_PASSWORD ""
 
 # Set data path where all the data is stored
 SetEnv PREVARISC_REAL_DATA_PATH "/var/www/html/prevarisc/public/data"

@@ -73,5 +73,16 @@ services:
       MP_SMTP_AUTH_ACCEPT_ANY: 1
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
 
+  # Proxy HTTP sortant pour tester PREVARISC_PROXY_ENABLED en local.
+  # Accessible depuis les conteneurs app/platau via http://tinyproxy:8888
+  tinyproxy:
+    image: monokal/tinyproxy:latest
+    command: ANY
+    restart: unless-stopped
+    ports:
+      - target: 8888
+        published: 8888
+        protocol: tcp
+
 volumes:
   db_data:
