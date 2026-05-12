@@ -19,6 +19,12 @@ Phase 4 : LINT                  → castor symfony:analyse + cs + test
 Phase 5 : REVUE                 → Agent code-review (Opus)
 ```
 
+**Run context & execution policy:**
+
+- Default run_context: `main`. Skills run deterministically and do not perform repository changes by themselves.
+- To execute inside a worktree, set `run_context: worktree` in the issue form or API call. Skills will delegate actual code changes to agents or slash commands; heavy or stateful tasks must be performed by agents.
+- Per-skill defaults and permissions are defined in `.github/skills-config.yml`.
+
 ---
 
 ## Phase 0 — Analyse fonctionnelle
