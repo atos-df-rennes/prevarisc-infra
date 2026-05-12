@@ -1,3 +1,4 @@
+### DEPRECATED: This issue template is deprecated for CLI-first workflows. Prefer invoking agents via CLI prompts.
 name: "🔄 Migration — Controller"
 description: "Porter un controller Zend vers Symfony (port direct, scope limité à un controller)"
 title: "feat(migration): porter [NomController] vers Symfony"

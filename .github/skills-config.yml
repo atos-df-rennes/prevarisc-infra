@@ -3,6 +3,12 @@
 # Global default run context for skills
 default_run_context: main
 
+# CLI-first mode: skills are documentation; agents are executed only via explicit CLI prompts or assistant commands
+cli_first: true
+
+# Disable automatic skill invocation by agents/automation
+auto_invoke_agents: false
+
 # Per-skill configuration
 skills:
   migrate-feature:
