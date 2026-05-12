@@ -11,6 +11,8 @@ Ce skill guide l'analyse du code Zend legacy dans `prevarisc/` avant de démarre
 
 Le répertoire `prevarisc/` est **en lecture seule**. Ne jamais modifier ces fichiers.
 
+**Run context :** `main` (par défaut). Ce skill est d'analyse uniquement et ne modifie pas le dépôt. Pour exécuter des actions dans un worktree, préciser `run_context: worktree` (opt‑in).
+
 ## Structure du legacy
 
 ```

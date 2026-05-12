@@ -69,6 +69,19 @@ body:
       validations:
           required: false
 
+    - type: dropdown
+      id: run_context
+      attributes:
+          label: "Contexte d'exécution"
+          description: "Choisir où exécuter la tâche (par défaut: Main repository)."
+          options:
+              - label: "Main repository (default)"
+                value: "main"
+              - label: "Worktree — exécuter la tâche dans un worktree (opt‑in)"
+                value: "worktree"
+      validations:
+          required: false
+
     - type: markdown
       attributes:
           value: |

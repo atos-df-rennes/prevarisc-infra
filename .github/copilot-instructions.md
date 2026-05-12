@@ -44,6 +44,7 @@ castor migration:progress # Avancement migration
 
 **REQUIS ✅**
 - Port direct comme point de départ pour les fonctions pure‑PHP ; adaptation ciblée pour les blocs dépendant de Zend (refactor léger autorisé si comportement inchangé)
+- Skills deterministics & run_context : les préférences par skill sont définies dans `.github/skills-config.yml` (default run_context = main, worktree opt‑in).
 - PHPStan niveau 10 + CS sans erreur avant commit
 - Rapport d'écarts à chaque livraison
 - Mettre à jour `docs/tech/migration/MANIFEST.yaml` dans chaque commit

@@ -22,6 +22,8 @@ Pour les fonctions pure‑PHP, des modifications peuvent être acceptées si les
 
 En cas d'ambiguïté ou quand une décision affecte le comportement, poser une question interactive avant de poursuivre.
 
+**Run context :** Par défaut `main`. Cet agent peut effectuer des modifications dans le dépôt principal. Pour exécuter dans un worktree, préciser `run_context: worktree` — l'agent opérera dans les répertoires worktree correspondants et utilisera les commandes `castor worktree:*`.
+
 ### Ce qui est mécanique (adapter sans risque)
 - Syntaxe Zend → Symfony (routing, DI, Twig, Doctrine)
 - `$this->view->x` → `return $this->render(..., ['x' => ...])`
