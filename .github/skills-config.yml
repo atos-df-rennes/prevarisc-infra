@@ -8,7 +8,9 @@ skills:
   migrate-feature:
     default_run_context: main
     supports_worktree: true
-    notes: "Orchestration skill: suggests tasks, checklists and outputs. To perform repo changes, prefer invoking the agent 'symfony-migration' or set run_context: worktree."
+    converted_to_agent: true
+    agent_name: migrate-feature
+    notes: "CONVERTED: This skill is now an agent 'migrate-feature'. Use the agent to perform repository changes. Skill remains as read-only documentation."
 
   analyse-legacy:
     default_run_context: main
@@ -19,7 +21,9 @@ skills:
     default_run_context: worktree
     supports_worktree: true
     opt_in_required: true
-    notes: "This skill operates inside a worktree and must be explicitly requested (run_context: worktree). It will NOT be invoked automatically by other skills unless explicitly asked."
+    converted_to_agent: true
+    agent_name: worktree-task
+    notes: "CONVERTED: This skill is now an agent 'worktree-task'. Use the agent for worktree operations. Skill kept for documentation only."
 
   symfony-migration:
     default_run_context: main

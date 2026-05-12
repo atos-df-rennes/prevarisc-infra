@@ -5,6 +5,8 @@ description: "Orchestre les tâches légères (refactor, modernisation, correcti
 
 # Skill : Tâche dans le worktree — Prevarisc
 
+> DEPRECATED : Cette skill a été convertie en agent `worktree-task` (voir `.github/agents/worktree-task.agent.md`). Les opérations de worktree doivent être lancées via l'agent avec `run_context: worktree`. La skill reste disponible pour documentation.
+
 Ce skill fournit le contexte complet pour toute tâche effectuée dans un worktree Git en parallèle de la branche principale. Plus besoin de mentionner le conteneur ou les répertoires worktree dans chaque prompt.
 
 **Run context (opt‑in)** : Ce skill agit exclusivement dans un worktree et est **opt‑in**. Il ne sera invoqué automatiquement que si `run_context: worktree` est explicitement demandé dans l'issue ou la commande. Pour des opérations déterministes dans le dépôt principal, ne pas demander ce skill.

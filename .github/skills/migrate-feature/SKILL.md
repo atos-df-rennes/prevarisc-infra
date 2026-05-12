@@ -5,6 +5,8 @@ description: "Orchestre le pipeline complet de migration d'une fonctionnalité Z
 
 # Skill : Pipeline de migration — Prevarisc
 
+> DEPRECATED : Cette skill a été convertie en agent `migrate-feature` (voir `.github/agents/migrate-feature.agent.md`). Pour exécuter des modifications dans le dépôt (commits, exécution de castor), utiliser l'agent ou la commande slash correspondante. La skill reste disponible pour documentation.
+
 Ce skill orchestre les 6 phases d'une migration de fonctionnalité complète, en indiquant quel outil invoquer à chaque étape.
 
 ## Vue d'ensemble du pipeline
