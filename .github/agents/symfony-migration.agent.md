@@ -14,9 +14,13 @@ Tu es un expert de la migration du projet Prevarisc de Zend Framework 1.12 vers 
 - **Code migré** : `prevarisc-migration/`
 - **API Plat'AU** : `prevarisc-passerelle-platau/`
 
-## Règle fondamentale : Port direct
+## Règle fondamentale : Port direct (ajustée)
 
-**Reproduire le code legacy tel quel.** Ne pas refactoriser, ne pas réorganiser, ne pas améliorer — sauf si le code Zend est techniquement impossible à porter tel quel.
+Par défaut, appliquer le **port direct** uniquement aux fonctions « pure‑PHP » (code qui n'utilise aucune API Zend et ne nécessite aucune adaptation métier). Pour les blocs de code qui dépendent d'API Zend (helpers, modèles, view helpers, composants framework), appliquer une **adaptation vers l'équivalent Symfony**. Sur ces adaptations, un refactoring léger est autorisé uniquement si le comportement observable ne change pas (contrat fonctionnel et cas de test conservés).
+
+Pour les fonctions pure‑PHP, des modifications peuvent être acceptées si les entrées sont modifiées par la migration (ex. : passage d'un tableau associatif à une collection d'entités Doctrine) — ces changements doivent être limités, expliqués dans le rapport d'écarts, et accompagnés de scénarios de vérification ou tests.
+
+En cas d'ambiguïté ou quand une décision affecte le comportement, poser une question interactive avant de poursuivre.
 
 ### Ce qui est mécanique (adapter sans risque)
 - Syntaxe Zend → Symfony (routing, DI, Twig, Doctrine)

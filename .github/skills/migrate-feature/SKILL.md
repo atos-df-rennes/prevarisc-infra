@@ -12,7 +12,8 @@ Ce skill orchestre les 6 phases d'une migration de fonctionnalité complète, en
 ```
 Phase 0 : ANALYSE FONCTIONNELLE → Documentation specs (docs/specs/MOD-XX.md)
 Phase 1 : ANALYSE TECHNIQUE     → Skill analyse-legacy
-Phase 2 : PORT DIRECT           → Agent symfony-migration
+Phase 2 : PORT DIRECT (pure‑PHP) → Agent symfony-migration
+Phase 2b: ADAPTATION (Zend‑dependent) → Agent symfony-migration (refactor léger autorisé si comportement inchangé)
 Phase 3 : OPTIMISATIONS         → Inline (suggestions légères)
 Phase 4 : LINT                  → castor symfony:analyse + cs + test
 Phase 5 : REVUE                 → Agent code-review (Opus)
@@ -104,13 +105,17 @@ find prevarisc/application/forms/ -name "*Nom*"
 
 ---
 
-## Phase 2 — Port direct
+## Phase 2 — Port direct (pure‑PHP) et Adaptation (Zend‑dependent)
 
 **Outil :** Agent `symfony-migration`
 
-Porter mécaniquement le code legacy vers Symfony. Stratégie : **port direct**.
+Porter mécaniquement le code legacy vers Symfony pour les fonctions *pure‑PHP* (sans dépendance à Zend). Pour les blocs dépendants d'API Zend (helpers, modèles, view helpers, composants framework), effectuer une adaptation ciblée vers l'équivalent Symfony. Un refactoring léger est autorisé uniquement si le comportement observable reste identique et si le changement est documenté dans le rapport d'écarts.
 
-**Règle fondamentale :** Reproduire la logique legacy telle quelle. Ne pas refactoriser, ne pas réorganiser.
+**Règles pratiques :**
+- Port direct : fonctions pure‑PHP, changements purement syntaxiques (Zend API → Symfony API).
+- Adaptation : blocs qui appellent des services Zend, utilisent des helpers ou modèlent la donnée via Zend — remplacer par l'équivalent Symfony/Doctrine.
+- Modifications autorisées sur fonctions pure‑PHP seulement si les entrées changent du fait de la migration (ex. tableau associatif → collection d'entités Doctrine) ; ces cas doivent être limités, expliqués et testés.
+- En cas d'ambiguïté qui affecte le comportement, poser une question interactive pour trancher avant de continuer.
 
 **Traductions mécaniques (sans risque) :**
 

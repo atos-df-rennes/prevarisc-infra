@@ -72,9 +72,9 @@ body:
     - type: markdown
       attributes:
           value: |
-              ## Stratégie obligatoire : Port direct
+              ## Stratégie recommandée : Port direct (ajustée)
 
-              **Reproduire le code legacy tel quel.** Ne pas refactoriser, ne pas réorganiser.
+              Par défaut, appliquer le port direct aux fonctions pure‑PHP. Pour les blocs dépendant d'API Zend, effectuer une adaptation vers l'équivalent Symfony ; un refactor léger est autorisé si le comportement reste identique. En cas d'ambiguïté sur le comportement, poser une question interactive avant de poursuivre.
 
               ### Mapping mécanique autorisé
               | Zend | Symfony |

@@ -73,7 +73,7 @@ Niveau de confiance global : ✅ / ⚠️ / 🔴
 
 ## Règles pour remplir le rapport
 
-### Ce qui mérite ✅ Port direct
+### Ce qui mérite ✅ Port direct (par défaut pour les fonctions pure‑PHP)
 - Tout ce qui est purement syntaxique (Zend API → Symfony API)
 - Rendu de variables simples (string, int, array)
 - Boucles `foreach` et conditions `if` portées tel quel

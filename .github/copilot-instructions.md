@@ -43,7 +43,7 @@ castor migration:progress # Avancement migration
 - Écrire "iso-fonctionnalité 100%" sans rapport d'écarts
 
 **REQUIS ✅**
-- Port direct comme point de départ systématique
+- Port direct comme point de départ pour les fonctions pure‑PHP ; adaptation ciblée pour les blocs dépendant de Zend (refactor léger autorisé si comportement inchangé)
 - PHPStan niveau 10 + CS sans erreur avant commit
 - Rapport d'écarts à chaque livraison
 - Mettre à jour `docs/tech/migration/MANIFEST.yaml` dans chaque commit
