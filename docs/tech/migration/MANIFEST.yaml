@@ -278,6 +278,7 @@ tasks:
       - "EtablissementController#retablirEtablissementAction"
     routes:
       - etablissement_informations
+      - etablissement_ajouter
       - etablissement_apres_modification
       - etablissement_historique
       - etablissement_dossiers
