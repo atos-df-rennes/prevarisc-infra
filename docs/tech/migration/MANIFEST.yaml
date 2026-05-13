@@ -265,6 +265,7 @@ tasks:
     status: done
     priority: 1
     complexity: medium
+    notes: "iso-fonctionnalité ajout corrigée (branch migration/ajout-etablissement) : commissions groupées par type, partial adresse réécrit, modales adresse/edit/confirmation portées depuis legacy"
     entities: [Etablissement, Adresse, Groupement]
     legacy:
       - "EtablissementController#indexAction"
