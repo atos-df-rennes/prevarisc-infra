@@ -250,7 +250,7 @@ function makeDump(
         return;
     }
 
-    $dumpName = 'prevarisc_'.date('Ymd').'.sql';
+    $dumpName = 'prevarisc_'.date('YmdHis').'.sql';
     run('docker exec -w / -i '.$container.' mysqldump -u root -p"planmusique" PRV_prevarisc_v2 > '.$dumpName);
 
     io()->success('Dump made successfully.');
