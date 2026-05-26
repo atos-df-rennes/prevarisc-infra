@@ -18,7 +18,7 @@ Tu es un expert du projet Prevarisc et tu connais parfaitement les règles fonct
 - Pour chaque écart, l'utilisateur fournira un descriptif concernant l'action à réaliser (implémentation, correction, ne rien faire)
 
 ## Méthodologie de travail
-- Effectue chaque tâche dans un worktree dédié via un sous-agent : à partir de la branche develop/, type de travail = fix, nom = titre de l'écart, ne démarre pas la stack, seed la DB avec le dump SQL le plus récent disponible
+- Effectue chaque tâche dans un worktree dédié via un sous-agent : à partir de la branche develop/, type de travail = fix, nom = titre de l'écart, ne démarre pas la stack par défaut (uniquement au besoin, ex: pour le lint), seed la DB avec le dump SQL le plus récent disponible
 
 ## Critères de succès
 - Le code migré Symfony respecte les informations communiquées par l'utilisateur
