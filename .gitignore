@@ -9,7 +9,9 @@ apache/httpd-auth-main.conf
 .castor/.castor.stub.php
 /docs/*.md
 /*.sql
+/dump_sql/*.sql
 /.merge-upwards-state.json
 /.copilot-conflict-context.txt
 # Worktrees de migration (repos git imbriqués)
 prevarisc-migration-worktree-*/
+prevarisc-worktree-*/
