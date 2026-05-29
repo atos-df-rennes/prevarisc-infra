@@ -250,7 +250,7 @@ function makeDump(
         return;
     }
 
-    $dumpName = 'prevarisc_'.date('YmdHis').'.sql';
+    $dumpName = 'dump_sql/prevarisc_'.date('YmdHis').'.sql';
     run('docker exec -w / -i '.$container.' mysqldump -u root -p"planmusique" PRV_prevarisc_v2 > '.$dumpName);
 
     io()->success('Dump made successfully.');
@@ -264,7 +264,7 @@ function loadDump(
     io()->title('Loading Prevarisc dump.');
 
     io()->text('Searching dump files (ordered by modification time, newest first).');
-    $sqlDumps = finder()->files()->in(dirname(__DIR__))->depth('== 0')->name('*.sql')->sortByModifiedTime()->reverseSorting();
+    $sqlDumps = finder()->files()->in(dirname(__DIR__).'/dump_sql')->depth('== 0')->name('*.sql')->sortByModifiedTime()->reverseSorting();
 
     if (!$sqlDumps->hasResults()) {
         io()->error('No dump file found.');
@@ -273,17 +273,21 @@ function loadDump(
     }
 
     if (iterator_count($sqlDumps) === 1) {
-        $dumpName = $sqlDumps->getIterator()->current()->getFilename();
+        $dumpPath = $sqlDumps->getIterator()->current();
     } else {
-        $dumpNames = array_values(array_map(fn ($sqlDump) => $sqlDump->getFilename(), iterator_to_array($sqlDumps)));
+        $dumpPaths = array_values(iterator_to_array($sqlDumps));
+        $dumpNames = array_map(fn ($sqlDump) => $sqlDump->getFilename(), $dumpPaths);
 
-        $dumpName = io()->choice('Please choose which dump file you want to load', $dumpNames, 0);
+        $selectedFileName = io()->choice('Please choose which dump file you want to load', $dumpNames, 0);
+        $selectedIndex = array_search($selectedFileName, $dumpNames, true);
+        $dumpPath = $dumpPaths[$selectedIndex];
     }
 
+    $dumpName = $dumpPath->getFilename();
+    $dumpFullPath = (string) $dumpPath;
     io()->info('Loading dump file: '.$dumpName);
 
-    run(['docker', 'cp', $dumpName, $container.':/'.$dumpName]);
-    run('docker exec -w / -i '.$container.' mysql -u root -p"planmusique" PRV_prevarisc_v2 < '.$dumpName);
+    run('docker exec -i '.$container.' mysql -u root -p"planmusique" PRV_prevarisc_v2 < '.$dumpFullPath);
 
     io()->success('Dump loaded successfully.');
 }
