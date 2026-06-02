@@ -81,7 +81,7 @@ SetEnv PREVARISC_DASHBOARD_COURRIER_SANS_REPONSE_DAYS 10
 
 # Proxy
 SetEnv PREVARISC_PROXY_ENABLED 0
-SetEnv PREVARISC_PROXY_PROTOCOL 0
+SetEnv PREVARISC_PROXY_PROTOCOL "HTTP"
 SetEnv PREVARISC_PROXY_PORT 8888
 SetEnv PREVARISC_PROXY_HOST "tinyproxy"
 SetEnv PREVARISC_PROXY_USERNAME ""
@@ -107,12 +107,3 @@ SetEnv PREVARISC_DEACTIVATE_PLATAU 0
 
 # Nombre maximum de dossiers à afficher en simultané
 # SetEnv PREVARISC_DOSSIERS_MAX_A_AFFICHER 8
-
-# Utiliser l'API Adresse plutôt que la base locale Prevarisc
-SetEnv PREVARISC_API_ADRESSE 0
-
-# Utiliser l'affichage Bootstrap v3 plutôt que Boostrap v2
-SetEnv PREVARISC_BOOTSTRAP_3 0
-
-# Utiliser l'authentification via Symfony au lieu de Zend
-SetEnv PREVARISC_SYMFONY_LOGIN 1
