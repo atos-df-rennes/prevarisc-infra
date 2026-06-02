@@ -352,7 +352,7 @@ function authEnsureTestUser(string $mode, string $dbContainer): void
         'ntlm'  => ['login' => 'testntlm', 'sso' => 1],
     };
 
-    [$count, $queryOk] = authDbQuery($dbContainer, "SELECT COUNT(*) FROM UTILISATEUR WHERE LOGIN='{$user['login']}'");
+    [$count, $queryOk] = authDbQuery($dbContainer, "SELECT COUNT(*) FROM utilisateur WHERE USERNAME_UTILISATEUR='{$user['login']}'");
 
     if (!$queryOk) {
         io()->warning('Impossible de vérifier l\'utilisateur en base (DB inaccessible ?).');
@@ -370,7 +370,7 @@ function authEnsureTestUser(string $mode, string $dbContainer): void
 
     $execOk = authDbExec(
         $dbContainer,
-        "INSERT INTO UTILISATEUR (LOGIN, PASSWORD, ACTIF, SSO, PROFIL_ID) VALUES ('{$user['login']}', '', 1, {$user['sso']}, 1)"
+        "INSERT INTO utilisateur (USERNAME_UTILISATEUR, PASSWD_UTILISATEUR, ACTIF_UTILISATEUR, FAILED_LOGIN_ATTEMPTS_UTILISATEUR, SSO, ID_GROUPE) VALUES ('{$user['login']}', '', 1, 0, {$user['sso']}, 1)"
     );
 
     if ($execOk) {
