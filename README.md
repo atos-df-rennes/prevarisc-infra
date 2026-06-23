@@ -14,7 +14,7 @@ Dépôt de l'infrastructure Docker pour Prevarisc. Il orchestre trois applicatio
 
 ### Pré-requis
 
-- [Docker](https://docs.docker.com/get-docker/)
+- [WSL en version 2](https://learn.microsoft.com/en-us/windows/wsl/install) | Cela nécessite d'activer les options de virtualisation dans le BIOS
 - [Castor](https://castor.jolicode.com/installation/#as-a-static-binary) — task runner utilisé pour piloter l'environnement
 - (Recommandé) [Activer l'autocomplétion Castor](https://castor.jolicode.com/going-further/interacting-with-castor/autocomplete/#installation)
 
