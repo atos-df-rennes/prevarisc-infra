@@ -5,7 +5,6 @@ use Castor\Attribute\AsArgument;
 use Castor\Attribute\ASOption;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Process\ExecutableFinder;
-use function Castor\check;
 use function Castor\context;
 use function Castor\exit_code;
 use function Castor\finder;
@@ -21,11 +20,30 @@ function setup(): void
 {
     io()->title('Setting up Prevarisc.');
 
-    check(
-        'Checking if Git is installed.',
-        'Git is not installed. Please install it first.',
-        fn () => (new ExecutableFinder())->find('git')
-    );
+    io()->text('Checking if Git is installed.');
+    if (!(new ExecutableFinder())->find('git')) {
+        io()->warning('Git n\'est pas installé. Installation automatique en cours...');
+        installGit();
+    } else {
+        io()->text('Git est installé.');
+    }
+
+    io()->text('Checking if Docker is installed.');
+    if (!(new ExecutableFinder())->find('docker')) {
+        io()->warning('Docker n\'est pas installé. Installation automatique en cours...');
+        installDocker();
+        postInstallDocker();
+    } else {
+        io()->text('Docker est installé.');
+
+        // Vérifie que le plugin docker compose est bien disponible
+        if (exit_code(['docker', 'compose', 'version'], quiet: true) !== 0) {
+            io()->warning('Le plugin Docker Compose n\'est pas disponible. Installation en cours...');
+            run(['sudo', 'apt-get', 'install', '-y', 'docker-compose-plugin']);
+        } else {
+            io()->text('Docker Compose est installé.');
+        }
+    }
 
     io()->section('Cloning repositories.');
 
@@ -219,7 +237,7 @@ function shell(): void
     );
 }
 
-#[AsTask(namespace: 'prevarisc', description: 'Update Prevarisc')]
+#[AsTask(namespace: 'prevarisc', description: 'Installs all composer dependencies and execute Doctrine migrations')]
 function update(): void
 {
     io()->title('Updating Prevarisc.');
@@ -236,7 +254,7 @@ function update(): void
     symfonyMigrate();
 }
 
-#[AsTask(namespace: 'prevarisc', description: 'Make Prevarisc dump')]
+#[AsTask(namespace: 'prevarisc', description: 'Make Prevarisc dump from db container to local host (WSL)')]
 function makeDump(
     #[ASOption(name: 'container', description: 'Nom du conteneur MySQL source')]
     string $container = 'prevarisc-infra-db-1'
@@ -256,7 +274,7 @@ function makeDump(
     io()->success('Dump made successfully.');
 }
 
-#[AsTask(namespace: 'prevarisc', description: 'Load Prevarisc dump')]
+#[AsTask(namespace: 'prevarisc', description: 'Load a selected Prevarisc dump from local host (WSL) to db container')]
 function loadDump(
     #[ASOption(name: 'container', description: 'Nom du conteneur MySQL cible')]
     string $container = 'prevarisc-infra-db-1'
@@ -309,6 +327,83 @@ function watchForApacheConfigurationChanges(): void
     parallel(
         fn () => watch('apache/', $handler),
         fn () => watch('php/prevarisc/', $handler),
+    );
+}
+
+function installGit(): void
+{
+    run(['sudo', 'apt-get', 'update', '-qq']);
+    run(['sudo', 'apt-get', 'install', '-y', 'git']);
+    io()->success('Git installé avec succès.');
+}
+
+function installDocker(): void
+{
+    io()->text('Installation des prérequis...');
+    run(['sudo', 'apt-get', 'update', '-qq']);
+    run(['sudo', 'apt-get', 'install', '-y', 'ca-certificates', 'curl']);
+
+    io()->text('Ajout de la clé GPG officielle Docker...');
+    run(['sudo', 'install', '-m', '0755', '-d', '/etc/apt/keyrings']);
+    run(['sudo', 'curl', '-fsSL', 'https://download.docker.com/linux/ubuntu/gpg', '-o', '/etc/apt/keyrings/docker.asc']);
+    run(['sudo', 'chmod', 'a+r', '/etc/apt/keyrings/docker.asc']);
+
+    io()->text('Ajout du dépôt Docker...');
+    $arch = trim((string) shell_exec('dpkg --print-architecture'));
+    $codename = trim((string) shell_exec('. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}"'));
+
+    $sourcesContent = implode("\n", [
+        'Types: deb',
+        'URIs: https://download.docker.com/linux/ubuntu',
+        "Suites: {$codename}",
+        'Components: stable',
+        "Architectures: {$arch}",
+        'Signed-By: /etc/apt/keyrings/docker.asc',
+        '',
+    ]);
+
+    $tempFile = tempnam(sys_get_temp_dir(), 'docker_sources_');
+    file_put_contents($tempFile, $sourcesContent);
+    run(['sudo', 'cp', $tempFile, '/etc/apt/sources.list.d/docker.sources']);
+    run(['sudo', 'chmod', '644', '/etc/apt/sources.list.d/docker.sources']);
+    unlink($tempFile);
+
+    io()->text('Installation de Docker Engine et Docker Compose...');
+    run(['sudo', 'apt-get', 'update', '-qq']);
+    run(['sudo', 'apt-get', 'install', '-y', 'docker-ce', 'docker-ce-cli', 'containerd.io', 'docker-buildx-plugin', 'docker-compose-plugin']);
+
+    io()->success('Docker installé avec succès.');
+}
+
+function postInstallDocker(): void
+{
+    io()->text('Configuration post-installation Docker...');
+
+    // Création du groupe docker (idempotent)
+    exit_code('sudo groupadd docker 2>/dev/null || true');
+
+    // Ajout de l'utilisateur courant au groupe docker
+    $currentUser = trim((string) shell_exec('whoami'));
+    if ('' !== $currentUser) {
+        run(['sudo', 'usermod', '-aG', 'docker', $currentUser]);
+        io()->text("Utilisateur '{$currentUser}' ajouté au groupe docker.");
+    }
+
+    // Activation du démarrage automatique via systemd
+    // Note : sous WSL2, systemd doit être activé dans /etc/wsl.conf ([boot] systemd=true)
+    io()->text('Activation du démarrage automatique de Docker (systemd)...');
+    exit_code('sudo systemctl enable docker.service 2>/dev/null || true');
+    exit_code('sudo systemctl enable containerd.service 2>/dev/null || true');
+    exit_code('sudo systemctl start docker.service 2>/dev/null || sudo service docker start 2>/dev/null || true');
+
+    io()->success('Configuration post-installation Docker terminée.');
+    io()->note(
+        'Pour que les droits du groupe docker prennent effet sans sudo, '
+        . 'déconnectez-vous et reconnectez-vous, ou exécutez : newgrp docker'
+    );
+    io()->note(
+        'Sous WSL2 : assurez-vous que systemd est activé dans /etc/wsl.conf '
+        . '([boot] systemd=true) pour que Docker démarre automatiquement au boot.'
     );
 }
 
