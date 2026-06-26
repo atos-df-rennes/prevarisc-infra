@@ -1,5 +1,6 @@
 ---
 name: performance-review
+description: Detects N+1 queries, inefficient database access patterns, and missing indexes in migrated code
 tools: [read, grep, glob, bash, search]
 ---
 

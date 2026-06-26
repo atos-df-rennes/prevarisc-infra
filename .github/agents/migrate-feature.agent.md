@@ -1,5 +1,6 @@
 ---
 name: migrate-feature
+description: Orchestrates the Zend to Symfony migration pipeline with validation and version control integration
 tools: [read, edit, create, glob, grep, bash, search]
 ---
 

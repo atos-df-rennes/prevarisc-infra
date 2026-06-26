@@ -1,5 +1,6 @@
 ---
 name: code-review
+description: Post-migration code reviewer for PHP7.1/Symfony4.4 compliance, security, and performance
 model: claude-opus-4.6
 tools: [read, grep, glob, bash]
 ---

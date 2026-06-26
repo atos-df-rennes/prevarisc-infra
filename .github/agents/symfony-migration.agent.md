@@ -1,5 +1,6 @@
 ---
 name: symfony-migration
+description: Ports Zend legacy code to Symfony 4.4 respecting PHP 7.1 compatibility and migration strategy
 tools: [read, edit, create, glob, grep, bash, search]
 ---
 

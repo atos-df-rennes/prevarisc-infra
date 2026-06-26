@@ -1,5 +1,6 @@
 ---
 name: worktree-task
+description: Performs isolated refactoring and fixes in Git worktrees with validation and version control
 tools: [read, edit, create, glob, grep, bash, search]
 ---
 

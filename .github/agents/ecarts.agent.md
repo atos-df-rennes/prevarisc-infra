@@ -1,5 +1,6 @@
 ---
 name: ecarts
+description: Corrects functional deviations between specifications and migrated code in isolated worktrees
 tools: [read, edit, create, glob, grep, bash, search]
 ---
 

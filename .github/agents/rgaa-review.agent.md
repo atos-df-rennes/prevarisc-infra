@@ -1,5 +1,6 @@
 ---
 name: rgaa-review
+description: RGAA 4.1 accessibility audit for Twig templates and HTML markup compliance
 tools: [read, grep, glob, bash, search]
 ---
 
