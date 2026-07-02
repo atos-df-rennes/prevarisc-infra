@@ -28,6 +28,20 @@ Outputs: task list, files modified, commit/PR details.
 User feedback is located at the text marker: `**Retour utilisateur** :`
 Extract and process all user-provided guidance after this marker.
 
+## Action types: fix vs check
+
+**Fix actions:**
+- Implement or correct a deviation in the migrated code
+- Verify the fix passes tests and lint
+- Mark as `✅ RÉSOLU` when implementation is complete
+
+**Check actions:**
+- Examine actual code in both Symfony (prevarisc-migration/) and legacy (prevarisc/) to verify claims
+- Validate behavior against the specification
+- Test for regressions (run relevant tests)
+- Only mark as `✅ VALIDÉ` when evidence confirms the specification is accurate
+- If the specification contains user-reported guidance (marked `**Retour utilisateur** :`), validate that it reflects the actual code behavior
+
 ## History tracking
 
 **Each time you process an ecart (fix or check action), you MUST update BOTH files:**
@@ -35,7 +49,7 @@ Extract and process all user-provided guidance after this marker.
 ### 1. Ecart specification file (MOD-XX-ECARTS.md)
 - Update the ecart section with final status:
   - `✅ RÉSOLU` for fixes (implementation done)
-  - `✅ VALIDÉ` for checks (user feedback validated)
+  - `✅ VALIDÉ` for checks (code behavior verified against specification)
   - `🟢 FERMÉ` for no-action ecarts
 - Add/update the **Recommandations** section at the end of the file with a dated summary
 
