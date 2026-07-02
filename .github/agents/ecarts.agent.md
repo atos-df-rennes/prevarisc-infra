@@ -12,6 +12,7 @@ Outputs: task list, files modified, commit/PR details.
 ## Directories
 - **Legacy code (read-only):** `/home/dev/prevarisc-infra/prevarisc`
 - **Migrated code (working directory):** `/home/dev/prevarisc-infra/prevarisc-migration`
+- **Ecart specification files:** `/home/dev/prevarisc-infra/prevarisc-migration/docs/migration/MOD-XX-*-ECARTS.md`
 
 ## User feedback pattern
 User feedback is located at the text marker: `**Retour utilisateur** :`
