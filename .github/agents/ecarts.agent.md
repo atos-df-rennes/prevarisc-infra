@@ -16,3 +16,10 @@ Outputs: task list, files modified, commit/PR details.
 ## User feedback pattern
 User feedback is located at the text marker: `**Retour utilisateur** :`
 Extract and process all user-provided guidance after this marker.
+
+## History tracking
+Each time you process an ecart (fix or check action), you **MUST** update `.github/ecarts-history.yml`:
+- Add a new entry under the module (e.g., `MOD-10`)
+- Include: number, title, action (fix|check), status (closed|open|blocked), date_processed, validated_by, notes, and files_modified
+- Update `metadata.last_updated` and `metadata.total_ecarts_processed`
+- Commit this file along with your code changes

@@ -1,0 +1,56 @@
+# Historique de traitement des écarts de migration
+# Ce fichier trace le statut et l'historique des corrections/validations d'écarts
+# Format: chaque entrée représente un écart traité avec ses métadonnées
+
+ecarts:
+  # Template: copier ce bloc pour chaque écart traité
+  # MOD-XX:
+  #   - number: <numéro écart>
+  #     title: <titre écart>
+  #     action: <fix|check> # fix = correction, check = vérification
+  #     status: <closed|open|blocked> # closed = terminé, open = en cours/ouvert, blocked = bloqué
+  #     date_processed: <YYYY-MM-DD>
+  #     validated_by: <user|system> # qui a validé la correction/vérification
+  #     notes: <notes additionnelles>
+  #     files_modified: # fichiers modifiés lors de la correction
+  #       - <path>
+  #     commit_refs: # références aux commits de correction (optionnel)
+  #       - <commit-sha>
+
+  MOD-10:
+    - number: 1
+      title: "Synchronisation visite/groupe de visites → établissement"
+      action: fix
+      status: closed
+      date_processed: "2026-05-22"
+      validated_by: system
+      notes: "Implémentation de la synchronisation des textes applicables depuis le dossier vers l'établissement. Fonctionne correctement en Symfony."
+      files_modified:
+        - "prevarisc-migration/src/Controller/Dossier/DossierController.php"
+        - "prevarisc-migration/src/Service/Dossier/DossierCreationService.php"
+
+    - number: 2
+      title: "Ordre d'affichage par défaut n'est pas réellement calculé en fin de liste"
+      action: check
+      status: closed
+      date_processed: "2026-05-22"
+      validated_by: user
+      notes: "Comportement Symfony améliore le legacy (pas de reset involontaire). Aucune régression fonctionnelle. FERMÉ sans action."
+      files_modified: []
+      functional_improvement: "Évite le reset involontaire du legacy lors de l'édition"
+
+    - number: 3
+      title: "Gestion d'erreur à la sauvegarde n'est pas restituée"
+      action: fix
+      status: closed
+      date_processed: "2026-05-22"
+      validated_by: system
+      notes: "Gestion des erreurs Doctrine intégrée avec messages d'erreur flash."
+      files_modified:
+        - "prevarisc-migration/src/Controller/TextesApplicablesController.php"
+
+# Méta
+metadata:
+  last_updated: "2026-07-02"
+  updated_by: "system"
+  total_ecarts_processed: 3
