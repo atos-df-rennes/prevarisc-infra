@@ -3,21 +3,21 @@ ecarts:
   - number: 1
     title: Suppression d'un établissement ✅ Migré
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/src/Service/Dossier.php
     - prevarisc-migration/templates/etablissement/informations.html.twig
-    - prevarisc-migration/src/Service/Etablissement.php
+    - prevarisc-migration/src/Service/Dossier.php
     - prevarisc-migration/src/Controller/Etablissement/EtablissementController.php
+    - prevarisc-migration/src/Service/Etablissement.php
   - number: 2
     title: Identifiant Winprev jamais auto-calculé ✅ Spécification corrigée
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
     - prevarisc-migration/docs/specs/MOD-01-ETABLISSEMENTS.md
@@ -25,41 +25,41 @@ ecarts:
     title: Propagation de la périodicité/catégorie aux cellules enfants ✅ Spécification
       corrigée
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
     - prevarisc-migration/src/Service/EtablissementPersistenceService.php
-    - prevarisc-migration/src/Service/Etablissement.php
     - prevarisc-migration/docs/specs/MOD-01-ETABLISSEMENTS.md
+    - prevarisc-migration/src/Service/Etablissement.php
   MOD-02:
   - number: 1
     title: Multi-natures non prises en charge
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/src/Entity/Dossier.php
     - prevarisc-migration/src/Form/Dossier/DossierType.php
+    - prevarisc-migration/src/Entity/Dossier.php
   - number: 2
     title: Masquage du champ `AVIS_COMMISSION` selon les cases cochées
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
     - prevarisc-migration/templates/dossier/index.html.twig
     - prevarisc-migration/src/Controller/Dossier/DossierController.php
   - number: 3
     title: Le verrouillage n'interdit pas toutes les modifications côté serveur
-    action: check
-    status: open
+    action: fix
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: system
     notes: Extracted from ecart specification
     files_modified:
     - prevarisc-migration/src/Controller/Dossier/DossierDocumentsConsultesController.php
@@ -67,55 +67,57 @@ ecarts:
   - number: 4
     title: Le champ CNE n'est pas exposé dans Symfony
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/src/Entity/Dossier.php
     - prevarisc-migration/src/Form/Dossier/DossierType.php
+    - prevarisc-migration/src/Entity/Dossier.php
   - number: 5
     title: L'accès à un dossier Plat'AU désactivé n'est pas bloqué en Symfony
-    action: check
-    status: open
+    action: fix
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: system
     notes: Extracted from ecart specification
     files_modified:
+    - prevarisc-migration/src/Service/Dossier/DossierSuppressionService.php
     - prevarisc-migration/config/services.php
+    - prevarisc-migration/templates/dossier/index.html.twig
     - prevarisc-migration/src/Controller/Dossier/DossierController.php
   MOD-03:
   - number: 1
     title: Les règles de compétence ne respectent pas la combinaison de critères «
       tous obligatoires » de la spec ✅ Sans action
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/src/Form/CommissionRegleType.php:41-46,58-63,82-87,99-105,119-125,181-199
     - prevarisc-migration/src/Service/Commission/CommissionRegleCompetenceService.php:14-20,64-103
     - prevarisc-migration/docs/specs/MOD-03-COMMISSIONS.md:391
+    - prevarisc-migration/src/Form/CommissionRegleType.php:41-46,58-63,82-87,99-105,119-125,181-199
   - number: 2
     title: Les natures de dossier et l'axe « commune » des spécialisations membres
       ne sont pas réellement utilisés pour filtrer les documents ✅ Spécification corrigée
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/src/Form/CommissionMembreType.php:120-199
     - prevarisc-migration/src/Service/Commission/CommissionMembreEligibilityChecker.php:13-21,30-76
     - prevarisc-migration/docs/specs/MOD-03-COMMISSIONS.md:405,453
+    - prevarisc-migration/src/Form/CommissionMembreType.php:120-199
   - number: 3
     title: Les ODJ des membres rattachés à un groupement ne sont pas filtrés par compétence
       ✅ Spécification corrigée
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
     - prevarisc-migration/docs/specs/MOD-03-COMMISSIONS.md:453-455
@@ -124,9 +126,9 @@ ecarts:
     title: L'indicateur de présence n'oppose pas « titulaire » et « suppléant », mais
       trois statuts métier différents ✅ Spécification corrigée
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
     - prevarisc-migration/docs/specs/MOD-03-COMMISSIONS.md:177,182,413
@@ -135,9 +137,9 @@ ecarts:
     title: Les séances créées en mode récurrent ne sont pas liées à la date principale
       ✅ Spécification corrigée
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
     - prevarisc-migration/src/Service/Commission/CalendarService.php:278-306
@@ -146,22 +148,26 @@ ecarts:
     title: La suppression d'un membre en Symfony ne garantit pas la suppression de
       ses modèles ODT ✅ Corrigé
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
     - prevarisc-migration/src/Controller/Commission/CommissionMembresController.php:45-59
-    - prevarisc-migration/docs/specs/MOD-03-COMMISSIONS.md:411
     - prevarisc-migration/src/Service/Commission/CommissionMembreCourrierService.php:98-121
     - prevarisc-migration/src/Entity/Commission.php:85-89
+    - prevarisc-migration/src/Service/Commission/CommissionManagerService.php:41-75
+    - prevarisc-migration/src/Service/Commission/IcalendarSyncService.php:13-16,32-35,66-127
+    - prevarisc-migration/src/Entity/Commission.php:72-89
+    - prevarisc-migration/docs/specs/MOD-03-COMMISSIONS.md:411
+    - prevarisc-migration/src/Controller/Commission/CommissionCompetencesController.php:109-113
   MOD-04:
   - number: 1
     title: Validation incomplète des prescriptions types côté Symfony ✅ Corrigé
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
     - prevarisc-migration/src/Form/PrescriptionTypePrescriptionType.php
@@ -169,9 +175,9 @@ ecarts:
     title: La valeur par défaut texte/article n'est plus atteignable depuis les formulaires
       Symfony
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
     - prevarisc-migration/src/Form/PrescriptionDossierAssociationType.php
@@ -181,22 +187,22 @@ ecarts:
     title: Les formulaires Symfony de remplacement texte/article proposent des choix
       interdits ✅ Corrigé
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/src/Form/ReplacePrescriptionArticleListeType.php
-    - prevarisc-migration/src/Form/ReplacePrescriptionTexteListeType.php
-    - prevarisc-migration/src/Controller/Prescription/PrescriptionsTextesController.php
     - prevarisc-migration/src/Controller/Prescription/PrescriptionsArticlesController.php
+    - prevarisc-migration/src/Form/ReplacePrescriptionTexteListeType.php
+    - prevarisc-migration/src/Form/ReplacePrescriptionArticleListeType.php
+    - prevarisc-migration/src/Controller/Prescription/PrescriptionsTextesController.php
   - number: 4
     title: La suppression d'une prescription de dossier n'a plus qu'une confirmation
       simple
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
     - prevarisc-migration/templates/dossier/prescriptions/form.html.twig
@@ -204,21 +210,21 @@ ecarts:
     title: La reprise multi-établissements est bien bloquée en Symfony, mais sans
       message explicatif ✅ Corrigé
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/templates/dossier/prescriptions/index.html.twig
     - prevarisc-migration/src/Controller/Dossier/DossierPrescriptionRepriseController.php
     - prevarisc-migration/docs/specs/MOD-04-PRESCRIPTIONS.md
+    - prevarisc-migration/templates/dossier/prescriptions/index.html.twig
   - number: 6
     title: La reprise Symfony renumérote les prescriptions au lieu de conserver leur
       numéro d'origine
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
     - prevarisc-migration/docs/specs/MOD-04-PRESCRIPTIONS.md
@@ -226,40 +232,40 @@ ecarts:
   - number: 1
     title: Création d'un utilisateur SSO avec mot de passe local encore stocké
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
     - prevarisc-migration/src/Service/UtilisateurManager.php
-    - prevarisc-migration/src/Controller/Admin/UtilisateursController.php
-    - prevarisc-migration/src/Form/UtilisateurType.php:52-131
     - prevarisc-migration/tests/Service/UtilisateurManagerTest.php
+    - prevarisc-migration/src/Form/UtilisateurType.php:52-131
+    - prevarisc-migration/src/Controller/Admin/UtilisateursController.php
   - number: 2
     title: Les droits dossier ne vérifient plus les établissements rattachés
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/src/Security/Voter/DossierVoter.php:42-126
     - prevarisc-migration/src/Controller/Dossier/DossierController.php:224-254
+    - prevarisc-migration/src/Security/Voter/DossierVoter.php:42-126
   - number: 3
     title: Les ressources spécialisées établissement — Pattern universel de sérialisation
       ✅ Spécification refactorisée
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified: []
   - number: 4
     title: La règle d'accès aux sites n'est pas reproduite à l'identique
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
     - prevarisc-migration/src/Security/Voter/Etablissement/EtablissementSiteVoter.php:47-140
@@ -267,26 +273,26 @@ ecarts:
   - number: 5
     title: La déconnexion Symfony ne reproduit pas toute la logique legacy
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/tests/Security/LogoutHandlerTest.php
-    - prevarisc-migration/tests/EventSubscriber/LastActionSubscriberTest.php
-    - prevarisc-migration/src/Security/LogoutHandler.php
-    - prevarisc-migration/src/Security/CasLogoutSuccessHandler.php:59-75
-    - prevarisc-migration/src/Security/LogoutHandler.php:42-56
     - prevarisc-migration/src/Security/FormLoginAuthenticator.php:238-265
-    - prevarisc-migration/src/EventSubscriber/LastActionSubscriber.php
-    - prevarisc-migration/src/EventSubscriber/LastActionSubscriber.php:47-76
+    - prevarisc-migration/src/Security/CasLogoutSuccessHandler.php:59-75
+    - prevarisc-migration/tests/EventSubscriber/LastActionSubscriberTest.php
     - prevarisc-migration/src/Service/LastActionUpdater.php
+    - prevarisc-migration/tests/Security/LogoutHandlerTest.php
+    - prevarisc-migration/src/Security/LogoutHandler.php:42-56
+    - prevarisc-migration/src/EventSubscriber/LastActionSubscriber.php:47-76
+    - prevarisc-migration/src/EventSubscriber/LastActionSubscriber.php
+    - prevarisc-migration/src/Security/LogoutHandler.php
   - number: 6
     title: La modification d'un groupe n'invalide pas les caches legacy
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
     - prevarisc-migration/src/Controller/Admin/GroupeController.php:117-128
@@ -294,55 +300,55 @@ ecarts:
     title: Les ressources dossier multi-natures sont décrites dans la spec mais non
       résolues
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
+    - prevarisc-migration/src/Security/Voter/DossierVoter.php:63
     - prevarisc-migration/src/Form/RessourceSpecialiseeDossierType.php:24-30
     - prevarisc-migration/src/Repository/ResourcesRepository.php:72-86
-    - prevarisc-migration/src/Security/Voter/DossierVoter.php:63
   MOD-06:
   - number: 1
     title: Cache de recherche ✅ Résolu
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified: []
   - number: 2
     title: Filtres « date de commission » et « date de visite » ✅ Résolu (code mort
       supprimé)
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified: []
   - number: 3
     title: Dépliage hiérarchique des dossiers liés ✅ Résolu (non porté par design)
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified: []
   - number: 4
     title: Informations d'établissement à la date pertinente 📋 Documenté
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified: []
   MOD-07:
   - number: 1
     title: Le nouveau groupement n'est pas automatiquement sélectionné après création
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
     - prevarisc-migration/src/Controller/GroupementController.php
@@ -350,42 +356,42 @@ ecarts:
   - number: 2
     title: La vue simplifiée de consultation embarquée n'est pas migrée
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/src/Controller/GroupementController.php
     - prevarisc-migration/templates/etablissement/_informations/_carto.html.twig
+    - prevarisc-migration/src/Controller/GroupementController.php
     - prevarisc-migration/templates/groupement/informations.html.twig
   - number: 3
     title: La sauvegarde Symfony ne recalcule pas intégralement les associations et
       ne renseigne pas explicitement la date de début des affectations
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/src/Controller/GroupementController.php
     - prevarisc-migration/src/Entity/Groupement.php
+    - prevarisc-migration/src/Controller/GroupementController.php
   - number: 4
     title: La réaffectation Symfony n'invalide pas le cache global de recherche
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
     - prevarisc-migration/src/Controller/GroupementController.php
-    - prevarisc-migration/src/Service/GroupementCommunes.php
     - prevarisc-migration/config/services.php
+    - prevarisc-migration/src/Service/GroupementCommunes.php
   - number: 5
     title: Le tri par type puis par libellé n'est pas garanti dans l'interface Symfony
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
     - prevarisc-migration/src/Controller/GroupementController.php
@@ -393,20 +399,20 @@ ecarts:
   - number: 6
     title: La fiche de coordonnées vide n'est pas créée automatiquement côté Symfony
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/src/Form/GroupementType.php
     - prevarisc-migration/src/Entity/Groupement.php
+    - prevarisc-migration/src/Form/GroupementType.php
   - number: 7
     title: La précondition « au moins un préventionniste » n'est vérifiée qu'en interface,
       pas côté serveur
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
     - prevarisc-migration/src/Controller/GroupementController.php
@@ -415,44 +421,44 @@ ecarts:
   - number: 1
     title: La fonction « Maire » reste proposée lors de la création ✅ Corrigé
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/src/Controller/ContactController.php
     - prevarisc-migration/src/Form/ContactType.php
+    - prevarisc-migration/src/Controller/ContactController.php
   - number: 2
     title: L'héritage des contacts d'établissement ne remonte qu'au parent direct
       ✅ Corrigé
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/src/Repository/EtablissementRepository.php
     - prevarisc-migration/src/Controller/Etablissement/EtablissementContactController.php
+    - prevarisc-migration/src/Repository/EtablissementRepository.php
   - number: 3
     title: La suppression peut effacer un contact encore lié à une autre entité du
       même type ✅ Corrigé
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
+    - prevarisc-migration/src/Controller/Commission/CommissionContactsController.php
+    - prevarisc-migration/src/Controller/Etablissement/EtablissementContactController.php
     - prevarisc-migration/src/Controller/GroupementController.php
     - prevarisc-migration/src/Controller/Dossier/DossierContactController.php
-    - prevarisc-migration/src/Controller/Etablissement/EtablissementContactController.php
-    - prevarisc-migration/src/Controller/Commission/CommissionContactsController.php
   - number: 4
     title: L'autocomplétion Symfony est plafonnée à 10 résultats au lieu de 100 ✅
       Corrigé
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
     - prevarisc-migration/src/Repository/UtilisateurInformationsRepository.php
@@ -461,35 +467,35 @@ ecarts:
     title: L'invalidation de cache prévue par la spec n'est pas portée en Symfony
       ✅ Accepté
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
     - prevarisc-migration/src/Controller/ContactController.php
-    - prevarisc-migration/src/Controller/GroupementController.php
-    - prevarisc-migration/src/Controller/Dossier/DossierContactController.php
     - prevarisc-migration/src/Controller/Etablissement/EtablissementContactController.php
     - prevarisc-migration/src/Controller/Commission/CommissionContactsController.php
+    - prevarisc-migration/src/Controller/Dossier/DossierContactController.php
+    - prevarisc-migration/src/Controller/GroupementController.php
   MOD-09:
   - number: 1
     title: Le lien d'une pièce jointe de dossier vers un ou plusieurs établissements
       n'est pas porté
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/templates/dossier/pieces_jointes/form.html.twig
     - prevarisc-migration/src/Controller/Dossier/DossierPiecesJointesController.php
+    - prevarisc-migration/templates/dossier/pieces_jointes/form.html.twig
   - number: 2
     title: La sélection unique d'une pièce jointe pour le passage en commission n'est
       pas disponible
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
     - prevarisc-migration/templates/dossier/pieces_jointes/_piece_jointe_row.html.twig
@@ -498,45 +504,45 @@ ecarts:
     title: Le téléchargement des pièces jointes de date de commission dépend encore
       du routing legacy
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/templates/calendrier_des_commissions/_piece_jointe_row.html.twig
     - prevarisc-migration/src/Controller/PieceJointeController.php
+    - prevarisc-migration/templates/calendrier_des_commissions/_piece_jointe_row.html.twig
   - number: 4
     title: Les valeurs de placement établissement ne sont pas compatibles avec le
       legacy et la génération des miniatures est plus large que prévu
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/src/Service/EtablissementPieceJointeService.php
     - prevarisc-migration/src/Constant/PlacementEtablissementPj.php
-    - prevarisc-migration/src/Repository/EtablissementPieceJointeRepository.php
     - prevarisc-migration/templates/etablissement/add_piece_jointe.html.twig
+    - prevarisc-migration/src/Service/EtablissementPieceJointeService.php
+    - prevarisc-migration/src/Repository/EtablissementPieceJointeRepository.php
   - number: 5
     title: La date d'ajout est stockée/affichée sans heure alors que la spec parle
       d'une date-heure
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/src/Entity/PieceJointe.php
     - prevarisc-migration/templates/dossier/pieces_jointes/_piece_jointe_row.html.twig
+    - prevarisc-migration/src/Entity/PieceJointe.php
     - prevarisc-migration/src/Controller/Commission/CalendrierDesCommissionsPiecesJointesController.php
     - prevarisc-migration/src/Controller/Dossier/DossierPiecesJointesController.php
   - number: 6
     title: Le legacy ne respecte pas toujours le nom par défaut « sans extension »
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
     - prevarisc-migration/src/Controller/Commission/CalendrierDesCommissionsPiecesJointesController.php
@@ -545,10 +551,10 @@ ecarts:
   - number: 1
     title: La synchronisation visite/groupe de visites → établissement n'est pas portée
       dans Symfony
-    action: check
-    status: open
+    action: fix
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: system
     notes: Extracted from ecart specification
     files_modified:
     - prevarisc-migration/src/Service/Dossier/DossierCreationService.php
@@ -562,8 +568,8 @@ ecarts:
     validated_by: user
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/src/Controller/TextesApplicablesController.php
     - prevarisc-migration/src/Form/TexteApplicableType.php
+    - prevarisc-migration/src/Controller/TextesApplicablesController.php
   - number: 3
     title: La gestion d'erreur à la sauvegarde n'est pas restituée dans Symfony ✅
       RÉSOLU
@@ -583,8 +589,8 @@ ecarts:
     validated_by: system
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/templates/dossier/textes_applicables/edit_textes_applicables.html.twig
     - prevarisc-migration/templates/etablissement/edit_textes_applicables.html.twig
+    - prevarisc-migration/templates/dossier/textes_applicables/edit_textes_applicables.html.twig
   - number: 5
     title: Le réordonnement AJAX Symfony renvoie une redirection HTTP au lieu d'une
       réponse légère ✅ RÉSOLU
@@ -614,8 +620,8 @@ ecarts:
     validated_by: pending
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/src/Controller/TableauDesPeriodicitesController.php
     - prevarisc-migration/templates/tableau_des_periodicites/index.html.twig
+    - prevarisc-migration/src/Controller/TableauDesPeriodicitesController.php
   - number: 2
     title: Le vidage du cache de recherche dépend encore d'un pont legacy côté Symfony
     action: check
@@ -634,8 +640,8 @@ ecarts:
     validated_by: pending
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/src/Controller/TableauDesPeriodicitesController.php
     - prevarisc-migration/templates/tableau_des_periodicites/index.html.twig
+    - prevarisc-migration/src/Controller/TableauDesPeriodicitesController.php
   - number: 4
     title: La sauvegarde legacy de la matrice n'est pas atomique, contrairement à
       Symfony
@@ -649,9 +655,9 @@ ecarts:
   - number: 5
     title: Le typage interne autour de `ID_TYPE` reste fragile dans la migration Symfony
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
     - prevarisc-migration/src/Entity/Periodicite.php
@@ -671,9 +677,9 @@ ecarts:
     title: L'indicateur de connectivité Plat'AU n'affiche plus l'état de chargement
       ni le bandeau embarqué attendu
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
     - prevarisc-migration/templates/index/index.html.twig:121-141
@@ -702,9 +708,9 @@ ecarts:
     title: L'export recherche ajoute toujours l'en-tête « Identifiant PLATAU », même
       sans filtre provenance Plat'AU
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
     - prevarisc-migration/src/Service/SearchExport.php:155-197
@@ -741,9 +747,9 @@ ecarts:
   - number: 4
     title: La suppression d'une valeur de liste n'est pas immédiate côté Symfony
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
     - prevarisc-migration/src/Controller/ChampController.php:83-87
@@ -757,8 +763,8 @@ ecarts:
     validated_by: pending
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/templates
     - prevarisc-migration/src
+    - prevarisc-migration/templates
   - number: 2
     title: Le legacy est explicitement marqué « non fonctionnel » et l'extraction
       4 ne filtre pas la bonne période
@@ -796,9 +802,9 @@ ecarts:
   - number: 6
     title: L'interface legacy conserve des fragilités fonctionnelles et de présentation
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified: []
   MOD-20:
@@ -811,8 +817,8 @@ ecarts:
     validated_by: pending
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/src/Controller/ElementsSupprimesController.php
     - prevarisc-migration/src/Controller/ElementsSupprimesController.php:19-21
+    - prevarisc-migration/src/Controller/ElementsSupprimesController.php
   - number: 2
     title: Les onglets sont affichés même quand l'utilisateur n'a accès qu'à un seul
       périmètre
@@ -845,25 +851,25 @@ ecarts:
     validated_by: pending
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/templates/elements_supprimes/_dossiers.html.twig
     - prevarisc-migration/templates/elements_supprimes/_dossiers.html.twig:38-45
+    - prevarisc-migration/templates/elements_supprimes/_dossiers.html.twig
   - number: 5
     title: Le rétablissement d'un établissement ne redirige plus vers la page précédente
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/src/Controller/ElementsSupprimesController.php:80-88
     - prevarisc-migration/src/Controller/ElementsSupprimesController.php:82-87
-    - prevarisc-migration/src/Controller/ElementsSupprimesController.php
-    - prevarisc-migration/templates/elements_supprimes/_dossiers.html.twig:28-42
-    - prevarisc-migration/src/Repository/EtablissementRepository.php:30-49
-    - prevarisc-migration/src/Service/Etablissement.php:378-383
-    - prevarisc-migration/src/Repository/DossierRepository.php:35-56
     - prevarisc-migration/src/Service/Dossier.php:45-50
+    - prevarisc-migration/src/Repository/EtablissementRepository.php:30-49
+    - prevarisc-migration/src/Repository/DossierRepository.php:35-56
+    - prevarisc-migration/src/Controller/ElementsSupprimesController.php:80-88
+    - prevarisc-migration/src/Service/Etablissement.php:378-383
+    - prevarisc-migration/src/Controller/ElementsSupprimesController.php
     - prevarisc-migration/src/Controller/ElementsSupprimesController.php:19-21
+    - prevarisc-migration/templates/elements_supprimes/_dossiers.html.twig:28-42
   MOD-21:
   - number: 1
     title: La présence de `PREVARISC_BRANCH` n'ignore pas réellement la vérification
@@ -874,12 +880,12 @@ ecarts:
     validated_by: pending
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/src/VersionType/EnvironmentType.php:43-68
+    - prevarisc-migration/src/Builder/VersionBuilder.php
     - prevarisc-migration/src/Builder/VersionBuilder.php:38-45
     - prevarisc-migration/src/VersionType/EnvironmentType.php
     - prevarisc-migration/src/Controller/Admin/AdminController.php:40-45
-    - prevarisc-migration/src/Builder/VersionBuilder.php
     - prevarisc-migration/src/Controller/Admin/AdminController.php
+    - prevarisc-migration/src/VersionType/EnvironmentType.php:43-68
   - number: 2
     title: La comparaison distante ne cible plus clairement la « branche stable »
       et le timeout de 3 s n'est plus garanti
@@ -889,10 +895,10 @@ ecarts:
     validated_by: pending
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/src/VersionType/GithubType.php
-    - prevarisc-migration/src/Builder/VersionBuilder.php
     - prevarisc-migration/src/VersionType/GithubType.php:65-78
     - prevarisc-migration/src/Builder/VersionBuilder.php:26-29
+    - prevarisc-migration/src/VersionType/GithubType.php
+    - prevarisc-migration/src/Builder/VersionBuilder.php
   - number: 3
     title: L'adresse de base de données affiche toujours `hôte:port`, même quand le
       port n'est pas censé être montré
@@ -903,9 +909,9 @@ ecarts:
     notes: Extracted from ecart specification
     files_modified:
     - prevarisc-migration/config/prevarisc.php
+    - prevarisc-migration/config/prevarisc.php:46-48
     - prevarisc-migration/src/Service/Informations.php
     - prevarisc-migration/src/Service/Informations.php:9-12
-    - prevarisc-migration/config/prevarisc.php:46-48
   - number: 4
     title: La projection Geoconcept vide n'est pas remplacée par « Non paramétrée
       »
@@ -915,12 +921,12 @@ ecarts:
     validated_by: pending
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/config/prevarisc.php:189-191
+    - prevarisc-migration/templates/admin/index.html.twig
     - prevarisc-migration/src/Controller/Admin/AdminController.php:55-62
     - prevarisc-migration/templates/admin/index.html.twig:94-104
-    - prevarisc-migration/templates/admin/index.html.twig
     - prevarisc-migration/config/prevarisc.php
     - prevarisc-migration/src/Controller/Admin/AdminController.php
+    - prevarisc-migration/config/prevarisc.php:189-191
   - number: 5
     title: La liste des utilisateurs connectés n'est pas limitée aux 1 000 premiers
       comptes évalués
@@ -941,28 +947,28 @@ ecarts:
     validated_by: pending
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/templates/admin/index.html.twig
     - prevarisc-migration/templates/admin/index.html.twig:129-136
+    - prevarisc-migration/templates/admin/index.html.twig
   - number: 7
     title: Le panneau Symfony expose un périmètre plus large que celui documenté
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
     - prevarisc-migration/templates/admin/index.html.twig:70-104
-    - prevarisc-migration/src/Controller/Admin/AdminController.php:63-65
     - prevarisc-migration/templates/admin/index.html.twig:46-51
-    - prevarisc-migration/src/Repository/UtilisateurRepository.php:46-65
-    - prevarisc-migration/templates/admin/index.html.twig:183-213
-    - prevarisc-migration/templates/admin/index.html.twig:107-127
-    - prevarisc-migration/templates/admin/index.html.twig
-    - prevarisc-migration/src/Service/Informations.php:40-60
-    - prevarisc-migration/templates/admin/index.html.twig:24-37
     - prevarisc-migration/src/Service/Informations.php:27-33
-    - prevarisc-migration/templates/admin/index.html.twig:53-68
+    - prevarisc-migration/src/Repository/UtilisateurRepository.php:46-65
+    - prevarisc-migration/src/Controller/Admin/AdminController.php:63-65
     - prevarisc-migration/src/Controller/Admin/AdminController.php:14-17
+    - prevarisc-migration/templates/admin/index.html.twig:24-37
+    - prevarisc-migration/templates/admin/index.html.twig:107-127
+    - prevarisc-migration/src/Service/Informations.php:40-60
+    - prevarisc-migration/templates/admin/index.html.twig:53-68
+    - prevarisc-migration/templates/admin/index.html.twig
+    - prevarisc-migration/templates/admin/index.html.twig:183-213
   MOD-22:
   - number: 1
     title: Le titre « Développeurs » contient une faute dans Symfony
@@ -983,33 +989,33 @@ ecarts:
     validated_by: pending
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/docs/support.md
     - prevarisc-migration/docs/about.md
     - prevarisc-migration/docs/about.md:11-17
     - prevarisc-migration/docs/support.md:17-25
+    - prevarisc-migration/docs/support.md
   - number: 3
     title: Un document absent ou un `doc` invalide produit une page vide sans retour
       utilisateur
     action: check
-    status: open
+    status: closed
     date_processed: '2026-05-22'
-    validated_by: pending
+    validated_by: user
     notes: Extracted from ecart specification
     files_modified:
-    - prevarisc-migration/src/Service/Doc.php
+    - prevarisc-migration/src/Controller/IndexController.php:274-284
+    - prevarisc-migration/templates/base.html.twig:69-71
+    - prevarisc-migration/templates/about/index.html.twig:1-7
     - prevarisc-migration/config/packages/security.php:58-67
+    - prevarisc-migration/src/Controller/AboutController.php:24-26
     - prevarisc-migration/templates/about/index.html.twig:5-7
     - prevarisc-migration/src/Controller/AboutController.php:21-47
-    - prevarisc-migration/templates/base.html.twig:69-71
-    - prevarisc-migration/src/Controller/AboutController.php:21-26
-    - prevarisc-migration/src/Controller/AboutController.php
-    - prevarisc-migration/src/Service/Doc.php:21-38
-    - prevarisc-migration/src/Controller/AboutController.php:24-26
-    - prevarisc-migration/templates/about/index.html.twig:1-7
-    - prevarisc-migration/docs/dev.md:1-80
     - prevarisc-migration/templates/_footer.html.twig:1-11
     - prevarisc-migration/templates/about/index.html.twig
-    - prevarisc-migration/src/Controller/IndexController.php:274-284
+    - prevarisc-migration/src/Controller/AboutController.php:21-26
+    - prevarisc-migration/docs/dev.md:1-80
+    - prevarisc-migration/src/Controller/AboutController.php
+    - prevarisc-migration/src/Service/Doc.php
+    - prevarisc-migration/src/Service/Doc.php:21-38
 metadata:
   last_updated: '2026-07-02'
   updated_by: system
