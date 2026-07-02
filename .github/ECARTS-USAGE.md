@@ -70,29 +70,22 @@ MOD-12  → MOD-12-[NOM]-ECARTS.md
 - **Si problème** → propose un plan avant d'agir
 - Met à jour `.github/ecarts-history.yml`
 
-## Suivi et historique
+## Fichiers à mettre à jour
 
-### `.github/ecarts-history.yml`
+Chaque écart corrigé/validé impacte **deux fichiers** :
 
-Chaque écart traité (fix ou check) génère une entrée dans ce fichier :
+### 1. **Fichier d'écarts** (`MOD-XX-TEXTES-APPLICABLES-ECARTS.md`)
+- Met à jour le statut dans la section écart avec les marqueurs : `✅ RÉSOLU`, `✅ VALIDÉ`, `🟢 FERMÉ`
+- Ajoute/met à jour la section **Recommandations** avec un résumé daté
 
-```yaml
-MOD-10:
-  - number: 5
-    title: "Description courte"
-    action: fix
-    status: closed
-    date_processed: "2026-07-02"
-    validated_by: system
-    notes: "Détails de ce qui a été fait"
-    files_modified:
-      - "prevarisc-migration/src/..."
-```
+### 2. **Historique de suivi** (`ecarts-history.yml`)
+- Ajoute/met à jour l'entrée dans la section module
+- Inclut : numéro, titre, action, status, date_processed, validated_by, notes, files_modified
+- Met à jour les métadonnées (`last_updated`, `total_ecarts_processed`)
 
-**Cet historique :**
-- Trace chaque correction/vérification effectuée
-- Facilite l'audit et la maintenabilité
-- Est mis à jour automatiquement par l'agent `ecarts`
+**Pourquoi les deux ?**
+- **Markdown** : contexte inline lisible pour les lecteurs de specs
+- **YAML** : suivi structuré pour audit, automatisation et historique
 
 ## Options futures
 
