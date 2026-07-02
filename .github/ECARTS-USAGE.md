@@ -1,11 +1,23 @@
 # Convention d'utilisation de l'agent `ecarts`
 
-## Syntaxe abrégée
+## Invocation
 
-Au lieu de formulations verboses, utilise la **syntaxe compacte** pour invoquer l'agent `ecarts` :
+Utilise la slash commande `/agent ecarts` pour invoquer directement l'agent :
 
 ```
-ecarts <action> <module> <number>
+/agent ecarts
+```
+
+Puis saisis ta syntaxe :
+
+```
+fix MOD-10 5
+```
+
+## Syntaxe abrégée
+
+```
+<action> <module> <number>
 ```
 
 ### Paramètres
