@@ -1,5 +1,16 @@
 # Convention d'utilisation de l'agent `ecarts`
 
+## ⚠️ IMPORTANT: Multi-repository Git structure
+
+**`prevarisc-migration/` is an INDEPENDENT git repository.**
+- Parent: `/home/dev/prevarisc-infra/` (prevarisc-infra repo)
+- Working directory: `/home/dev/prevarisc-infra/prevarisc-migration/` (separate repo)
+
+**The agent automatically handles commits within the correct repository.** You don't need to do anything special — just invoke the agent normally. It will:
+1. Make code changes in `prevarisc-migration/`
+2. Update spec files in `prevarisc-migration/`
+3. Commit and push **from within** the `prevarisc-migration/` repository (not the parent)
+
 ## Invocation
 
 Utilise la slash commande `/agent ecarts` pour invoquer directement l'agent :

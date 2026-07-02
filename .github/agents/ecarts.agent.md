@@ -15,6 +15,15 @@ Outputs: task list, files modified, commit/PR details.
 - **Ecart specification files:** `/home/dev/prevarisc-infra/prevarisc-migration/docs/migration/MOD-XX-*-ECARTS.md`
 - **Ecart tracking history:** `/home/dev/prevarisc-infra/prevarisc-migration/docs/migration/ecarts-history.yml`
 
+## CRITICAL: Git repository structure
+⚠️ **`prevarisc-migration/` is an INDEPENDENT git repository.**
+- Parent directory `/home/dev/prevarisc-infra/` is the `prevarisc-infra` git repo
+- Subdirectory `/home/dev/prevarisc-infra/prevarisc-migration/` is its own git repo
+- **ALL commits must be made INSIDE `prevarisc-migration/` repo, not the parent**
+- When committing changes: use `cd /home/dev/prevarisc-infra/prevarisc-migration && git commit ...`
+- Never attempt to commit from `/home/dev/prevarisc-infra/` when changes are in `prevarisc-migration/`
+- Each repo has its own `.git/`, remote, and branch history
+
 ## User feedback pattern
 User feedback is located at the text marker: `**Retour utilisateur** :`
 Extract and process all user-provided guidance after this marker.
@@ -39,4 +48,25 @@ Extract and process all user-provided guidance after this marker.
 - Markdown files provide **inline context** in specification docs (readers see status immediately)
 - YAML file provides **structured tracking** and audit trail (for automation, reporting, and history)
 
-**Commit strategy:** Commit both files together in a single commit with clear message referencing the ecart(s) addressed
+## Commit strategy (ESSENTIAL)
+
+**ALWAYS commit from within the `prevarisc-migration/` repository directory**, not the parent:
+
+1. Before committing, verify your working directory:
+   ```bash
+   pwd  # Must show: /home/dev/prevarisc-infra/prevarisc-migration
+   git status  # Must show prevarisc-migration's git status
+   ```
+
+2. Add and commit changes ONLY from within `prevarisc-migration/`:
+   ```bash
+   cd /home/dev/prevarisc-infra/prevarisc-migration
+   git add <modified files>
+   git commit -m "feat(MOD-XX): description"
+   ```
+
+3. **Never** attempt to commit from `/home/dev/prevarisc-infra/` parent directory when modifying `prevarisc-migration/` code
+
+4. Commit both spec files (MOD-XX-ECARTS.md + ecarts-history.yml) together in a single commit
+
+5. Push to the `prevarisc-migration` remote (not prevarisc-infra)

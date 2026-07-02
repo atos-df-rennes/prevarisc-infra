@@ -36,7 +36,13 @@ skills:
     supports_worktree: true
     notes: "Agent that may perform code changes. Default runs in main; to run in a worktree set run_context: worktree."
 
-# Policy summary
+  ecarts:
+    default_run_context: main
+    supports_worktree: false
+    converted_to_agent: true
+    agent_name: ecarts
+    git_aware: true
+    notes: "CRITICAL: prevarisc-migration/ is an INDEPENDENT git repository. ALL commits MUST be made from within /home/dev/prevarisc-infra/prevarisc-migration/, never from the parent directory /home/dev/prevarisc-infra/. Agent handles multi-repo structure automatically."
 policy: |
   Skills are orchestration-only and deterministic. They will not alter repository state by themselves. Use agents or explicit slash commands for actions that change files, branches, or push commits.
   Set run_context to 'worktree' to opt-in to worktree operations.
