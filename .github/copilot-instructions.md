@@ -4,7 +4,7 @@ Context: Migration Zend 1.12 → Symfony 4.4 (PHP 7.1.33). Repos: prevarisc/ (le
 
 Repository structure:
 - prevarisc-migration/ → `/home/dev/prevarisc-infra/prevarisc-migration/` (migrated code)
-- prevarisc/ → `/home/dev/prevarisc/` (legacy code, read-only)
+- prevarisc/ → `/home/dev/prevarisc-infra/prevarisc/` (legacy code, read-only)
 
 Absolute rules:
 - Never modify prevarisc/ (legacy) in automated runs.
