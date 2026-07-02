@@ -614,13 +614,12 @@ ecarts:
   MOD-11:
   - number: 1
     title: La borne métier 0..999 mois n'est pas validée côté serveur
-    action: check
-    status: open
-    date_processed: '2026-05-22'
-    validated_by: pending
-    notes: Extracted from ecart specification
+    action: fix
+    status: closed
+    date_processed: '2026-07-02'
+    validated_by: system
+    notes: Ajout d'une validation serveur pour vérifier que les périodicités sont comprises entre 0 et 999 mois dans TableauDesPeriodicitesController::save()
     files_modified:
-    - prevarisc-migration/templates/tableau_des_periodicites/index.html.twig
     - prevarisc-migration/src/Controller/TableauDesPeriodicitesController.php
   - number: 2
     title: Le vidage du cache de recherche dépend encore d'un pont legacy côté Symfony
@@ -1019,5 +1018,5 @@ ecarts:
 metadata:
   last_updated: '2026-07-02'
   updated_by: system
-  total_ecarts_processed: 90
+  total_ecarts_processed: 91
 
