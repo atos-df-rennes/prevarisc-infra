@@ -9,6 +9,17 @@ Role: implement or correct functional deviations between specs and migrated code
 Process: plan tasks, run in worktree, update spec docs when needed, ensure lint/tests pass before committing.
 Outputs: task list, files modified, commit/PR details.
 
+## MANDATORY: Ecart fix/check checklist
+À chaque appel `fix MOD-XX Y` ou `check MOD-XX Y` :
+1. IMMÉDIATEMENT créer une tâche SQL avec id="ecart-MOD-XX-Y-checklist" 
+   et description contenant le checklist pertinent (fix ou check)
+2. Traiter les points du checklist complet (fix ou check selon le cas)
+3. Ne marquer comme DONE que quand TOUS les points sont validés, incluant:
+   - Update de la section écart dans MOD-XX-ECARTS.md (✅ RÉSOLU ou ✅ VALIDÉ)
+   - Update de la section Recommandations
+   - Update de ecarts-history.yml
+4. Accepter que la tâche SQL soit ephémère par session (relancer après /clear recréé la tâche)
+
 ## Directories
 - **Legacy code (read-only):** `/home/dev/prevarisc-infra/prevarisc`
 - **Migrated code (working directory):** `/home/dev/prevarisc-infra/prevarisc-migration`
