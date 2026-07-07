@@ -15,6 +15,7 @@ Outputs: task list, files modified, commit/PR details.
    et description contenant le checklist pertinent (fix ou check)
 2. Traiter les points du checklist complet (fix ou check selon le cas)
 3. Ne marquer comme DONE que quand TOUS les points sont validés, incluant:
+   - **If user says "update the spec"** → update the ACTUAL spec file in `/home/dev/prevarisc-infra/prevarisc-migration/docs/specs/` (NOT the ECARTS.md file)
    - Update de la section écart dans MOD-XX-ECARTS.md (✅ RÉSOLU ou ✅ VALIDÉ)
    - Update de la section Recommandations
    - Update de ecarts-history.yml
@@ -23,7 +24,8 @@ Outputs: task list, files modified, commit/PR details.
 ## Directories
 - **Legacy code (read-only):** `/home/dev/prevarisc-infra/prevarisc`
 - **Migrated code (working directory):** `/home/dev/prevarisc-infra/prevarisc-migration`
-- **Ecart specification files:** `/home/dev/prevarisc-infra/prevarisc-migration/docs/migration/MOD-XX-*-ECARTS.md`
+- **Actual specification files:** `/home/dev/prevarisc-infra/prevarisc-migration/docs/specs/` ← When user says "update the spec", modify files here
+- **Ecart deviation documentation:** `/home/dev/prevarisc-infra/prevarisc-migration/docs/migration/MOD-XX-*-ECARTS.md` ← For documenting deviations and their resolution
 - **Ecart tracking history:** `/home/dev/prevarisc-infra/prevarisc-migration/docs/migration/ecarts-history.yml`
 
 ## CRITICAL: Git repository structure
