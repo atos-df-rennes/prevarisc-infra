@@ -5,6 +5,7 @@ ARG uid
 
 # Création de l'utilisateur "prv"
 RUN useradd -G www-data -u "$uid" -d /home/"$user" "$user" \
+    && usermod -aG prv "$user" \
     && usermod -aG prv www-data \
     && mkdir -p /home/"$user"/.composer \
     # Création des dossiers spécifiques à l'application et paramétrage des droits/permissions
@@ -17,15 +18,14 @@ RUN useradd -G www-data -u "$uid" -d /home/"$user" "$user" \
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
 
 RUN a2enmod authz_core deflate dir ssl headers expires include rewrite \
-    && sed -i '/deb http:\/\/deb.debian.org\/debian buster main/d' /etc/apt/sources.list \
-    && sed -i 's/^# deb http:\/\/snapshot.debian.org\/archive\/debian\/20191118T000000Z buster main/deb http:\/\/snapshot.debian.org\/archive\/debian\/20191118T000000Z buster main/' /etc/apt/sources.list \
-    && sed -i '/deb http:\/\/security.debian.org\/debian-security buster\/updates main/d' /etc/apt/sources.list \
-    && sed -i '/deb http:\/\/deb.debian.org\/debian buster-updates main/d' /etc/apt/sources.list \
-    && apt update \
-    && apt install -y \
+    && sed -i '/security.debian.org/d' /etc/apt/sources.list \
+    && sed -i 's|http://deb.debian.org/debian|http://archive.debian.org/debian|g' /etc/apt/sources.list \
+    && apt-get update \
+    && apt-get install -y \
         zip \
         git \
-    && apt clean \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
     && chmod +x /usr/local/bin/install-php-extensions \
     && install-php-extensions \
         opcache \
