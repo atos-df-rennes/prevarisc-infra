@@ -7,7 +7,6 @@ services:
       dockerfile: php/prevarisc/Dockerfile
     restart: unless-stopped
     volumes:
-      - ./prevarisc:/var/www/html/prevarisc
       - ./php/prevarisc/php.ini:/usr/local/etc/php/php.ini
       - ./apache/apache.conf:/etc/apache2/sites-available/000-default.conf
       - ./apache/httpd-prevarisc-version.conf:/etc/apache2/httpd-prevarisc-version.conf
@@ -18,10 +17,10 @@ services:
       # Lorsque le code sera rapatrié dans l'application, ce montage ne sera plus nécessaire.
       - ./prevarisc-passerelle-platau:/var/www/html/prevarisc-passerelle-platau
     post_start:
-      - command: chmod 775 /var/www/html/prevarisc/public
-      - command: bash -c 'mkdir -p /var/www/html/prevarisc/public/data/uploads/{commission,dossier,etablissement,etablissement_miniature} && chown prv:prv /var/www/html/prevarisc/public/data/uploads/*'
-      - command: bash -c 'mkdir -p /var/www/html/prevarisc/public/data/uploads/documents/{1,2,3,4} && chown prv:prv /var/www/html/prevarisc/public/data/uploads/documents/*'
-      - command: chmod -R 775 /var/www/html/prevarisc/public/data
+      - command: chmod 775 /var/www/html/prevarisc-migration/public
+      - command: bash -c 'mkdir -p /var/www/html/prevarisc-migration/public/data/uploads/{commission,dossier,etablissement,etablissement_miniature} && chown prv:prv /var/www/html/prevarisc-migration/public/data/uploads/*'
+      - command: bash -c 'mkdir -p /var/www/html/prevarisc-migration/public/data/uploads/documents/{1,2,3,4} && chown prv:prv /var/www/html/prevarisc-migration/public/data/uploads/documents/*'
+      - command: chmod -R 775 /var/www/html/prevarisc-migration/public/data
     ports:
       - target: 80
         published: 7080
@@ -41,7 +40,6 @@ services:
     volumes:
       - ./prevarisc-passerelle-platau:/var/www/html/prevarisc-passerelle-platau
       - ./php/prevarisc-passerelle-platau/php.ini:/usr/local/etc/php/php.ini
-      - ./prevarisc:/var/www/html/prevarisc
       - ./prevarisc-migration:/var/www/html/prevarisc-migration
 
   db:
