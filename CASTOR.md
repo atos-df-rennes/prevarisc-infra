@@ -271,6 +271,28 @@ castor symfony:status
 
 ---
 
+## `upgrade:*` — Montée de version
+
+### `castor upgrade:php --target=<version>`
+**Monte la version PHP du projet (Dockerfile, `composer.json`, `phpstan.neon.dist`, `rector.php`) et valide.**
+
+```bash
+castor upgrade:php --target=7.3
+```
+
+L'option s'appelle `--target` (et non `--version`) car `--version`/`-V` est une option globale réservée par Castor.
+
+Exécute dans l'ordre :
+1. Détecte la version PHP actuelle depuis `php/prevarisc/Dockerfile` et vérifie que `--target` est la **prochaine** version supportée (montée incrémentale uniquement — pas de saut de version, pas de downgrade).
+2. Met à jour `php/prevarisc/Dockerfile` (image `php:<version>-apache`), `prevarisc-migration/composer.json` (contrainte `"php": "^<version>.0"`), `prevarisc-migration/phpstan.neon.dist` (`phpVersion`) et `prevarisc-migration/rector.php` (`PhpVersion::PHP_XY` + `withPhpSets`).
+3. Reconstruit et redémarre le conteneur `app`.
+4. Régénère `composer.lock` (`composer update` dans le conteneur `app`).
+5. Lance la validation : `symfony:analyse`, `symfony:cs`, `symfony:test`.
+
+> Ne gère pour l'instant que les montées de version PHP mineures (7.1 → 8.5). S'arrête au premier échec — en cas d'erreur (dépendance incompatible, erreur PHPStan, test cassé…), corriger manuellement puis relancer `castor symfony:validate`.
+
+---
+
 ## `worktree:*` — Travail en parallèle sur branches isolées
 
 Les worktrees permettent de travailler sur une feature de migration Symfony **pendant** qu'un bug fix sur le legacy est en cours, sans interférence entre les branches.
