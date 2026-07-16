@@ -16,6 +16,8 @@ services:
       # Passerelle Plat'AU montée pour que Prevarisc puisse faire un healthcheck.
       # Lorsque le code sera rapatrié dans l'application, ce montage ne sera plus nécessaire.
       - ./prevarisc-passerelle-platau:/var/www/html/prevarisc-passerelle-platau
+      # Fork OdtPHP, monté ici pour ne pas dupliquer les conteneurs
+      - ../prevarisc-odtphp:/var/www/html/prevarisc-odtphp
     post_start:
       - command: chmod 775 /var/www/html/prevarisc-migration/public
       - command: bash -c 'mkdir -p /var/www/html/prevarisc-migration/public/data/uploads/{commission,dossier,etablissement,etablissement_miniature} && chown prv:prv /var/www/html/prevarisc-migration/public/data/uploads/*'
