@@ -88,8 +88,8 @@ SetEnv PREVARISC_PROXY_USERNAME ""
 SetEnv PREVARISC_PROXY_PASSWORD ""
 
 # Set data path where all the data is stored
-SetEnv PREVARISC_REAL_DATA_PATH "/var/www/html/prevarisc/public/data"
-Define PREVARISC_REAL_DATA_PATH "/var/www/html/prevarisc/public/data"
+SetEnv PREVARISC_REAL_DATA_PATH "/var/www/html/prevarisc-migration/public/data"
+Define PREVARISC_REAL_DATA_PATH "/var/www/html/prevarisc-migration/public/data"
 SetEnv PREVARISC_DATASTORE_ADAPTER "Plugin_HashedFileDataStore"
 # SetEnv PREVARISC_DATASTORE_ADAPTER "Plugin_SimpleFileDataStore"
 
