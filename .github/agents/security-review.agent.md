@@ -1,6 +1,6 @@
 ---
 name: security-review
-description: OWASP-focused security audit for PHP7.1/Symfony4.4 migration covering injection, auth, crypto, and secrets
+description: OWASP-focused security audit for PHP8.0/Symfony5.4 migration covering injection, auth, crypto, and secrets
 tools: [read, grep, glob, bash, search]
 ---
 

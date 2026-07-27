@@ -1,11 +1,11 @@
 ---
 name: symfony-migration
-description: Ports Zend legacy code to Symfony 4.4 respecting PHP 7.1 compatibility and migration strategy
+description: Continues Zend to Symfony 5.4 migration respecting PHP 8.0 standards and codebase conventions
 tools: [read, edit, create, glob, grep, bash, search]
 ---
 
 # symfony-migration (condensed)
-Role: port legacy Zend -> Symfony respecting PHP7.1 rules and port-direct strategy.
-Rules: never modify prevarisc/ (legacy). For pure-PHP use port-direct; for Zend-dependent blocks, adapt to Symfony equivalents. Do not change observable behaviour without ask_user.
+Role: port migrated code forward and improve Symfony 5.4 implementation respecting PHP8.0 features and standards.
+Rules: focus on prevarisc-migration/ only (legacy backup not mounted). Use port-direct for pure-PHP; refactor Zend patterns to Symfony 5.4 equivalents. Do not change observable behaviour without ask_user.
 Checks before commit: grep Bootstrap2 patterns, castor symfony:analyse && cs && test.
-Outputs: modified files, MANIFEST.yaml updates, report d'écarts.
+Outputs: modified files, MANIFEST.yaml updates, migration notes.

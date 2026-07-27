@@ -1,17 +1,28 @@
 ---
 name: phpstan-fix
-description: Guide pour corriger les erreurs PHPStan niveau 10 dans le projet Prevarisc (PHP 7.1, Symfony 4.4, Doctrine 2.14). À utiliser pour comprendre et corriger les erreurs PHPStan sans changer la logique métier.
+description: Guide pour corriger les erreurs PHPStan niveau 10 dans le projet Prevarisc (PHP 8.0, Symfony 5.4, Doctrine 2.14). À utiliser pour comprendre et corriger les erreurs PHPStan sans changer la logique métier.
 ---
 
 # Skill : Correction PHPStan niveau 10 — Prevarisc
 
-Ce skill guide la correction des erreurs PHPStan niveau 10 pour PHP 7.1 dans le projet Prevarisc.
+Ce skill guide la correction des erreurs PHPStan niveau 10 pour PHP 8.0 dans le projet Prevarisc.
 
 ## Lancer l'analyse
 
 ```bash
 castor symfony:analyse
 ```
+
+## PHP 8.0 — Nouvelles possibilités
+
+Avec PHP 8.0, vous pouvez maintenant utiliser :
+
+- **Propriétés typées** : `private DossierRepository $repo;` (au lieu de DocBlocks)
+- **Union types** : `public function process(int|string $id): Dossier|null`
+- **Named arguments** : `$this->findById(id: 123, validate: true)`
+- **Match expressions** : `$status = match($code) { 200 => 'OK', 404 => 'Not Found' };`
+- **Nullsafe operator** : `$user?->getProfile()?->getName()` (au lieu de nested null checks)
+- **Attributes** : `#[Route('/path', methods: ['GET'])]` (prédécesseur des annotations)
 
 ## Erreurs courantes et corrections
 
@@ -20,12 +31,17 @@ castor symfony:analyse
 ```
 # Erreur : Property X::$y has no type hint specified.
 
-// 🚫 Avant
+// 🚫 Avant (ancienne syntaxe PHP 7.1)
 class DossierController extends AbstractController {
     private $dossierRepository;
 }
 
-// ✅ Après — DocBlock obligatoire (pas de propriété typée en PHP 7.1)
+// ✅ Après — PHP 8.0 : propriété typée
+class DossierController extends AbstractController {
+    private DossierRepository $dossierRepository;
+}
+
+// ✅ Ou avec DocBlock (compatible avec les outils de static analysis)
 class DossierController extends AbstractController {
     /** @var DossierRepository */
     private $dossierRepository;

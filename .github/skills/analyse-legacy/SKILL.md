@@ -3,13 +3,19 @@ name: analyse-legacy
 description: Guide pour analyser le code Zend legacy du projet Prevarisc avant de le migrer. À utiliser pour comprendre un controller, une vue ou un modèle Zend existant et planifier son portage Symfony.
 ---
 
-# Skill : Analyse du code legacy Zend — Prevarisc
+# ⚠️ Skill : Analyse du code legacy Zend — Prevarisc (ARCHIVÉ)
 
-Ce skill guide l'analyse du code Zend legacy dans `prevarisc/` avant de démarrer une migration.
+**STATUS**: Ce skill est archivé et fourni à titre de référence uniquement.
+
+**Contexte** : Le répertoire legacy `prevarisc/` est maintenant une **sauvegarde non montée** dans l'infrastructure. Il n'est plus appelé en production. La migration est active dans `prevarisc-migration/`.
+
+**Utilisation** : Ce skill ne devrait être utilisé que si vous devez comprendre le code legacy pour corriger un bug détecté. Pour la migration active, consulter l'agent `symfony-migration`.
+
+---
 
 ## Règle fondamentale
 
-Le répertoire `prevarisc/` est **en lecture seule**. Ne jamais modifier ces fichiers.
+Le répertoire `prevarisc/` est **en lecture seule et non monté**. Ne jamais modifier ces fichiers (sauvegarde uniquement).
 
 **Run context :** `main` (par défaut). Ce skill est d'analyse uniquement et ne modifie pas le dépôt. Pour exécuter des actions dans un worktree, préciser `run_context: worktree` (opt‑in).
 

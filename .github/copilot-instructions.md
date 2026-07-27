@@ -1,14 +1,14 @@
 # Copilot instructions (condensed)
 
-Context: Migration Zend 1.12 → Symfony 4.4 (PHP 7.1.33). Repos: prevarisc/ (legacy, read-only), prevarisc-migration/ (migrated).
+Context: Migration Zend 1.12 → Symfony 5.4 (PHP 8.0). Active migration in prevarisc-migration/. Legacy backup at prevarisc/ (not mounted).
 
 Repository structure:
-- prevarisc-migration/ → `/home/dev/prevarisc-infra/prevarisc-migration/` (migrated code)
-- prevarisc/ → `/home/dev/prevarisc-infra/prevarisc/` (legacy code, read-only)
+- prevarisc-migration/ → `/home/dev/prevarisc-infra/prevarisc-migration/` (active migrated code)
+- prevarisc/ → `/home/dev/prevarisc-infra/prevarisc/` (legacy backup, not mounted — reference only in case of bug detection)
 
 Absolute rules:
-- Never modify prevarisc/ (legacy) in automated runs.
-- PHP must remain 7.1-compatible (no typed properties, no PHP8 features).
+- Focus on prevarisc-migration/ only. Legacy code (prevarisc/) is not called in production.
+- Use PHP 8.0 features (typed properties, null coalescing, etc.) in migrated code.
 - findAll() without pagination is forbidden.
 
 Essential commands (host):
