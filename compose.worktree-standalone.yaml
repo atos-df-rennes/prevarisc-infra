@@ -19,7 +19,6 @@ services:
       dockerfile: php/prevarisc/Dockerfile
     restart: unless-stopped
     volumes:
-      - ./${PREVARISC_DIR:-prevarisc}:/var/www/html/prevarisc
       - ./php/prevarisc/php.ini:/usr/local/etc/php/php.ini
       - ./apache/apache.conf:/etc/apache2/sites-available/000-default.conf
       - ./apache/httpd-prevarisc-version.conf:/etc/apache2/httpd-prevarisc-version.conf
@@ -28,10 +27,10 @@ services:
       - ./prevarisc-passerelle-platau:/var/www/html/prevarisc-passerelle-platau
       - ./apache/httpd-auth-worktree.conf:/etc/apache2/httpd-auth-worktree.conf:ro
     post_start:
-      - command: chmod 775 /var/www/html/prevarisc/public
-      - command: bash -c 'mkdir -p /var/www/html/prevarisc/public/data/uploads/{commission,dossier,etablissement,etablissement_miniature} && chown prv:prv /var/www/html/prevarisc/public/data/uploads/*'
-      - command: bash -c 'mkdir -p /var/www/html/prevarisc/public/data/uploads/documents/{1,2,3,4} && chown prv:prv /var/www/html/prevarisc/public/data/uploads/documents/*'
-      - command: chmod -R 775 /var/www/html/prevarisc/public/data
+      - command: chmod 775 /var/www/html/prevarisc-migration/public
+      - command: bash -c 'mkdir -p /var/www/html/prevarisc-migration/public/data/uploads/{commission,dossier,etablissement,etablissement_miniature} && chown prv:prv /var/www/html/prevarisc-migration/public/data/uploads/*'
+      - command: bash -c 'mkdir -p /var/www/html/prevarisc-migration/public/data/uploads/documents/{1,2,3,4} && chown prv:prv /var/www/html/prevarisc-migration/public/data/uploads/documents/*'
+      - command: chmod -R 775 /var/www/html/prevarisc-migration/public/data
     ports:
       - target: 80
         published: 7081
@@ -53,21 +52,6 @@ services:
       MYSQL_DATABASE: PRV_prevarisc_v2
       MYSQL_USER: prevarisc
       MYSQL_PASSWORD: planmusique
-
-  # Conteneur PHP 8.1 dédié aux outils de développement (PHPStan, Rector, PHP-CS-Fixer, Twig-CS-Fixer).
-  # Miroir du service platau de compose.dev.yaml, ciblant les répertoires worktree.
-  platau:
-    build:
-      args:
-        user: prv
-        uid: 1000
-      dockerfile: php/prevarisc-passerelle-platau/Dockerfile
-    restart: unless-stopped
-    volumes:
-      - ./prevarisc-passerelle-platau:/var/www/html/prevarisc-passerelle-platau
-      - ./php/prevarisc-passerelle-platau/php.ini:/usr/local/etc/php/php.ini
-      - ./${PREVARISC_DIR:-prevarisc}:/var/www/html/prevarisc
-      - ./${PREVARISC_MIGRATION_DIR:-prevarisc-migration}:/var/www/html/prevarisc-migration
 
   mailpit:
     image: axllent/mailpit:latest

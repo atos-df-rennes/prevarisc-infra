@@ -30,20 +30,6 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
 
-  # Passerelle Plat'AU dans un conteneur car version de PHP différente.
-  # Lorsque le code sera rapatrié dans l'application, ce conteneur ne sera plus nécessaire.
-  platau:
-    build:
-      args:
-        user: prv
-        uid: 1000
-      dockerfile: php/prevarisc-passerelle-platau/Dockerfile
-    restart: unless-stopped
-    volumes:
-      - ./prevarisc-passerelle-platau:/var/www/html/prevarisc-passerelle-platau
-      - ./php/prevarisc-passerelle-platau/php.ini:/usr/local/etc/php/php.ini
-      - ./prevarisc-migration:/var/www/html/prevarisc-migration
-
   db:
     image: mysql:5.6.51
     volumes:
