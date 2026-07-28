@@ -47,17 +47,6 @@ function setup(): void
 
     io()->section('Cloning repositories.');
 
-    if (!fs()->exists('prevarisc')) {
-        io()->text('Cloning Prevarisc repository.');
-        run([
-            'git',
-            'clone',
-            'https://github.com/atos-df-rennes/prevarisc.git'
-        ]);
-    } else {
-        io()->text('Prevarisc repository already exists.');
-    }
-
     if (!fs()->exists('prevarisc-migration')) {
         io()->info('You will need a Personal Access Token for the next operation. Please create one if you do not have one already.');
 
@@ -87,6 +76,8 @@ function setup(): void
         io()->text('Prevarisc Passerelle Plat\'AU repository already exists.');
     }
 
+    // @todo: Cloner OdtPHP
+
     io()->section('Copying web server files.');
 
     if (!fs()->exists('apache/httpd-prevarisc-config.conf')) {
@@ -94,7 +85,7 @@ function setup(): void
         fs()->copy('apache/httpd-prevarisc-config.conf.example', 'apache/httpd-prevarisc-config.conf');
 
         io()->info('You may want to update the configuration file with your values.');
-        $continueInstallation = io()->confirm('Resume sript?');
+        $continueInstallation = io()->confirm('Resume script?');
 
         if (!$continueInstallation) {
             return;
@@ -110,13 +101,6 @@ function setup(): void
         io()->text('Version file already exists.');
     }
 
-    if (!fs()->exists('prevarisc/application/plugins/HashedFileDataStore.php')) {
-        io()->text('Copying HashedFileDataStore.');
-        fs()->copy('app/HashedFileDataStore.php', 'prevarisc/application/plugins/HashedFileDataStore.php');
-    } else {
-        io()->text('HashedFileDataStore already exists.');
-    }
-
     io()->section('Starting Prevarisc.');
 
     io()->text('Starting containers.');
@@ -130,10 +114,6 @@ function setup(): void
     wait_for_docker_container(
         containerName: 'prevarisc-infra-app-1',
         message: 'Waiting for prevarisc application container to be ready.'
-    );
-    wait_for_docker_container(
-        containerName: 'prevarisc-infra-platau-1',
-        message: 'Waiting for prevarisc platau container to be ready.'
     );
 
     if (!fs()->exists('prevarisc-migration/.env')) {
@@ -155,9 +135,6 @@ function setup(): void
             }
             if (str_starts_with($envFileContentLine, 'DATABASE_URL="mysql')) {
                 $envFileContentArray[$key] = 'DATABASE_URL="mysql://root:planmusique@db:3306/PRV_prevarisc_v2?serverVersion=5.6&charset=utf8mb4"';
-            }
-            if (str_starts_with($envFileContentLine, 'PREVARISC_PATH')) {
-                $envFileContentArray[$key] = 'PREVARISC_PATH=/var/www/html/prevarisc';
             }
         }
 
@@ -413,13 +390,10 @@ function composerInstall(): void
 
     parallel(
         function () {
-            run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc', 'app', 'composer', 'install']);
-        },
-        function () {
             run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'composer', 'install']);
         },
         function () {
-            run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-passerelle-platau', 'platau', 'composer', 'install']);
+            run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-passerelle-platau', 'app', 'composer', 'install']);
         },
     );
 }
@@ -430,10 +404,7 @@ function composerInstallDev(): void
 
     parallel(
         function () {
-            run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc/tools', 'platau', 'composer', 'install']);
-        },
-        function () {
-            run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration/tools', 'platau', 'composer', 'install']);
+            run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration/tools', 'app', 'composer', 'install']);
         },
     );
 }

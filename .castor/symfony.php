@@ -45,13 +45,13 @@ function symfonyCs(
     }
 
     io()->section($rectorTitle);
-    exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'platau', 'tools/vendor/bin/rector', ...$options]);
+    exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'tools/vendor/bin/rector', ...$options]);
 
     io()->section($phpCsFixerTitle);
-    exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'platau', 'tools/vendor/bin/php-cs-fixer', 'fix', ...$options]);
+    exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'tools/vendor/bin/php-cs-fixer', 'fix', ...$options]);
 
     io()->section($twigCsFixerTitle);
-    exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'platau', 'tools/vendor/bin/twig-cs-fixer', ...$optionsTwigCsFixer]);
+    exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'tools/vendor/bin/twig-cs-fixer', ...$optionsTwigCsFixer]);
 }
 
 #[AsTask(name: 'analyse', namespace: 'symfony', description: 'Analyse for Symfony application')]
@@ -60,7 +60,7 @@ function symfonyAnalyse(): void
     io()->title('Analysing Symfony application');
 
     io()->section('Executing PHPStan');
-    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'platau', 'tools/vendor/bin/phpstan', '--memory-limit=-1']);
+    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'tools/vendor/bin/phpstan', '--memory-limit=-1']);
 }
 
 #[AsTask(name: 'test', namespace: 'symfony', description: 'Test for Symfony application')]
@@ -114,16 +114,12 @@ function symfonyMake(#[AsRawTokens] array $args): void
     symfonyConsole(['make:' . array_shift($args), ...$args]);
 }
 
-#[AsTask(name: 'status', namespace: 'symfony', description: 'Show git status for prevarisc and prevarisc-migration repos')]
+#[AsTask(name: 'status', namespace: 'symfony', description: 'Show git status for prevarisc-migration repo')]
 function symfonyStatus(): void
 {
-    io()->title('Git status — prevarisc + prevarisc-migration');
+    io()->title('Git status —  prevarisc-migration');
 
     parallel(
-        function () {
-            io()->section('prevarisc');
-            run(['git', '-C', 'prevarisc', 'status', '--short', '--branch']);
-        },
         function () {
             io()->section('prevarisc-migration');
             run(['git', '-C', 'prevarisc-migration', 'status', '--short', '--branch']);
@@ -137,16 +133,16 @@ function symfonyValidate(): void
     io()->title('Validating Symfony application');
 
     io()->section('Step 1/3 — PHPStan');
-    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'platau', 'tools/vendor/bin/phpstan', '--memory-limit=-1']);
+    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'tools/vendor/bin/phpstan', '--memory-limit=-1']);
 
     io()->section('Step 2/3 — Rector (dry-run)');
-    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'platau', 'tools/vendor/bin/rector', '--dry-run']);
+    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'tools/vendor/bin/rector', '--dry-run']);
 
     io()->section('Step 2/3 — PHP-CS-Fixer (dry-run)');
-    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'platau', 'tools/vendor/bin/php-cs-fixer', 'fix', '--dry-run']);
+    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'tools/vendor/bin/php-cs-fixer', 'fix', '--dry-run']);
 
     io()->section('Step 2/3 — Twig-CS-Fixer (check)');
-    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'platau', 'tools/vendor/bin/twig-cs-fixer', 'check']);
+    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'tools/vendor/bin/twig-cs-fixer', 'check']);
 
     io()->section('Step 3/3 — PHPUnit');
     run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'php', 'bin/phpunit', '--testdox', '--exclude-group', 'functional']);

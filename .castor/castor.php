@@ -59,7 +59,7 @@ function test(): void
             zendTest();
         },
         function () {
-            symfonyTest();
+            symfonyTest(false);
         },
         function () {
             platauTest();

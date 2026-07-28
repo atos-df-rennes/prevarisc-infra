@@ -25,7 +25,7 @@ function platauCs(
     io()->title('Checking coding style for Plat\'AU application');
 
     io()->section($phpCsFixerTitle);
-    exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-passerelle-platau', 'platau', 'vendor/bin/php-cs-fixer', '--config=vendor/kdubuc/php-cs-fixer-rules/php-cs-fixer.php', 'fix', ...$options]);
+    exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-passerelle-platau', 'app', 'vendor/bin/php-cs-fixer', '--config=vendor/kdubuc/php-cs-fixer-rules/php-cs-fixer.php', 'fix', ...$options]);
 }
 
 #[AsTask(name: 'analyse', namespace: 'platau', description: 'Analyse for Plat\'AU application')]
@@ -34,7 +34,7 @@ function platauAnalyse(): void
     io()->title('Analysing Plat\'AU application');
 
     io()->section('Executing Psalm');
-    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-passerelle-platau', 'platau', 'vendor/bin/psalm']);
+    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-passerelle-platau', 'app', 'vendor/bin/psalm']);
 }
 
 #[AsTask(name: 'test', namespace: 'platau', description: 'Test for Plat\'AU application')]
@@ -43,5 +43,5 @@ function platauTest(): void
     io()->title('Testing Plat\'AU application');
 
     io()->section('Executing PHPUnit');
-    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-passerelle-platau', 'platau', 'vendor/bin/phpunit', '--testdox', 'tests/']);
+    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-passerelle-platau', 'app', 'vendor/bin/phpunit', '--testdox', 'tests/']);
 }

@@ -17,7 +17,6 @@ const WORKTREE_PROJECT = 'worktree';
 const WORKTREE_COMPOSE_FILE = 'compose.worktree-standalone.yaml';
 const WORKTREE_APP_CONTAINER = 'worktree-app-1';
 const WORKTREE_DB_CONTAINER = 'worktree-db-1';
-const WORKTREE_PLATAU_CONTAINER = 'worktree-platau-1';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Tâches publiques
