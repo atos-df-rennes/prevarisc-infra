@@ -78,7 +78,7 @@ function symfonyTest(
         $options = ['--exclude-group', 'functional'];
     }
 
-    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'php', 'bin/phpunit', '--testdox', ...$options]);
+    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'php', 'vendor/bin/simple-phpunit', '--testdox', ...$options]);
 }
 
 #[AsTask(name: 'migrate', namespace: 'symfony', description: 'Migrate database schema')]
