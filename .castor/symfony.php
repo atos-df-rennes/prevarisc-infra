@@ -78,7 +78,7 @@ function symfonyTest(
         $options = ['--exclude-group', 'functional'];
     }
 
-    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'php', 'vendor/bin/simple-phpunit', '--testdox', ...$options]);
+    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'php', 'vendor/bin/phpunit', '--testdox', ...$options]);
 }
 
 #[AsTask(name: 'migrate', namespace: 'symfony', description: 'Migrate database schema')]
@@ -145,7 +145,7 @@ function symfonyValidate(): void
     run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'tools/vendor/bin/twig-cs-fixer', 'check']);
 
     io()->section('Step 3/3 — PHPUnit');
-    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'php', 'bin/phpunit', '--testdox', '--exclude-group', 'functional']);
+    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'php', 'vendor/bin/phpunit', '--testdox', '--exclude-group', 'functional']);
 
     io()->success('All checks passed!');
 }
