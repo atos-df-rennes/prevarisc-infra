@@ -37,7 +37,7 @@ function setup(): void
         io()->text('Docker est installé.');
 
         // Vérifie que le plugin docker compose est bien disponible
-        if (exit_code(['docker', 'compose', 'version'], quiet: true) !== 0) {
+        if (exit_code(['docker', 'compose', 'version'], context: context()->withQuiet()) !== 0) {
             io()->warning('Le plugin Docker Compose n\'est pas disponible. Installation en cours...');
             run(['sudo', 'apt-get', 'install', '-y', 'docker-compose-plugin']);
         } else {
