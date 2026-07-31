@@ -3,12 +3,11 @@ FROM php:8.1-apache
 ARG user
 ARG uid
 
-# Création de l'utilisateur "prv"
+# Création de l'utilisateur "prv", des dossiers spécifiques à l'application et paramétrage des droits/permissions
 RUN useradd -G www-data -u "$uid" -d /home/"$user" "$user" \
     && usermod -aG prv "$user" \
     && usermod -aG prv www-data \
     && mkdir -p /home/"$user"/.composer \
-    # Création des dossiers spécifiques à l'application et paramétrage des droits/permissions
     && mkdir -p /home/"$user"/cache \
     && chmod 775 /home/"$user"/cache \
     && mkdir -p /home/"$user"/logs \
@@ -33,10 +32,10 @@ RUN a2enmod authz_core deflate dir ssl headers expires include rewrite \
         gd \
         ldap \
         exif \
-        xdebug
+        xdebug \
+        intl
 
-COPY --from=composer:2.2 /usr/bin/composer /usr/bin/composer
-# Xdebug conf
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 COPY php/prevarisc/xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
 
 USER "$user"
