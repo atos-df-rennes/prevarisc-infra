@@ -246,7 +246,7 @@ function makeDump(
     }
 
     $dumpName = 'dump_sql/prevarisc_'.date('YmdHis').'.sql';
-    run('docker exec -w / -i '.$container.' mysqldump -u root -p"planmusique" PRV_prevarisc_v2 > '.$dumpName);
+    run('docker exec -w / -i '.$container.' mariadb-dump -u root -p"planmusique" PRV_prevarisc_v2 > '.$dumpName);
 
     io()->success('Dump made successfully.');
 }
@@ -282,7 +282,7 @@ function loadDump(
     $dumpFullPath = (string) $dumpPath;
     io()->info('Loading dump file: '.$dumpName);
 
-    run('docker exec -i '.$container.' mysql -u root -p"planmusique" PRV_prevarisc_v2 < '.$dumpFullPath);
+    run('docker exec -i '.$container.' mariadb -u root -p"planmusique" PRV_prevarisc_v2 < '.$dumpFullPath);
 
     io()->success('Dump loaded successfully.');
 }
