@@ -12,6 +12,10 @@ use function Castor\wait_for_docker_container;
 // Upgrades must move one step at a time along this list (cf. roadmap Phase 3 — PHP incremental).
 const UPGRADE_PHP_SUPPORTED_VERSIONS = ['7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2', '8.3', '8.4', '8.5'];
 
+// Ordered list of Symfony LTS versions supported by our tooling. Only LTS versions are listed since
+// this project only tracks LTS releases (cf. roadmap Phase 3 — Symfony incremental).
+const UPGRADE_SYMFONY_SUPPORTED_VERSIONS = ['5.4', '6.4', '7.4', '8.0'];
+
 #[AsTask(
     name: 'php',
     namespace: 'upgrade',
@@ -147,4 +151,107 @@ function upgradePhp(
     symfonyTest(false);
 
     io()->success(sprintf('PHP successfully upgraded from %s to %s.', $currentVersion, $target));
+}
+
+#[AsTask(
+    name: 'symfony',
+    namespace: 'upgrade',
+    description: 'Upgrade the project Symfony version (composer.json symfony/* constraints + extra.symfony.require) and validate'
+)]
+function upgradeSymfony(
+    #[AsOption(
+        name: 'target',
+        mode: InputOption::VALUE_REQUIRED,
+        description: 'Version Symfony LTS cible (ex: 7.4). Note: nommée "target" car "version" est réservé par Castor (--version applicatif).'
+    )]
+    string $target = ''
+): void {
+    io()->title('Upgrading Symfony version');
+
+    if ('' === $target) {
+        io()->error('Missing required option --target=<target_version> (ex: --target=7.4).');
+        exit(1);
+    }
+
+    if (1 !== preg_match('/^\d+\.\d+$/', $target)) {
+        io()->error(sprintf('Invalid version format "%s". Expected format: MAJOR.MINOR (ex: 7.4).', $target));
+        exit(1);
+    }
+
+    $composerJsonPath = 'prevarisc-migration/composer.json';
+
+    $composerJsonContent = file_get_contents($composerJsonPath);
+    $composerData = json_decode($composerJsonContent, true);
+    $currentVersion = $composerData['extra']['symfony']['require'] ?? null;
+
+    if (null === $currentVersion || 1 !== preg_match('/^(\d+\.\d+)\.\*$/', $currentVersion, $matches)) {
+        io()->error(sprintf('Unable to determine current Symfony version from %s (extra.symfony.require).', $composerJsonPath));
+        exit(1);
+    }
+    $currentVersion = $matches[1];
+
+    if ($currentVersion === $target) {
+        io()->warning(sprintf('Project is already on Symfony %s. Nothing to do.', $target));
+        return;
+    }
+
+    $currentIndex = array_search($currentVersion, UPGRADE_SYMFONY_SUPPORTED_VERSIONS, true);
+    $targetIndex = array_search($target, UPGRADE_SYMFONY_SUPPORTED_VERSIONS, true);
+
+    if (false === $targetIndex) {
+        io()->error(sprintf(
+            'Unsupported target Symfony version "%s". Supported LTS versions: %s.',
+            $target,
+            implode(', ', UPGRADE_SYMFONY_SUPPORTED_VERSIONS)
+        ));
+        exit(1);
+    }
+
+    if (false === $currentIndex) {
+        io()->error(sprintf('Current Symfony version %s is not in the known supported list. Aborting to avoid an unsafe jump.', $currentVersion));
+        exit(1);
+    }
+
+    if ($targetIndex !== $currentIndex + 1) {
+        $nextVersion = UPGRADE_SYMFONY_SUPPORTED_VERSIONS[$currentIndex + 1] ?? null;
+        io()->error(sprintf(
+            'Symfony upgrades must be incremental (LTS to LTS). Current version is %s, requested %s. Next allowed version is %s.',
+            $currentVersion,
+            $target,
+            $nextVersion ?? 'none (already at the latest supported version)'
+        ));
+        exit(1);
+    }
+
+    io()->section(sprintf('Upgrading Symfony %s → %s', $currentVersion, $target));
+
+    io()->text(sprintf('Updating %s', $composerJsonPath));
+    // Only rewrite "symfony/xxx": "X.Y.*" constraints (skips symfony/flex, symfony/monolog-bundle,
+    // symfony/requirements-checker, symfony/maker-bundle, symfony/polyfill-* which follow their own versioning).
+    $composerJsonContent = preg_replace(
+        '/("symfony\/[a-z0-9-]+": ")\d+\.\d+\.\*(")/',
+        "\${1}{$target}.*\${2}",
+        $composerJsonContent
+    );
+    $composerJsonContent = preg_replace(
+        '/("require": ")\d+\.\d+\.\*(")/',
+        "\${1}{$target}.*\${2}",
+        $composerJsonContent
+    );
+    file_put_contents($composerJsonPath, $composerJsonContent);
+
+    io()->success('Configuration files updated.');
+
+    io()->section('Updating composer dependencies');
+    run([
+        'docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration',
+        'app', 'composer', 'update', 'symfony/*', '--with-all-dependencies',
+    ]);
+
+    io()->section('Running validation (symfony:analyse, symfony:cs, symfony:test)');
+    symfonyAnalyse();
+    symfonyCs(false);
+    symfonyTest(false);
+
+    io()->success(sprintf('Symfony successfully upgraded from %s to %s.', $currentVersion, $target));
 }
