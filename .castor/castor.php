@@ -10,23 +10,32 @@ use function Castor\parallel;
 
 import(__DIR__);
 
-#[AsTask(description: 'Check coding style for all applications')]
-function cs(
-    #[AsOption(name: 'dry-run', mode: InputOption::VALUE_NONE, description: 'Lance les linters sans modifications')]
-    bool $dryRun
-): void
+#[AsTask(description: 'Fix coding style for all applications')]
+function cs(): void
 {
-    io()->title('Checking coding style for all applications');
+    io()->title('Fixing coding style for all applications');
 
     parallel(
-        function () use ($dryRun): void {
-            zendCs($dryRun);
+        function () {
+            symfonyCs();
         },
-        function () use ($dryRun): void {
-            symfonyCs($dryRun);
+        function () {
+            platauCs();
+        }
+    );
+}
+
+#[AsTask(description: 'Refactor all applications')]
+function refactor(): void
+{
+    io()->title('Refactoring all applications');
+
+    parallel(
+        function () {
+            symfonyRefactor();
         },
-        function () use ($dryRun): void {
-            platauCs($dryRun);
+        function () {
+            platauRefactor();
         }
     );
 }
@@ -37,9 +46,6 @@ function analyse(): void
     io()->title('Analysing all applications');
 
     parallel(
-        function () {
-            zendAnalyse();
-        },
         function () {
             symfonyAnalyse();
         },
@@ -55,9 +61,6 @@ function test(): void
     io()->title('Testing all applications');
 
     parallel(
-        function () {
-            zendTest();
-        },
         function () {
             symfonyTest(false);
         },

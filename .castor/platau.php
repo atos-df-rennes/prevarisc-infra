@@ -8,24 +8,13 @@ use function Castor\exit_code;
 use function Castor\io;
 use function Castor\run;
 
-#[AsTask(name: 'cs', namespace: 'platau', description: 'Check Plat\'AU application coding style')]
-function platauCs(
-    #[AsOption(name: 'dry-run', mode: InputOption::VALUE_NONE, description: 'Lance les linters sans modifications')]
-    bool $dryRun
-): void
+#[AsTask(name: 'cs', namespace: 'platau', description: 'Fix Plat\'AU application coding style')]
+function platauCs(): void
 {
-    $options = [];
-    $phpCsFixerTitle = 'Executing PHP-CS-FIXER';
+    io()->title('Fixing coding style for Plat\'AU application');
 
-    if (true === $dryRun) {
-        $options = ['--dry-run'];
-        $phpCsFixerTitle .= ' with '.implode(', ', $options);
-    }
-
-    io()->title('Checking coding style for Plat\'AU application');
-
-    io()->section($phpCsFixerTitle);
-    exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-passerelle-platau', 'app', 'vendor/bin/php-cs-fixer', '--config=vendor/kdubuc/php-cs-fixer-rules/php-cs-fixer.php', 'fix', ...$options]);
+    io()->section('Executing PHP-CS-FIXER');
+    exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-passerelle-platau', 'app', 'vendor/bin/php-cs-fixer', '--config=vendor/kdubuc/php-cs-fixer-rules/php-cs-fixer.php', 'fix']);
 }
 
 #[AsTask(name: 'refactor', namespace: 'platau', description: 'Refactor Plat\'AU application')]

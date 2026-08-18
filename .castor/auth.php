@@ -16,27 +16,9 @@ const AUTH_COMPOSE_AUTH_FILE = 'compose.worktree-auth.yaml';
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Configuration de la stack worktree isolée.
- *
- * @return array{project: string, composeFile: string, appContainer: string, dbContainer: string, authConfFile: string, appPort: string, isWorktree: bool}
- */
-function authWorktreeConfig(): array
-{
-    return [
-        'project'      => WORKTREE_PROJECT,
-        'composeFile'  => WORKTREE_COMPOSE_FILE,
-        'appContainer' => WORKTREE_APP_CONTAINER,
-        'dbContainer'  => WORKTREE_DB_CONTAINER,
-        'authConfFile' => 'apache/httpd-auth-worktree.conf',
-        'appPort'      => '7081',
-        'isWorktree'   => true,
-    ];
-}
-
-/**
  * Configuration de la stack principale (compose.dev.yaml).
  *
- * @return array{project: string, composeFile: string, appContainer: string, dbContainer: string, authConfFile: string, appPort: string, isWorktree: bool}
+ * @return array{project: string, composeFile: string, appContainer: string, dbContainer: string, authConfFile: string, appPort: string}
  */
 function authMainConfig(): array
 {
@@ -47,39 +29,12 @@ function authMainConfig(): array
         'dbContainer'  => 'prevarisc-infra-db-1',
         'authConfFile' => 'apache/httpd-auth-main.conf',
         'appPort'      => '7080',
-        'isWorktree'   => false,
     ];
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Tâches publiques
 // ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Bascule le mécanisme d'authentification sur le worktree isolé.
- *
- * Gère automatiquement :
- *   - La configuration Apache (httpd-auth-worktree.conf, inclut PREVARISC_SYMFONY_LOGIN)
- *   - Le redémarrage du container app avec préservation du worktree actif
- *   - Le démarrage/arrêt des services SSO (ldap, phpldapadmin, cas)
- *   - La création de l'utilisateur de test en base si absent
- */
-#[AsTask(name: 'authentification', namespace: 'worktree', description: 'Bascule le mécanisme d\'authentification du worktree pour tests (sélection interactive)')]
-function worktreeAuthentification(): void
-{
-    $cfg = authWorktreeConfig();
-
-    if (!authIsContainerRunning($cfg['appContainer'])) {
-        io()->error(sprintf(
-            'Le container "%s" n\'est pas démarré. Lancez "castor worktree:start" avant.',
-            $cfg['appContainer']
-        ));
-
-        return;
-    }
-
-    authRun($cfg);
-}
 
 /**
  * Bascule le mécanisme d'authentification sur la stack principale (compose.dev.yaml).
@@ -114,18 +69,11 @@ function symfonyAuthentification(): void
 /**
  * Orchestre le changement de mécanisme d'authentification pour une stack donnée.
  *
- * @param array{project: string, composeFile: string, appContainer: string, dbContainer: string, authConfFile: string, appPort: string, isWorktree: bool} $cfg
+ * @param array{project: string, composeFile: string, appContainer: string, dbContainer: string, authConfFile: string, appPort: string} $cfg
  */
 function authRun(array $cfg): void
 {
-    $repoChoice = io()->choice(
-        'Dépôt à tester',
-        [
-            'migration — formulaire Symfony (PREVARISC_SYMFONY_LOGIN=1)',
-            'legacy    — formulaire Zend    (PREVARISC_SYMFONY_LOGIN=0)',
-        ]
-    );
-    $repo = str_starts_with($repoChoice, 'migration') ? 'migration' : 'legacy';
+    $repo = 'migration';
 
     $modeChoice = io()->choice(
         'Mécanisme d\'authentification',
@@ -138,8 +86,8 @@ function authRun(array $cfg): void
     );
     $mode = explode(' ', trim($modeChoice))[0];
 
-    $symfonyLogin = 'migration' === $repo ? '1' : '0';
-    $formLabel = 'migration' === $repo ? 'Symfony' : 'Zend (legacy)';
+    $symfonyLogin = '1';
+    $formLabel = 'Symfony';
 
     io()->title(sprintf(
         'Authentification — mode : %s | repo : %s → formulaire %s',
@@ -243,7 +191,7 @@ function authWriteConf(string $mode, string $symfonyLogin, string $authConfFile)
  * Pour le worktree, préserve les répertoires montés du worktree actif.
  * Le --force-recreate recharge les variables Apache du fichier auth conf.
  *
- * @param array{project: string, composeFile: string, appContainer: string, dbContainer: string, authConfFile: string, appPort: string, isWorktree: bool} $cfg
+ * @param array{project: string, composeFile: string, appContainer: string, dbContainer: string, authConfFile: string, appPort: string} $cfg
  */
 function authRestartApp(array $cfg): void
 {
@@ -253,25 +201,7 @@ function authRestartApp(array $cfg): void
         '--file', $cfg['composeFile'],
     ];
 
-    if ($cfg['isWorktree']) {
-        $prevariscDir = authGetMountSource('/var/www/html/prevarisc', $cfg['appContainer']) ?? 'prevarisc';
-        $migrationDir = authGetMountSource('/var/www/html/prevarisc-migration', $cfg['appContainer']) ?? 'prevarisc-migration';
-
-        io()->text(sprintf(
-            'Worktree actif : <info>%s</info> + <info>%s</info>',
-            $prevariscDir,
-            $migrationDir
-        ));
-
-        $ctx = context()->withEnvironment([
-            'PREVARISC_DIR'           => $prevariscDir,
-            'PREVARISC_MIGRATION_DIR' => $migrationDir,
-        ]);
-
-        exit_code([...$composeArgs, 'up', '-d', '--force-recreate', '--remove-orphans', 'app'], $ctx);
-    } else {
-        exit_code([...$composeArgs, 'up', '-d', '--force-recreate', 'app']);
-    }
+    exit_code([...$composeArgs, 'up', '-d', '--force-recreate', 'app']);
 
     wait_for_docker_container(
         containerName: $cfg['appContainer'],
@@ -283,7 +213,7 @@ function authRestartApp(array $cfg): void
  * Démarre les services SSO requis (sous le projet de la stack cible) et arrête ceux qui ne le sont pas.
  *
  * @param string $mode form|ldap|cas|ntlm
- * @param array{project: string, composeFile: string, appContainer: string, dbContainer: string, authConfFile: string, appPort: string, isWorktree: bool} $cfg
+ * @param array{project: string, composeFile: string, appContainer: string, dbContainer: string, authConfFile: string, appPort: string} $cfg
  */
 function authManageSsoServices(string $mode, array $cfg): void
 {
@@ -389,9 +319,7 @@ function authEnsureTestUser(string $mode, string $dbContainer): void
  */
 function authShowInstructions(string $mode, string $repo, string $appPort): void
 {
-    $symfonyLoginLabel = 'migration' === $repo
-        ? '1 → formulaire Symfony'
-        : '0 → formulaire Zend (legacy)';
+    $symfonyLoginLabel = '1 → formulaire Symfony';
 
     /** @var array<array{string, string}> $rows */
     $rows = [
@@ -429,42 +357,6 @@ function authShowInstructions(string $mode, string $repo, string $appPort): void
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Retourne le nom du répertoire source monté pour une destination donnée dans un container.
- * Utilisé par le worktree pour détecter les repos actifs sans casser les volumes au redémarrage.
- *
- * @param string $destination  Chemin de destination dans le container (ex: /var/www/html/prevarisc)
- * @param string $appContainer Nom du container à inspecter
- */
-function authGetMountSource(string $destination, string $appContainer): ?string
-{
-    $output = [];
-    exec(
-        sprintf('docker inspect %s --format "{{json .Mounts}}" 2>/dev/null', escapeshellarg($appContainer)),
-        $output,
-        $code
-    );
-
-    if (0 !== $code || [] === $output) {
-        return null;
-    }
-
-    /** @var array<array{Destination: string, Source: string}>|null $mounts */
-    $mounts = json_decode(implode('', $output), true);
-
-    if (!is_array($mounts)) {
-        return null;
-    }
-
-    foreach ($mounts as $mount) {
-        if (($mount['Destination'] ?? '') === $destination) {
-            return basename($mount['Source'] ?? '');
-        }
-    }
-
-    return null;
-}
 
 /**
  * Vérifie si un container Docker est en cours d'exécution.

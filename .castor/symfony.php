@@ -9,52 +9,28 @@ use function Castor\io;
 use function Castor\parallel;
 use function Castor\run;
 
-#[AsTask(name: 'console', namespace: 'symfony', description: 'Execute Symfony console command')]
-function symfonyConsole(#[AsRawTokens] array $args): void
+#[AsTask(name: 'cs', namespace: 'symfony', description: 'Fix coding style for Symfony application')]
+function symfonyCs(): void
 {
-    io()->title('Executing Symfony console command');
+    io()->title('Fixing coding style for Symfony application');
 
-    run(
-        [
-            'docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration',
-            'app', 'php', 'bin/console', ...$args
-        ]
-    );
+    io()->section('Executing PHP-CS-FIXER');
+    exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'tools/vendor/bin/php-cs-fixer', 'fix']);
+
+    io()->section('Executing TWIG-CS-FIXER');
+    exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'tools/vendor/bin/twig-cs-fixer', 'fix']);
 }
 
-#[AsTask(name: 'cs', namespace: 'symfony', description: 'Check coding style for Symfony application')]
-function symfonyCs(
-    #[AsOption(name: 'dry-run', mode: InputOption::VALUE_NONE, description: 'Lance les linters sans modifications')]
-    bool $dryRun
-): void
+#[AsTask(name: 'refactor', namespace: 'symfony', description: 'Refactor Symfony application')]
+function symfonyRefactor(): void
 {
-    io()->title('Checking coding style for Symfony application');
+    io()->title('Refactoring Symfony application');
 
-    $options = [];
-    $rectorTitle = 'Executing Rector';
-    $phpCsFixerTitle = 'Executing PHP-CS-FIXER';
-    $twigCsFixerTitle = 'Executing TWIG-CS-FIXER';
-    $optionsTwigCsFixer = ['fix'];
-
-    if (true === $dryRun) {
-        $options = ['--dry-run'];
-        $rectorTitle .= ' with '.implode(', ', $options);
-        $phpCsFixerTitle .= ' with '.implode(', ', $options);
-        $twigCsFixerTitle .= ' with '.implode(', ', $options);
-        $optionsTwigCsFixer = ['check'];
-    }
-
-    io()->section($rectorTitle);
-    exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'tools/vendor/bin/rector', ...$options]);
-
-    io()->section($phpCsFixerTitle);
-    exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'tools/vendor/bin/php-cs-fixer', 'fix', ...$options]);
-
-    io()->section($twigCsFixerTitle);
-    exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'tools/vendor/bin/twig-cs-fixer', ...$optionsTwigCsFixer]);
+    io()->section('Executing Rector');
+    exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'tools/vendor/bin/rector']);
 }
 
-#[AsTask(name: 'analyse', namespace: 'symfony', description: 'Analyse for Symfony application')]
+#[AsTask(name: 'analyse', namespace: 'symfony', description: 'Analyse Symfony application')]
 function symfonyAnalyse(): void
 {
     io()->title('Analysing Symfony application');
@@ -63,7 +39,7 @@ function symfonyAnalyse(): void
     run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'tools/vendor/bin/phpstan', '--memory-limit=-1']);
 }
 
-#[AsTask(name: 'test', namespace: 'symfony', description: 'Test for Symfony application')]
+#[AsTask(name: 'test', namespace: 'symfony', description: 'Test Symfony application')]
 function symfonyTest(
     #[AsOption(name: 'all', mode: InputOption::VALUE_NONE, description: 'Lance la suite complète de tests incluant les tests fonctionnels')]
     bool $all
@@ -79,52 +55,6 @@ function symfonyTest(
     }
 
     run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'php', 'vendor/bin/phpunit', '--testdox', ...$options]);
-}
-
-#[AsTask(name: 'migrate', namespace: 'symfony', description: 'Migrate database schema')]
-function symfonyMigrate(): void
-{
-    io()->title('Migrating database schema');
-
-    io()->section('Executing Doctrine migrations');
-    symfonyConsole(['d:m:m', '--no-interaction']);
-}
-
-#[AsTask(name: 'migration-status', namespace: 'symfony', description: 'Show Doctrine migration status')]
-function symfonyMigrationStatus(): void
-{
-    io()->title('Doctrine migration status');
-
-    symfonyConsole(['d:m:status']);
-}
-
-#[AsTask(name: 'cache', namespace: 'symfony', description: 'Clear Symfony cache')]
-function symfonyCache(): void
-{
-    io()->title('Clearing Symfony cache');
-
-    symfonyConsole(['cache:clear']);
-}
-
-#[AsTask(name: 'make', namespace: 'symfony', description: 'Run a Symfony maker command (make:entity, make:migration…)')]
-function symfonyMake(#[AsRawTokens] array $args): void
-{
-    io()->title('Running Symfony maker');
-
-    symfonyConsole(['make:' . array_shift($args), ...$args]);
-}
-
-#[AsTask(name: 'status', namespace: 'symfony', description: 'Show git status for prevarisc-migration repo')]
-function symfonyStatus(): void
-{
-    io()->title('Git status —  prevarisc-migration');
-
-    parallel(
-        function () {
-            io()->section('prevarisc-migration');
-            run(['git', '-C', 'prevarisc-migration', 'status', '--short', '--branch']);
-        }
-    );
 }
 
 #[AsTask(name: 'validate', namespace: 'symfony', description: 'Run PHPStan + CS (dry-run) + tests sequentially — stops on first failure')]

@@ -187,22 +187,6 @@ function rebuild(): void
     io()->success('Containers rebuilt and restarted.');
 }
 
-#[AsTask(namespace: 'prevarisc', description: 'Follow Docker logs (all containers or a specific one)')]
-function logs(
-    #[AsArgument(name: 'service', description: 'Nom du service Docker à surveiller (ex: app, db, platau). Tous si omis.')]
-    string $service = ''
-): void
-{
-    io()->title('Prevarisc logs' . ('' !== $service ? " — {$service}" : ''));
-
-    $cmd = ['docker', 'compose', '--file', 'compose.dev.yaml', 'logs', '--follow', '--tail=100'];
-    if ('' !== $service) {
-        $cmd[] = $service;
-    }
-
-    run($cmd);
-}
-
 #[AsTask(namespace: 'prevarisc', description: 'Open an interactive shell inside the app container')]
 function shell(): void
 {
