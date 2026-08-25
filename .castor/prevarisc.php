@@ -176,6 +176,15 @@ function stop(): void
     exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'down', '--remove-orphans']);
 }
 
+#[AsTask(namespace: 'prevarisc', description: 'Restart Prevarisc')]
+function restart(): void
+{
+    io()->title('Restarting Prevarisc.');
+
+    stop();
+    start(false);
+}
+
 #[AsTask(namespace: 'prevarisc', description: 'Rebuild and restart Prevarisc containers')]
 function rebuild(): void
 {
