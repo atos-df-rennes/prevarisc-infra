@@ -43,6 +43,12 @@ skills:
     agent_name: ecarts
     git_aware: true
     notes: "CRITICAL: prevarisc-migration/ is an INDEPENDENT git repository. ALL commits MUST be made from within /home/dev/prevarisc-infra/prevarisc-migration/, never from the parent directory /home/dev/prevarisc-infra/. Agent handles multi-repo structure automatically."
+
+  merge-branch:
+    default_run_context: main
+    supports_worktree: false
+    git_aware: true
+    notes: "Conflict-resolution playbook for cross-version merges (e.g. release/2.10 → release/3.0). Complements castor git:merge-upwards, which handles branch traversal and pauses on conflicts; this skill resolves the annotation→attribute / property-promotion conflicts at that pause point. prevarisc-migration/ is an INDEPENDENT git repository — commit from within it, not from the parent."
 policy: |
   Skills are orchestration-only and deterministic. They will not alter repository state by themselves. Use agents or explicit slash commands for actions that change files, branches, or push commits.
   Set run_context to 'worktree' to opt-in to worktree operations.
