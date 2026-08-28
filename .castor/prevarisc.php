@@ -221,7 +221,7 @@ function update(): void
         },
     );
 
-    symfonyMigrate();
+    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'php', 'bin/console', 'd:m:m', '--no-interaction']);
 }
 
 #[AsTask(namespace: 'prevarisc', description: 'Make Prevarisc dump from db container to local host (WSL)')]
