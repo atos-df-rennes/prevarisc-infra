@@ -40,7 +40,7 @@ function setup(): void
         io()->text('Docker est installé.');
 
         // Vérifie que le plugin docker compose est bien disponible
-        if (exit_code(['docker', 'compose', 'version'], quiet: true) !== 0) {
+        if (exit_code(['docker', 'compose', 'version'], context: context()->withQuiet()) !== 0) {
             io()->warning('Le plugin Docker Compose n\'est pas disponible. Installation en cours...');
             run(['sudo', 'apt-get', 'install', '-y', 'docker-compose-plugin']);
         } else {
@@ -326,6 +326,38 @@ function loadDump(
     run('docker exec -i '.$container.' mysql -u root -p"planmusique" PRV_prevarisc_v2 < '.$dumpFullPath);
 
     io()->success('Dump loaded successfully.');
+}
+
+#[AsTask(namespace: 'prevarisc', name: 'switch', description: 'Switch branches and perform required setup (stop, delete volume, rebuild, load dump, reinstall dependencies)')]
+function switchBranch(): void
+{
+    io()->title('Switching Prevarisc branches.');
+
+    io()->section('Stopping containers...');
+    stop();
+
+    io()->section('Removing database volume...');
+    exit_code(['docker', 'volume', 'rm', 'prevarisc-infra_db_data'], context: context()->withQuiet());
+    io()->text('Database volume removed.');
+
+    io()->section('Rebuilding and starting containers...');
+    rebuild();
+
+    io()->section('Removing prevarisc-migration vendor directory...');
+    if (fs()->exists('prevarisc-migration/vendor')) {
+        fs()->remove('prevarisc-migration/vendor');
+        io()->text('Vendor directory removed.');
+    } else {
+        io()->text('Vendor directory not found (already clean).');
+    }
+
+    io()->section('Loading database dump...');
+    loadDump();
+
+    io()->section('Updating dependencies...');
+    update();
+
+    io()->success('Branch switch completed successfully! You can now work with the new branch.');
 }
 
 function watchForApacheConfigurationChanges(): void
