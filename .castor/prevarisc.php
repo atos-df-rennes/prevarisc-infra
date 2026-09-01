@@ -15,6 +15,9 @@ use function Castor\run;
 use function Castor\wait_for_docker_container;
 use function Castor\watch;
 
+const MYSQL_IDENTIFIER = 'mysql';
+const MARIADB_IDENTIFIER = 'mariadb';
+
 #[AsTask(namespace: 'prevarisc', description: 'Setup Prevarisc')]
 function setup(): void
 {
@@ -146,7 +149,7 @@ function setup(): void
 
     composerInstall();
     composerInstallDev();
-    symfonyMigrate();
+    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'php', 'bin/console', 'd:m:m', '--no-interaction']);
 
     io()->success('Prevarisc is now ready!');
 
@@ -238,7 +241,7 @@ function makeDump(
         return;
     }
 
-    $dumpName = 'dump_sql/prevarisc_'.date('YmdHis').'.sql';
+    $dumpName = 'dump_sql/prevarisc_'.MYSQL_IDENTIFIER.'_'.date('YmdHis').'.sql';
     run('docker exec -w / -i '.$container.' mariadb-dump -u root -p"planmusique" PRV_prevarisc_v2 > '.$dumpName);
 
     io()->success('Dump made successfully.');
@@ -252,18 +255,24 @@ function loadDump(
     io()->title('Loading Prevarisc dump.');
 
     io()->text('Searching dump files (ordered by modification time, newest first).');
-    $sqlDumps = finder()->files()->in(dirname(__DIR__).'/dump_sql')->depth('== 0')->name('*.sql')->sortByModifiedTime()->reverseSorting();
+    $allSqlDumps = finder()->files()->in(dirname(__DIR__).'/dump_sql')->depth('== 0')->name('*.sql')->sortByModifiedTime()->reverseSorting();
 
-    if (!$sqlDumps->hasResults()) {
-        io()->error('No dump file found.');
+    // Filter out dumps containing the opposite database identifier
+    $sqlDumpPaths = array_filter(
+        iterator_to_array($allSqlDumps),
+        fn ($file) => !str_contains($file->getFilename(), MARIADB_IDENTIFIER)
+    );
+
+    if (empty($sqlDumpPaths)) {
+        io()->error('No compatible dump file found.');
 
         return;
     }
 
-    if (iterator_count($sqlDumps) === 1) {
-        $dumpPath = $sqlDumps->getIterator()->current();
+    if (count($sqlDumpPaths) === 1) {
+        $dumpPath = reset($sqlDumpPaths);
     } else {
-        $dumpPaths = array_values(iterator_to_array($sqlDumps));
+        $dumpPaths = array_values($sqlDumpPaths);
         $dumpNames = array_map(fn ($sqlDump) => $sqlDump->getFilename(), $dumpPaths);
 
         $selectedFileName = io()->choice('Please choose which dump file you want to load', $dumpNames, 0);
