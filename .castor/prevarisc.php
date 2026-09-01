@@ -277,7 +277,7 @@ function makeDump(
         return;
     }
 
-    $dumpName = 'dump_sql/prevarisc_'.date('YmdHis').'.sql';
+    $dumpName = 'dump_sql/prevarisc_mysql_'.date('YmdHis').'.sql';
     run('docker exec -w / -i '.$container.' mysqldump -u root -p"planmusique" PRV_prevarisc_v2 > '.$dumpName);
 
     io()->success('Dump made successfully.');
@@ -291,7 +291,7 @@ function loadDump(
     io()->title('Loading Prevarisc dump.');
 
     io()->text('Searching dump files (ordered by modification time, newest first).');
-    $sqlDumps = finder()->files()->in(dirname(__DIR__).'/dump_sql')->depth('== 0')->name('*.sql')->sortByModifiedTime()->reverseSorting();
+    $sqlDumps = finder()->files()->in(dirname(__DIR__).'/dump_sql')->depth('== 0')->name('*mysql*.sql')->sortByModifiedTime()->reverseSorting();
 
     if (!$sqlDumps->hasResults()) {
         io()->error('No dump file found.');
