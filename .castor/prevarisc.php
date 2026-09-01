@@ -241,7 +241,7 @@ function makeDump(
         return;
     }
 
-    $dumpName = 'dump_sql/prevarisc_'.MYSQL_IDENTIFIER.'_'.date('YmdHis').'.sql';
+    $dumpName = 'dump_sql/prevarisc_'.MARIADB_IDENTIFIER.'_'.date('YmdHis').'.sql';
     run('docker exec -w / -i '.$container.' mariadb-dump -u root -p"planmusique" PRV_prevarisc_v2 > '.$dumpName);
 
     io()->success('Dump made successfully.');
@@ -260,7 +260,7 @@ function loadDump(
     // Filter out dumps containing the opposite database identifier
     $sqlDumpPaths = array_filter(
         iterator_to_array($allSqlDumps),
-        fn ($file) => !str_contains($file->getFilename(), MARIADB_IDENTIFIER)
+        fn ($file) => !str_contains($file->getFilename(), MYSQL_IDENTIFIER)
     );
 
     if (empty($sqlDumpPaths)) {
