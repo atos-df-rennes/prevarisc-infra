@@ -44,6 +44,12 @@ services:
       MYSQL_DATABASE: PRV_prevarisc_v2
       MYSQL_USER: prevarisc
       MYSQL_PASSWORD: planmusique
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-u', 'root', '-pplanmusique']
+      interval: 2s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
 
   mailpit:
     image: axllent/mailpit:latest

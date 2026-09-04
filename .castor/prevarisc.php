@@ -156,60 +156,6 @@ function setup(): void
     watchForApacheConfigurationChanges();
 }
 
-#[AsTask(namespace: 'prevarisc', description: 'Start Prevarisc')]
-function start(
-    #[ASOption(name: 'watch', mode: InputOption::VALUE_NONE, description: 'Surveille les fichiers Apache/PHP et recharge automatiquement')]
-    bool $watch
-): void
-{
-    io()->title('Starting Prevarisc.');
-
-    exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'up', '-d']);
-
-    if ($watch) {
-        watchForApacheConfigurationChanges();
-    }
-}
-
-#[AsTask(namespace: 'prevarisc', description: 'Stop Prevarisc')]
-function stop(): void
-{
-    io()->title('Stoping Prevarisc.');
-
-    exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'down', '--remove-orphans']);
-}
-
-#[AsTask(namespace: 'prevarisc', description: 'Restart Prevarisc')]
-function restart(): void
-{
-    io()->title('Restarting Prevarisc.');
-
-    stop();
-    start(false);
-}
-
-#[AsTask(namespace: 'prevarisc', description: 'Rebuild and restart Prevarisc containers')]
-function rebuild(): void
-{
-    io()->title('Rebuilding Prevarisc containers.');
-
-    run(['docker', 'compose', '--file', 'compose.dev.yaml', 'build']);
-    exit_code(['docker', 'compose', '--file', 'compose.dev.yaml', 'up', '-d']);
-
-    io()->success('Containers rebuilt and restarted.');
-}
-
-#[AsTask(namespace: 'prevarisc', description: 'Open an interactive shell inside the app container')]
-function shell(): void
-{
-    io()->title('Opening shell in app container.');
-
-    run(
-        ['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', 'app', 'bash'],
-        context: context()->withTty(true)
-    );
-}
-
 #[AsTask(namespace: 'prevarisc', description: 'Installs all composer dependencies and execute Doctrine migrations')]
 function update(): void
 {
@@ -227,69 +173,7 @@ function update(): void
     run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'php', 'bin/console', 'd:m:m', '--no-interaction']);
 }
 
-#[AsTask(namespace: 'prevarisc', description: 'Make Prevarisc dump from db container to local host (WSL)')]
-function makeDump(
-    #[ASOption(name: 'container', description: 'Nom du conteneur MySQL source')]
-    string $container = 'prevarisc-infra-db-1'
-): void
-{
-    io()->title('Making Prevarisc dump.');
-
-    if (!preg_match('/^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/', $container)) {
-        io()->error(sprintf('Nom de conteneur invalide : "%s". Seuls les caractères alphanumériques, tirets, underscores et points sont autorisés.', $container));
-
-        return;
-    }
-
-    $dumpName = 'dump_sql/prevarisc_'.MARIADB_IDENTIFIER.'_'.date('YmdHis').'.sql';
-    run('docker exec -w / -i '.$container.' mariadb-dump -u root -p"planmusique" PRV_prevarisc_v2 > '.$dumpName);
-
-    io()->success('Dump made successfully.');
-}
-
-#[AsTask(namespace: 'prevarisc', description: 'Load a selected Prevarisc dump from local host (WSL) to db container')]
-function loadDump(
-    #[ASOption(name: 'container', description: 'Nom du conteneur MySQL cible')]
-    string $container = 'prevarisc-infra-db-1'
-): void {
-    io()->title('Loading Prevarisc dump.');
-
-    io()->text('Searching dump files (ordered by modification time, newest first).');
-    $allSqlDumps = finder()->files()->in(dirname(__DIR__).'/dump_sql')->depth('== 0')->name('*.sql')->sortByModifiedTime()->reverseSorting();
-
-    // Filter out dumps containing the opposite database identifier
-    $sqlDumpPaths = array_filter(
-        iterator_to_array($allSqlDumps),
-        fn ($file) => !str_contains($file->getFilename(), MYSQL_IDENTIFIER)
-    );
-
-    if (empty($sqlDumpPaths)) {
-        io()->error('No compatible dump file found.');
-
-        return;
-    }
-
-    if (count($sqlDumpPaths) === 1) {
-        $dumpPath = reset($sqlDumpPaths);
-    } else {
-        $dumpPaths = array_values($sqlDumpPaths);
-        $dumpNames = array_map(fn ($sqlDump) => $sqlDump->getFilename(), $dumpPaths);
-
-        $selectedFileName = io()->choice('Please choose which dump file you want to load', $dumpNames, 0);
-        $selectedIndex = array_search($selectedFileName, $dumpNames, true);
-        $dumpPath = $dumpPaths[$selectedIndex];
-    }
-
-    $dumpName = $dumpPath->getFilename();
-    $dumpFullPath = (string) $dumpPath;
-    io()->info('Loading dump file: '.$dumpName);
-
-    run('docker exec -i '.$container.' mariadb -u root -p"planmusique" PRV_prevarisc_v2 < '.$dumpFullPath);
-
-    io()->success('Dump loaded successfully.');
-}
-
-#[AsTask(namespace: 'prevarisc', name: 'switch', description: 'Switch branches and perform required setup (stop, delete volume, rebuild, load dump, reinstall dependencies)')]
+#[AsTask(name: 'switch', namespace: 'prevarisc', description: 'Switch branches and perform required setup (stop, delete volume, rebuild, load dump, reinstall dependencies)')]
 function switchBranch(): void
 {
     io()->title('Switching Prevarisc branches.');
@@ -312,6 +196,10 @@ function switchBranch(): void
         io()->text('Vendor directory not found (already clean).');
     }
 
+    wait_for_docker_container(
+        containerName: 'prevarisc-infra-db-1',
+        message: 'Waiting for db container to be ready.'
+    );
     io()->section('Loading database dump...');
     loadDump();
 
