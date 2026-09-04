@@ -351,6 +351,10 @@ function switchBranch(): void
         io()->text('Vendor directory not found (already clean).');
     }
 
+    wait_for_docker_container(
+        containerName: 'prevarisc-infra-db-1',
+        message: 'Waiting for db container to be ready.'
+    );
     io()->section('Loading database dump...');
     loadDump();
 
