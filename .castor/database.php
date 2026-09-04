@@ -26,8 +26,8 @@ function makeDump(
     io()->success('Dump made successfully.');
 }
 
-#[AsTask(namespace: 'database', description: 'Load a selected Prevarisc dump from local host (WSL) to db container')]
-function load(
+#[AsTask(name: 'load', namespace: 'database', description: 'Load a selected Prevarisc dump from local host (WSL) to db container')]
+function loadDump(
     #[ASOption(name: 'container', description: 'Nom du conteneur MySQL cible')]
     string $container = 'prevarisc-infra-db-1'
 ): void {
