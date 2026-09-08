@@ -68,13 +68,13 @@ function logs(
     run($cmd);
 }
 
-#[AsTask(namespace: 'docker', description: 'Open an interactive shell inside the app container')]
-function shell(): void
+#[AsTask(name: 'shell', namespace: 'docker', description: 'Open an interactive shell inside the app container')]
+function dockerShell(): void
 {
     io()->title('Opening shell in app container.');
 
     run(
         ['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', 'app', 'bash'],
-        context: context()->withTty(true)
+        context: context()->withTty()
     );
 }
