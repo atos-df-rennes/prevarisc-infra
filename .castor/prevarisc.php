@@ -201,6 +201,12 @@ function switchBranch(): void
 {
     io()->title('Switching Prevarisc branches.');
 
+    io()->section('Checking repositories alignment...');
+    if (!checkSwitchRepositoriesAligned()) {
+        return;
+    }
+    io()->text('Les dépôts sont bien alignés sur la même branche.');
+
     io()->section('Stopping containers...');
     stop();
 
@@ -230,6 +236,77 @@ function switchBranch(): void
     update();
 
     io()->success('Branch switch completed successfully! You can now work with the new branch.');
+}
+
+/**
+ * Vérifie que prevarisc-infra, prevarisc-migration et prevarisc-passerelle-platau
+ * sont tous les trois sur la même branche.
+ *
+ * Un désalignement (ex. prevarisc-migration sur release/3.0 alors que
+ * prevarisc-passerelle-platau est encore sur release/2.10) entraîne
+ * l'installation de dépendances incohérentes entre les dépôts.
+ *
+ * @return bool true si les dépôts sont alignés (ou si leur branche n'a pas pu être
+ *              déterminée), false si un désalignement a été détecté
+ */
+function checkSwitchRepositoriesAligned(): bool
+{
+    $repoDirs = [
+        'prevarisc-infra' => '.',
+        'prevarisc-migration' => 'prevarisc-migration',
+        'prevarisc-passerelle-platau' => 'prevarisc-passerelle-platau',
+    ];
+
+    $branches = [];
+
+    foreach ($repoDirs as $label => $dir) {
+        if (!fs()->exists($dir)) {
+            io()->text("Dépôt <info>{$label}</info> introuvable ({$dir}), vérification ignorée pour celui-ci.");
+            continue;
+        }
+
+        $branch = getCurrentGitBranch($dir);
+        if (null === $branch) {
+            io()->warning("Impossible de déterminer la branche courante du dépôt <info>{$label}</info> ({$dir}).");
+            continue;
+        }
+
+        $branches[$label] = $branch;
+        io()->text("Dépôt <info>{$label}</info> : branche <info>{$branch}</info>.");
+    }
+
+    $distinctBranches = array_unique(array_values($branches));
+
+    if (\count($distinctBranches) > 1) {
+        io()->error('Les dépôts ne sont pas alignés sur la même branche. Merci de mettre tous les dépôts (prevarisc-infra, prevarisc-migration, prevarisc-passerelle-platau) sur la même branche (ex. release/2.10 ou release/3.0) avant de relancer le switch.');
+
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * Retourne le nom de la branche courante d'un dépôt Git, ou null si elle
+ * n'a pas pu être déterminée (dépôt absent, HEAD détaché, etc.).
+ */
+function getCurrentGitBranch(string $dir): ?string
+{
+    $output = [];
+    $resultCode = 0;
+    exec('git -C '.escapeshellarg($dir).' rev-parse --abbrev-ref HEAD 2>/dev/null', $output, $resultCode);
+
+    if (0 !== $resultCode || [] === $output) {
+        return null;
+    }
+
+    $branch = trim($output[0]);
+
+    if ('' === $branch || 'HEAD' === $branch) {
+        return null;
+    }
+
+    return $branch;
 }
 
 function watchForApacheConfigurationChanges(): void
