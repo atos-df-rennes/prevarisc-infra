@@ -2,9 +2,21 @@
 
 use Castor\Attribute\AsOption;
 use Castor\Attribute\AsTask;
+use function Castor\context;
 use function Castor\finder;
 use function Castor\io;
 use function Castor\run;
+
+#[AsTask(name: 'shell', namespace: 'database', description: 'Open an interactive shell inside the db container')]
+function dbShell(): void
+{
+    io()->title('Opening shell in db container.');
+
+    run(
+        ['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', 'db', 'bash'],
+        context: context()->withTty()
+    );
+}
 
 #[AsTask(name: 'dump', namespace: 'database', description: 'Make Prevarisc dump from db container to local host (WSL)')]
 function makeDump(
