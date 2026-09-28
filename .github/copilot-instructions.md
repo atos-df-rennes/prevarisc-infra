@@ -1,25 +1,27 @@
 # Copilot instructions (condensed)
 
-Context: Migration Zend 1.12 → Symfony 5.4 (PHP 8.0). Active migration in prevarisc-migration/. Legacy backup at prevarisc/ (not mounted).
+Context: Symfony 4.4 (PHP 7.1.33). prevarisc-migration/ is the current production application; prevarisc/ is a frozen Zend 1.12 reference, used only to check whether a bug predates the migration (legacy bug) or was introduced by it (regression).
+
+Stack: PHP 7.1.33, Symfony 4.4, Doctrine ORM 2.14, Twig 2/3, PHPUnit 7.5.
 
 Repository structure:
-- prevarisc-migration/ → `/home/dev/prevarisc-infra/prevarisc-migration/` (active migrated code)
-- prevarisc/ → `/home/dev/prevarisc-infra/prevarisc/` (legacy backup, not mounted — reference only in case of bug detection)
+- prevarisc-migration/ → `/home/dev/prevarisc-infra/prevarisc-migration/` (current application code)
+- prevarisc/ → `/home/dev/prevarisc-infra/prevarisc/` (read-only, see Context above)
 
 Absolute rules:
-- Focus on prevarisc-migration/ only. Legacy code (prevarisc/) is not called in production.
-- Use PHP 8.0 features (typed properties, null coalescing, etc.) in migrated code.
+- Never modify prevarisc/ in automated runs.
+- PHP must remain 7.1-compatible (no typed properties, no PHP8 features).
 - findAll() without pagination is forbidden.
+- No symfony/messenger, scheduler, or other feature requiring an extra long-running worker process: the app is delivered on client infra and an additional process/restart is too costly to roll out for now.
 
-Essential commands (host):
+Essential commands (host) — see the `run-linters` skill for details/nuances:
 - castor symfony:analyse  # PHPStan lvl10
-- castor symfony:cs
-- castor symfony:test
-- castor symfony:validate
-- castor migration:progress
+- castor symfony:cs       # Rector + PHP-CS-Fixer + Twig-CS-Fixer
+- castor symfony:test     # unit/non-functional tests (no --all)
+- castor symfony:validate # runs all of the above with --dry-run
 
-Commit format (required):
-feat(scope): description
+Commit format (required, Conventional Commits — types observed in git log: fix, feat, chore, perf, style, refactor, migration):
+type(scope): description
 
 Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
 

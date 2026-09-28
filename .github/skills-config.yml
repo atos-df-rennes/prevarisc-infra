@@ -11,38 +11,20 @@ auto_invoke_agents: false
 
 # Per-skill configuration
 skills:
-  migrate-feature:
-    default_run_context: main
-    supports_worktree: true
-    converted_to_agent: true
-    agent_name: migrate-feature
-    notes: "CONVERTED: This skill is now an agent 'migrate-feature'. Use the agent to perform repository changes. Skill remains as read-only documentation."
-
   analyse-legacy:
     default_run_context: main
     supports_worktree: false
-    notes: "Read-only analysis skill. It does not change repository state."
+    notes: "Read-only analysis skill. It does not change repository state. Used to compare current Symfony behavior against the frozen Zend reference (prevarisc/) when diagnosing whether a bug is a migration regression or a pre-existing legacy defect."
 
-  worktree-task:
-    default_run_context: worktree
-    supports_worktree: true
-    opt_in_required: true
-    converted_to_agent: true
-    agent_name: worktree-task
-    notes: "CONVERTED: This skill is now an agent 'worktree-task'. Use the agent for worktree operations. Skill kept for documentation only."
+  run-linters:
+    default_run_context: main
+    supports_worktree: false
+    notes: "Reference for castor lint/test commands (symfony:analyse, symfony:cs, symfony:test, symfony:validate). Documentation only: symfony:cs writes changes directly (no --dry-run); symfony:validate runs all three checks in --dry-run mode. Does not itself change repository state beyond whichever underlying command is invoked."
 
   symfony-migration:
     default_run_context: main
     supports_worktree: true
     notes: "Agent that may perform code changes. Default runs in main; to run in a worktree set run_context: worktree."
-
-  ecarts:
-    default_run_context: main
-    supports_worktree: false
-    converted_to_agent: true
-    agent_name: ecarts
-    git_aware: true
-    notes: "CRITICAL: prevarisc-migration/ is an INDEPENDENT git repository. ALL commits MUST be made from within /home/dev/prevarisc-infra/prevarisc-migration/, never from the parent directory /home/dev/prevarisc-infra/. Agent handles multi-repo structure automatically."
 
   merge-branch:
     default_run_context: main
