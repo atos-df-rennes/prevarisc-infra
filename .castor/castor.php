@@ -1,8 +1,8 @@
 <?php
 
+defined('CASTOR_USE_CHDIR') || define('CASTOR_USE_CHDIR', true);
+
 use Castor\Attribute\AsTask;
-use Castor\Attribute\ASOption;
-use Symfony\Component\Console\Input\InputOption;
 
 use function Castor\import;
 use function Castor\io;
