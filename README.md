@@ -4,7 +4,7 @@ Dépôt de l'infrastructure Docker pour Prevarisc. Il orchestre trois applicatio
 
 | Dépôt | Rôle |
 |---|---|
-| `prevarisc/` | Code legacy Zend 1.12 (lecture seule en dehors des bug fixes) |
+| `prevarisc/` | Code legacy Zend 1.12 (lecture seule, sert de référence) |
 | `prevarisc-migration/` | Code migré Symfony 4.4 (travail principal) |
 | `prevarisc-passerelle-platau/` | API de passerelle Plat'AU |
 
@@ -34,8 +34,8 @@ castor prevarisc:setup
 Pour les sessions suivantes :
 
 ```bash
-castor prevarisc:start   # démarrer
-castor prevarisc:stop    # arrêter
+castor docker:start   # démarrer
+castor docker:stop    # arrêter
 ```
 
 ### Référence des commandes
