@@ -5,7 +5,7 @@ description: Guide pour analyser le code Zend legacy du projet Prevarisc (dépô
 
 # Skill : Analyse du code legacy Zend — Prevarisc
 
-Prevarisc est entièrement migré : `prevarisc-migration/` (Symfony 4.4) est l'application utilisée en production. Le dépôt `prevarisc/` (Zend 1.12) n'est conservé que comme référence figée, pour comparer un comportement Symfony actuel au comportement legacy d'origine — typiquement lors du diagnostic d'un bug, afin de distinguer une régression introduite par la migration d'un défaut déjà présent avant elle.
+Prevarisc est entièrement migré : `prevarisc-migration/` (Symfony 7.4, PHP 8.5) est l'application utilisée en production. Le dépôt `prevarisc/` (Zend 1.12) n'est conservé que comme référence figée, pour comparer un comportement Symfony actuel au comportement legacy d'origine — typiquement lors du diagnostic d'un bug, afin de distinguer une régression introduite par la migration d'un défaut déjà présent avant elle.
 
 Ce skill guide cette analyse comparative du code Zend dans `prevarisc/`.
 

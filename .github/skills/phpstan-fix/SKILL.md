@@ -1,11 +1,11 @@
 ---
 name: phpstan-fix
-description: Guide pour corriger les erreurs PHPStan niveau 10 dans le projet Prevarisc (PHP 8.0, Symfony 5.4, Doctrine 2.14). À utiliser pour comprendre et corriger les erreurs PHPStan sans changer la logique métier.
+description: Guide pour corriger les erreurs PHPStan niveau 10 dans le projet Prevarisc (PHP 8.5, Symfony 7.4, Doctrine 2.20). À utiliser pour comprendre et corriger les erreurs PHPStan sans changer la logique métier.
 ---
 
 # Skill : Correction PHPStan niveau 10 — Prevarisc
 
-Ce skill guide la correction des erreurs PHPStan niveau 10 pour PHP 8.0 dans le projet Prevarisc.
+Ce skill guide la correction des erreurs PHPStan niveau 10 pour PHP 8.5 dans le projet Prevarisc.
 
 ## Lancer l'analyse
 
@@ -13,16 +13,18 @@ Ce skill guide la correction des erreurs PHPStan niveau 10 pour PHP 8.0 dans le 
 castor symfony:analyse
 ```
 
-## PHP 8.0 — Nouvelles possibilités
+## PHP 8.5 — À privilégier
 
-Avec PHP 8.0, vous pouvez maintenant utiliser :
+Le projet utilise déjà ces fonctionnalités modernes (voir les entités dans `src/Entity/`) — les préférer aux DocBlocks quand c'est possible :
 
-- **Propriétés typées** : `private DossierRepository $repo;` (au lieu de DocBlocks)
-- **Union types** : `public function process(int|string $id): Dossier|null`
+- **Propriétés typées** : `private ?DossierRepository $repo = null;` (au lieu de DocBlocks)
+- **Propriétés promues/readonly** : `public function __construct(private readonly LastActionUpdater $updater) {}`
+- **Attributs Doctrine** (pas d'annotations) : `#[ORM\Column(name: 'LIBELLE', type: Types::STRING, nullable: true)]`
+- **Union types** : `public function process(int|string $id): ?Dossier`
 - **Named arguments** : `$this->findById(id: 123, validate: true)`
 - **Match expressions** : `$status = match($code) { 200 => 'OK', 404 => 'Not Found' };`
 - **Nullsafe operator** : `$user?->getProfile()?->getName()` (au lieu de nested null checks)
-- **Attributes** : `#[Route('/path', methods: ['GET'])]` (prédécesseur des annotations)
+- **Enums** : privilégier un `enum` PHP natif à des constantes de classe pour un ensemble de valeurs fermé
 
 ## Erreurs courantes et corrections
 
@@ -31,20 +33,14 @@ Avec PHP 8.0, vous pouvez maintenant utiliser :
 ```
 # Erreur : Property X::$y has no type hint specified.
 
-// 🚫 Avant (ancienne syntaxe PHP 7.1)
+// 🚫 Avant
 class DossierController extends AbstractController {
     private $dossierRepository;
 }
 
-// ✅ Après — PHP 8.0 : propriété typée
+// ✅ Après — propriété typée native (préféré sur ce projet)
 class DossierController extends AbstractController {
-    private DossierRepository $dossierRepository;
-}
-
-// ✅ Ou avec DocBlock (compatible avec les outils de static analysis)
-class DossierController extends AbstractController {
-    /** @var DossierRepository */
-    private $dossierRepository;
+    public function __construct(private readonly DossierRepository $dossierRepository) {}
 }
 ```
 
@@ -166,21 +162,18 @@ class DossierRepository extends ServiceEntityRepository {
 ### 8. Entities Doctrine — Champs nullable
 
 ```php
-// ✅ Champ nullable dans l'entité
-/**
- * @ORM\Column(type="string", nullable=true)
- * @var string|null
- */
-private $commentaire;
+// ✅ Champ nullable dans l'entité — attribut Doctrine (pas d'annotation)
+#[ORM\Column(name: 'COMMENTAIRE', type: Types::STRING, nullable: true)]
+private ?string $commentaire = null;
 
-/** @return string|null */
 public function getCommentaire(): ?string {
     return $this->commentaire;
 }
 
-/** @param string|null $commentaire */
-public function setCommentaire(?string $commentaire): void {
+public function setCommentaire(?string $commentaire): self {
     $this->commentaire = $commentaire;
+
+    return $this;
 }
 ```
 
@@ -231,7 +224,7 @@ echo $result;
 2. Regrouper les erreurs par fichier
 3. Corriger dans l'ordre : entités → repositories → services → controllers
 4. **Ne jamais modifier la logique métier** pour corriger PHPStan
-5. Utiliser uniquement des DocBlocks et annotations (pas de refactoring)
+5. Privilégier les types natifs (propriétés typées, attributs) plutôt que les DocBlocks — seuls les cas non exprimables nativement (génériques de collection type `Dossier[]`, `array<string, mixed>`) nécessitent un DocBlock
 6. Relancer `castor symfony:analyse` pour vérifier : 0 erreur attendu
 
 ## Annotations PHPDoc utiles pour PHPStan

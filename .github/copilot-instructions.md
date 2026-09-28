@@ -1,8 +1,8 @@
 # Copilot instructions (condensed)
 
-Context: Symfony 4.4 (PHP 7.1.33). prevarisc-migration/ is the current production application; prevarisc/ is a frozen Zend 1.12 reference, used only to check whether a bug predates the migration (legacy bug) or was introduced by it (regression).
+Context: Symfony 7.4 (PHP 8.5.0). prevarisc-migration/ is the current production application; prevarisc/ is a frozen Zend 1.12 reference, used only to check whether a bug predates the migration (legacy bug) or was introduced by it (regression).
 
-Stack: PHP 7.1.33, Symfony 4.4, Doctrine ORM 2.14, Twig 2/3, PHPUnit 7.5.
+Stack: PHP 8.5.0, Symfony 7.4, Doctrine ORM 2.20, Twig 3, PHPUnit 13.
 
 Repository structure:
 - prevarisc-migration/ → `/home/dev/prevarisc-infra/prevarisc-migration/` (current application code)
@@ -10,7 +10,7 @@ Repository structure:
 
 Absolute rules:
 - Never modify prevarisc/ in automated runs.
-- PHP must remain 7.1-compatible (no typed properties, no PHP8 features).
+- Use modern PHP 8.5 features (typed/readonly properties, promoted constructor properties, enums, match, nullsafe `?->`, attributes instead of annotations) — no need to preserve PHP 7.1 compatibility on this branch.
 - findAll() without pagination is forbidden.
 - No symfony/messenger, scheduler, or other feature requiring an extra long-running worker process: the app is delivered on client infra and an additional process/restart is too costly to roll out for now.
 
