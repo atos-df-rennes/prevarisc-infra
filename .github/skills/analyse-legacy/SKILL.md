@@ -1,11 +1,13 @@
 ---
 name: analyse-legacy
-description: Guide pour analyser le code Zend legacy du projet Prevarisc avant de le migrer. À utiliser pour comprendre un controller, une vue ou un modèle Zend existant et planifier son portage Symfony.
+description: Guide pour analyser le code Zend legacy du projet Prevarisc (dépôt prevarisc/, référence figée). À utiliser pour comprendre le comportement historique d'un controller, d'une vue ou d'un modèle Zend et déterminer si un bug constaté dans prevarisc-migration/ est une régression de migration ou un défaut déjà présent dans le legacy.
 ---
 
 # Skill : Analyse du code legacy Zend — Prevarisc
 
-Ce skill guide l'analyse du code Zend legacy dans `prevarisc/` avant de démarrer une migration.
+Prevarisc est entièrement migré : `prevarisc-migration/` (Symfony 4.4) est l'application utilisée en production. Le dépôt `prevarisc/` (Zend 1.12) n'est conservé que comme référence figée, pour comparer un comportement Symfony actuel au comportement legacy d'origine — typiquement lors du diagnostic d'un bug, afin de distinguer une régression introduite par la migration d'un défaut déjà présent avant elle.
+
+Ce skill guide cette analyse comparative du code Zend dans `prevarisc/`.
 
 ## Règle fondamentale
 
@@ -28,7 +30,7 @@ prevarisc/application/
 └── Bootstrap.php       # Bootstrap Zend
 ```
 
-## Processus d'analyse avant migration
+## Processus d'analyse comparative
 
 ### 1. Identifier les fichiers à migrer
 
@@ -142,7 +144,7 @@ class Application_Form_Dossier extends Zend_Form {
 
 → Porter comme : `DossierType extends AbstractType`
 
-### 6. Questions à se poser avant de migrer
+### 6. Questions à se poser pour situer le comportement legacy
 
 - [ ] Quelles sont les routes de cette fonctionnalité ?
 - [ ] Quels modèles/tables sont utilisés ?
@@ -167,12 +169,12 @@ grep -r "partial\|render\|renderScript" prevarisc/application/views/scripts/nom/
 grep -r "_helper->" prevarisc/application/controllers/NomController.php
 ```
 
-## Checklist avant de démarrer la migration
+## Checklist avant de conclure l'analyse
 
-1. ✅ Tous les fichiers legacy lus et compris
+1. ✅ Tous les fichiers legacy concernés lus et compris
 2. ✅ Dépendances cartographiées (modèles, vues partielles, helpers)
 3. ✅ Requêtes SQL identifiées et analysées
 4. ✅ Logique métier non triviale identifiée (→ niveau 🔴 dans le rapport d'écarts)
-5. ✅ Entités Doctrine existantes vérifiées (éviter les doublons)
-6. ✅ Routes cibles définies
-7. ✅ **Patterns Bootstrap 2 inventoriés** dans tous les templates `.phtml` concernés (grep obligatoire — cf. étape 3b)
+5. ✅ Comportement legacy comparé au comportement Symfony actuel constaté
+6. ✅ Conclusion posée : régression de migration vs défaut déjà présent dans le legacy
+7. ✅ **Patterns Bootstrap 2 inventoriés** si le sujet concerne un template `.phtml` (grep — cf. étape 3b)
