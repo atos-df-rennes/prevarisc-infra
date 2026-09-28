@@ -20,9 +20,6 @@ function cs(
 
     parallel(
         function () use ($dryRun): void {
-            zendCs($dryRun);
-        },
-        function () use ($dryRun): void {
             symfonyCs($dryRun);
         },
         function () use ($dryRun): void {
@@ -37,9 +34,6 @@ function analyse(): void
     io()->title('Analysing all applications');
 
     parallel(
-        function () {
-            zendAnalyse();
-        },
         function () {
             symfonyAnalyse();
         },
@@ -56,10 +50,7 @@ function test(): void
 
     parallel(
         function () {
-            zendTest();
-        },
-        function () {
-            symfonyTest();
+            symfonyTest(false);
         },
         function () {
             platauTest();
