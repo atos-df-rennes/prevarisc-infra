@@ -10,6 +10,8 @@ Repository structure:
 
 Absolute rules:
 - Never modify prevarisc/ in automated runs.
+- Never switch/checkout a different git branch than the one currently active without explicit user permission, even if a task or skill references "branch X" conversationally.
+- When following a skill's or checklist's verification steps (e.g. merge-branch's conflict-marker check, annotation→attribute conversions, deprecated API replacements), actually run every stated verification command before committing — do not skip ahead based on visual inspection alone.
 - Use modern PHP 8.5 features (typed/readonly properties, promoted constructor properties, enums, match, nullsafe `?->`, attributes instead of annotations) — no need to preserve PHP 7.1 compatibility on this branch.
 - findAll() without pagination is forbidden.
 - No symfony/messenger, scheduler, or other feature requiring an extra long-running worker process: the app is delivered on client infra and an additional process/restart is too costly to roll out for now.
