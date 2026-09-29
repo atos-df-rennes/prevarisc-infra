@@ -1,12 +1,13 @@
 # Infrastructure Prevarisc
 
-Dépôt de l'infrastructure Docker pour Prevarisc. Il orchestre trois applications :
+Dépôt de l'infrastructure Docker pour Prevarisc. Il orchestre les dépôts applicatifs et leurs dépendances :
 
 | Dépôt | Rôle |
 |---|---|
-| `prevarisc/` | Code legacy Zend 1.12 (lecture seule, sert de référence) |
-| `prevarisc-migration/` | Code migré Symfony 4.4 (travail principal) |
-| `prevarisc-passerelle-platau/` | API de passerelle Plat'AU |
+| `prevarisc/` | Référence historique Zend 1.12 (lecture seule, non livrée aux clients) |
+| `prevarisc-migration/` | Application Symfony 7.4 en production ; les corrections et évolutions se font dans ce dépôt |
+| `prevarisc-passerelle-platau/` | Package applicatif de communication avec l'API Plat'AU, destiné à être intégré à terme dans l'application |
+| [`odtphp`](https://github.com/atos-df-rennes/odtphp) | Fork maintenu pour compatibilité avec la stack PHP actuelle, utilisé comme dépendance Composer de l'application |
 
 ---
 
@@ -49,4 +50,3 @@ Pour la liste brute : `castor list`
 ## Installation de production
 
 À venir.
-

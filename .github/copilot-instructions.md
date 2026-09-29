@@ -1,30 +1,16 @@
-# Copilot instructions (condensed)
+# Copilot instructions — Prevarisc infrastructure
 
-Context: Symfony 7.4 (PHP 8.5.0). prevarisc-migration/ is the current production application; prevarisc/ is a frozen Zend 1.12 reference, used only to check whether a bug predates the migration (legacy bug) or was introduced by it (regression).
+This repository contains the shared Docker and Castor infrastructure for the Prevarisc projects. The application code lives in separate Git repositories, notably `prevarisc-migration/` and `prevarisc-passerelle-platau/`; the historical Zend reference in `prevarisc/` is read-only.
 
-Stack: PHP 8.5.0, Symfony 7.4, Doctrine ORM 2.20, Twig 3, PHPUnit 13.
+## Scope and safety
 
-Repository structure:
-- prevarisc-migration/ → `/home/dev/prevarisc-infra/prevarisc-migration/` (current application code)
-- prevarisc/ → `/home/dev/prevarisc-infra/prevarisc/` (read-only, see Context above)
+- Make infrastructure changes in this repository. For application bug fixes and features, work in the relevant application's own Git repository.
+- Never modify the frozen `prevarisc/` reference.
+- Never switch or check out a different branch without explicit user permission.
+- Do not add Symfony Messenger, a scheduler, or another feature requiring a long-running worker process; client infrastructure changes are too costly to roll out.
+- Run Castor commands from this repository root unless a command's documentation says otherwise. `CASTOR.md` documents orchestration and validation tasks.
+- Do not commit unless requested. When committing is requested, use Conventional Commits (`type(scope): description`) and include `Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>`.
 
-Absolute rules:
-- Never modify prevarisc/ in automated runs.
-- Never switch/checkout a different git branch than the one currently active without explicit user permission, even if a task or skill references "branch X" conversationally.
-- When following a skill's or checklist's verification steps (e.g. merge-branch's conflict-marker check, annotation→attribute conversions, deprecated API replacements), actually run every stated verification command before committing — do not skip ahead based on visual inspection alone.
-- Use modern PHP 8.5 features (typed/readonly properties, promoted constructor properties, enums, match, nullsafe `?->`, attributes instead of annotations) — no need to preserve PHP 7.1 compatibility on this branch.
-- findAll() without pagination is forbidden.
-- No symfony/messenger, scheduler, or other feature requiring an extra long-running worker process: the app is delivered on client infra and an additional process/restart is too costly to roll out for now.
+The `run-linters` skill documents Castor validation tasks. The application repository contains the `analyse-legacy` skill for comparing current behavior with the frozen reference.
 
-Essential commands (host) — see the `run-linters` skill for details/nuances:
-- castor symfony:analyse  # PHPStan lvl10
-- castor symfony:cs       # Rector + PHP-CS-Fixer + Twig-CS-Fixer
-- castor symfony:test     # unit/non-functional tests (no --all)
-- castor symfony:validate # runs all of the above with --dry-run
-
-Commit format (required, Conventional Commits — types observed in git log: fix, feat, chore, perf, style, refactor, migration):
-type(scope): description
-
-Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
-
-See .github/skills-config.yml for run_context and invocation policy.
+See `.github/skills-config.yml` for skill run-context and invocation policy.
