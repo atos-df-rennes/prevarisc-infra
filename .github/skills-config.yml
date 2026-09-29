@@ -11,26 +11,10 @@ auto_invoke_agents: false
 
 # Per-skill configuration
 skills:
-  analyse-legacy:
-    default_run_context: main
-    supports_worktree: false
-    notes: "Read-only analysis skill. It does not change repository state. Used to compare current Symfony behavior against the frozen Zend reference (prevarisc/) when diagnosing whether a bug is a migration regression or a pre-existing legacy defect."
-
   run-linters:
     default_run_context: main
     supports_worktree: false
-    notes: "Reference for castor lint/test commands (symfony:analyse, symfony:cs, symfony:test, symfony:validate). Documentation only: symfony:cs writes changes directly (no --dry-run); symfony:validate runs all three checks in --dry-run mode. Does not itself change repository state beyond whichever underlying command is invoked."
-
-  symfony-migration:
-    default_run_context: main
-    supports_worktree: true
-    notes: "Agent that may perform code changes. Default runs in main; to run in a worktree set run_context: worktree."
-
-  merge-branch:
-    default_run_context: main
-    supports_worktree: false
-    git_aware: true
-    notes: "Conflict-resolution playbook for cross-version merges (e.g. release/2.10 → release/3.0). Complements castor git:merge-upwards, which handles branch traversal and pauses on conflicts; this skill resolves the annotation→attribute / property-promotion conflicts at that pause point. prevarisc-migration/ is an INDEPENDENT git repository — commit from within it, not from the parent."
+    notes: "Reference for Castor lint/test tasks in this infrastructure repository, including their scope and whether they modify files."
 policy: |
   Skills are orchestration-only and deterministic. They will not alter repository state by themselves. Use agents or explicit slash commands for actions that change files, branches, or push commits.
   Set run_context to 'worktree' to opt-in to worktree operations.
