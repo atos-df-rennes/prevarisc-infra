@@ -43,11 +43,26 @@ Vérifier que la base de fusion correspond bien à la dernière version déjà i
 (ex. tag `vX.Y.Z-1`) : si ce n'est pas le cas, une cascade intermédiaire a peut-être été
 sautée — le signaler avant de continuer.
 
-## Étape 2 — Résoudre chaque fichier en conflit
+## Étape 2 — Résoudre et moderniser tous les fichiers concernés
 
 Traiter chaque hunk conflictuel en appliquant le correctif fonctionnel de la branche
 source **avec la syntaxe déjà en vigueur sur la branche cible**. Ne jamais reculer la
 cible vers l'ancienne syntaxe.
+
+La modernisation ne doit **jamais se limiter aux fichiers en conflit**. Recenser tous
+les fichiers ajoutés ou modifiés par la branche source depuis la base de fusion, puis
+examiner chacun d'eux, y compris ceux fusionnés automatiquement :
+
+```bash
+git diff --name-only --diff-filter=ACMRT "$(git merge-base HEAD MERGE_HEAD)" MERGE_HEAD
+```
+
+Pour chaque fichier concerné, conserver le correctif fonctionnel apporté par la source,
+mais moderniser toute syntaxe ou structure legacy introduite par le merge selon les
+conventions de la branche cible (attributs, typage, propriétés promues `readonly`,
+API Symfony/Doctrine/PHPUnit à jour, style, etc.). Un fichier fusionné sans conflit
+n'est pas présumé compatible : il doit faire l'objet de la même vérification qu'un
+fichier conflictuel.
 
 ### Patron 1 — Annotations Doctrine/Route/PHPUnit → Attributs
 
@@ -192,6 +207,9 @@ cd - && git worktree remove /tmp/baseline-check --force
       classiques
 - [ ] Toutes les annotations legacy dupliquées par erreur (Route, ORM, dataProvider)
       sont supprimées au profit des attributs déjà en place côté cible
+- [ ] Tous les fichiers ajoutés ou modifiés par la branche source ont été examinés et
+      modernisés selon les conventions de la branche cible, pas uniquement les fichiers
+      ayant présenté des conflits
 - [ ] `git diff HEAD --stat` vide juste après le commit (pas de commit de merge vide)
 - [ ] Tests, PHPStan et CS-Fixer relancés ; tout échec résiduel est identifié comme
       préexistant (avec preuve) ou corrigé
