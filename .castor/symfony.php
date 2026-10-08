@@ -43,12 +43,16 @@ function symfonyAnalyse(): void
 }
 
 #[AsTask(name: 'metrics', namespace: 'symfony', description: 'Generate local PhpMetrics reports for src (without Composer network analysis)')]
-function symfonyMetrics(): void
+function symfonyMetrics(
+    #[AsOption(name: 'keep-baseline', mode: InputOption::VALUE_NONE, description: 'Keep the existing baseline instead of replacing it with the current report')]
+    bool $keepBaseline
+): void
 {
     io()->title('Measuring Symfony application complexity');
 
     $application = dirname(__DIR__) . '/prevarisc-migration';
     $directory = $application . '/var/metrics';
+    $baselineDirectory = $directory . '/baseline';
     $docker = ['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-T', '-w', '/var/www/html/prevarisc-migration', 'app'];
     $options = [
         '--composer=false',
@@ -69,11 +73,58 @@ echo json_encode([
 ], JSON_THROW_ON_ERROR);
 PHP
     ]), true, flags: JSON_THROW_ON_ERROR);
+    $readCompleteManifest = static function (string $path): ?array {
+        if (!is_file($path)) {
+            return null;
+        }
+
+        $manifest = json_decode(file_get_contents($path), true, flags: JSON_THROW_ON_ERROR);
+        if (!is_array($manifest)) {
+            throw new RuntimeException('Invalid metrics manifest: ' . $path);
+        }
+
+        return 'complete' === ($manifest['status'] ?? null) ? $manifest : null;
+    };
+    $baselineManifest = null;
+    if ($keepBaseline) {
+        $baselineManifest = $readCompleteManifest($baselineDirectory . '/manifest.json');
+        if (null === $baselineManifest) {
+            throw new RuntimeException('No complete metrics baseline to keep. Run castor symfony:metrics first without --keep-baseline.');
+        }
+    } else {
+        $currentManifest = $readCompleteManifest($directory . '/manifest.json');
+        if (null !== $currentManifest) {
+            $stagingDirectory = $directory . '/baseline.tmp';
+            fs()->remove($stagingDirectory);
+            fs()->mkdir($stagingDirectory);
+            foreach (['manifest.json', 'diagnostics.log', 'phpmetrics.json', 'violations.xml'] as $file) {
+                if (!is_file($directory . '/' . $file)) {
+                    throw new RuntimeException('Cannot archive complete metrics snapshot; missing ' . $file);
+                }
+                fs()->copy($directory . '/' . $file, $stagingDirectory . '/' . $file);
+            }
+            if (!is_dir($directory . '/html')) {
+                throw new RuntimeException('Cannot archive complete metrics snapshot; missing html report');
+            }
+            fs()->mirror($directory . '/html', $stagingDirectory . '/html');
+            fs()->remove($baselineDirectory);
+            fs()->rename($stagingDirectory, $baselineDirectory);
+            $baselineManifest = $currentManifest;
+        } else {
+            $baselineManifest = $readCompleteManifest($baselineDirectory . '/manifest.json');
+        }
+    }
+    $baseline = null === $baselineManifest ? null : [
+        'path' => 'baseline',
+        'project_sha' => $baselineManifest['project_sha'] ?? null,
+        'finished_at' => $baselineManifest['finished_at'] ?? null,
+    ];
     $manifest = [
         'status' => 'running',
         'started_at' => gmdate('c'),
         'project_sha' => trim(capture(['git', '-C', $application, 'rev-parse', 'HEAD'])),
         'worktree_dirty' => '' !== trim(capture(['git', '-C', $application, 'status', '--porcelain'])),
+        'baseline' => $baseline,
         'versions' => $versions,
         'scope' => ['src'],
         'options' => $options,
@@ -142,6 +193,12 @@ PHP
         io()->warning('PhpMetrics emitted PHP warnings or deprecations. See diagnostics.log.');
     }
     io()->success('Reports generated in prevarisc-migration/var/metrics/ (HTML: html/index.html).');
+    if (null !== $baseline) {
+        io()->note(sprintf('Comparison baseline: %s, commit %s, measured %s.', $baseline['path'], $baseline['project_sha'] ?? 'unknown', $baseline['finished_at'] ?? 'unknown'));
+    }
+    if ($keepBaseline) {
+        io()->note('Existing comparison baseline was kept.');
+    }
 }
 
 #[AsTask(name: 'test', namespace: 'symfony', description: 'Test Symfony application')]

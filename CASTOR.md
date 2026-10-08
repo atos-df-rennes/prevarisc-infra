@@ -188,7 +188,8 @@ Plus rapide que `validate` pour une itération rapide sur des erreurs de typage.
 **Génère une cartographie locale de la complexité avec PhpMetrics.**
 
 ```bash
-castor symfony:metrics
+castor symfony:metrics                  # met le rapport courant en référence, puis génère le nouveau
+castor symfony:metrics --keep-baseline  # conserve la référence et remplace seulement le rapport courant
 ```
 
 Analyse les fichiers PHP de tout `prevarisc-migration/src/` dans le container `app`,
@@ -205,9 +206,17 @@ Les artefacts sont générés dans `prevarisc-migration/var/metrics/`, ignoré p
 | `violations.xml` | Violations, dont le contenu n'est pas conservé dans le JSON de PhpMetrics 2.11 |
 | `diagnostics.log` | Sorties standard et d'erreur, notamment les fichiers rejetés par le parseur |
 | `manifest.json` | État du rapport, SHA applicatif, indicateur de modifications locales, dates UTC, versions installées de PHP/PhpMetrics/php-parser, périmètre et options |
+| `baseline/` | Dernier snapshot de référence complet, avec les mêmes rapports et son manifeste |
 
-Chaque lancement remplace le snapshot précédent, sans conserver l'historique HTML.
-Pour comparer deux mesures, copier les artefacts avant de relancer la commande.
+Par défaut, avant de remplacer les rapports courants, la commande copie le dernier
+snapshot complet dans `baseline/`. C'est le point de comparaison « avant » ; le
+nouveau rapport courant constitue le « après ». L'option `--keep-baseline` conserve
+la référence existante pour refaire une mesure sans la remplacer. Elle échoue si
+aucune référence complète n'existe : lancer d'abord la commande sans cette option.
+Le manifeste courant indique la référence utilisée (chemin, commit et date de mesure).
+Il n'y a qu'un seul snapshot de référence ; un lancement par défaut le remplace par
+le rapport courant précédent lorsqu'il est complet.
+
 Seul un manifeste avec `status: complete` indique une mesure terminée sans fichier
 rejeté ni rapport manquant. Les erreurs d'exécution ou de parsing font échouer
 la commande ; les violations de complexité sont signalées mais ne la bloquent pas.
