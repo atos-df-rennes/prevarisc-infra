@@ -184,6 +184,42 @@ Plus rapide que `validate` pour une itération rapide sur des erreurs de typage.
 
 ---
 
+### `castor symfony:metrics`
+**Génère une cartographie locale de la complexité avec PhpMetrics.**
+
+```bash
+castor symfony:metrics
+```
+
+Analyse les fichiers PHP de tout `prevarisc-migration/src/` dans le container `app`,
+y compris les repositories et le Kernel, sans reprendre les exclusions PHPStan.
+L'analyse Composer est désactivée (`--composer=false`) : aucune requête Packagist
+n'est nécessaire. Le container doit être démarré et les dépendances de `tools/` installées.
+
+Les artefacts sont générés dans `prevarisc-migration/var/metrics/`, ignoré par Git :
+
+| Fichier | Usage |
+|---|---|
+| `phpmetrics.json` | Métriques complètes des classes pour les agents |
+| `html/index.html` | Rapport visuel à ouvrir localement dans un navigateur |
+| `violations.xml` | Violations, dont le contenu n'est pas conservé dans le JSON de PhpMetrics 2.11 |
+| `diagnostics.log` | Sorties standard et d'erreur, notamment les fichiers rejetés par le parseur |
+| `manifest.json` | État du rapport, SHA applicatif, indicateur de modifications locales, dates UTC, versions installées de PHP/PhpMetrics/php-parser, périmètre et options |
+
+Chaque lancement remplace le snapshot précédent, sans conserver l'historique HTML.
+Pour comparer deux mesures, copier les artefacts avant de relancer la commande.
+Seul un manifeste avec `status: complete` indique une mesure terminée sans fichier
+rejeté ni rapport manquant. Les erreurs d'exécution ou de parsing font échouer
+la commande ; les violations de complexité sont signalées mais ne la bloquent pas.
+Les avertissements et dépréciations PHP sont signalés et conservés dans le journal.
+Cette tâche est indépendante de `symfony:validate` et n'ajoute aucun seuil à la validation.
+
+Le JSON est un radar de **classes**, pas un classement des méthodes : il ne fournit
+ni leurs scores individuels ni les chemins/lignes des classes. Utiliser le XML
+pour les violations plutôt que le champ JSON `violations: {}`.
+
+---
+
 ### `castor symfony:cs [--dry-run]`
 **Corrige le style de code (Rector + PHP-CS-Fixer + Twig-CS-Fixer).**
 
