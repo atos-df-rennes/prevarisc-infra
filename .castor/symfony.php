@@ -42,6 +42,83 @@ function symfonyAnalyse(): void
     run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'tools/vendor/bin/phpstan', '--memory-limit=-1']);
 }
 
+#[AsTask(name: 'dependencies', namespace: 'symfony', description: 'Check outdated direct dependencies of the application and tools')]
+function symfonyDependencies(
+    #[AsOption(name: 'target', mode: InputOption::VALUE_REQUIRED, description: 'Composer project to check: all, app or tools')]
+    string $target = 'all',
+    #[AsOption(name: 'limit', mode: InputOption::VALUE_REQUIRED, description: 'Fail when the outdated package count reaches this limit (per project)')]
+    int $limit = 5
+): void
+{
+    if (!in_array($target, ['all', 'app', 'tools'], true)) {
+        throw new InvalidArgumentException('Invalid target. Expected all, app or tools.');
+    }
+    if ($limit < 1) {
+        throw new InvalidArgumentException('The dependency limit must be greater than zero.');
+    }
+
+    io()->title('Checking Symfony project dependencies');
+    $application = '/var/www/html/prevarisc-migration';
+    $projects = ['app' => $application, 'tools' => $application . '/tools'];
+    $failedProjects = [];
+
+    foreach ($projects as $name => $directory) {
+        if ('all' !== $target && $target !== $name) {
+            continue;
+        }
+
+        io()->section('Checking dependencies: ' . $name);
+        $code = exit_code([
+            'docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-T', '-w', $directory,
+            'app', $application . '/tools/vendor/bin/swiss-knife', 'breakpoint', '--limit', (string) $limit,
+        ]);
+        if (0 !== $code) {
+            $failedProjects[] = sprintf('%s (exit code %d)', $name, $code);
+        }
+    }
+
+    if ([] !== $failedProjects) {
+        io()->error('Dependency checks failed: ' . implode(', ', $failedProjects));
+        exit(1);
+    }
+}
+
+#[AsTask(name: 'conflicts', namespace: 'symfony', description: 'Check the application for unresolved Git conflict markers')]
+function symfonyConflicts(): void
+{
+    io()->section('Checking Git conflict markers');
+    run([
+        'docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-T', '-w', '/var/www/html/prevarisc-migration',
+        'app', 'tools/vendor/bin/swiss-knife', 'check-conflicts', '.',
+        '--exclude', '/.git/',
+        '--exclude', '/prevarisc-migration/var/',
+        '--exclude', '/public/bundles/',
+        '--exclude', '/cypress/screenshots/',
+        '--exclude', '/cypress/videos/',
+        '--exclude', '/bin/.phpunit/',
+    ]);
+}
+
+#[AsTask(name: 'duplicates', namespace: 'symfony', description: 'Diagnose duplicated PHP code in src (independent of validation)')]
+function symfonyDuplicates(
+    #[AsOption(name: 'min-tokens', mode: InputOption::VALUE_REQUIRED, description: 'Minimum number of tokens in a duplicated block')]
+    int $minTokens = 150,
+    #[AsOption(name: 'min-lines', mode: InputOption::VALUE_REQUIRED, description: 'Minimum number of lines in a duplicated block')]
+    int $minLines = 5
+): void
+{
+    if ($minTokens < 1 || $minLines < 1) {
+        throw new InvalidArgumentException('Duplicate detection thresholds must be greater than zero.');
+    }
+
+    io()->title('Diagnosing duplicated PHP code');
+    run([
+        'docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-T', '-w', '/var/www/html/prevarisc-migration',
+        'app', 'tools/vendor/bin/swiss-knife', 'duplicated-code', 'src',
+        '--min-tokens', (string) $minTokens, '--min-lines', (string) $minLines,
+    ]);
+}
+
 #[AsTask(name: 'metrics', namespace: 'symfony', description: 'Generate local PhpMetrics reports for src (without Composer network analysis)')]
 function symfonyMetrics(
     #[AsOption(name: 'keep-baseline', mode: InputOption::VALUE_NONE, description: 'Keep the existing baseline instead of replacing it with the current report')]
@@ -219,10 +296,12 @@ function symfonyTest(
     run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'php', 'vendor/bin/phpunit', '--testdox', ...$options]);
 }
 
-#[AsTask(name: 'validate', namespace: 'symfony', description: 'Run PHPStan + CS (dry-run) + tests sequentially — stops on first failure')]
+#[AsTask(name: 'validate', namespace: 'symfony', description: 'Run conflict checks + PHPStan + Rector/CS (dry-run) + tests — stops on first failure')]
 function symfonyValidate(): void
 {
     io()->title('Validating Symfony application');
+
+    symfonyConflicts();
 
     io()->section('Step 1/3 — PHPStan');
     run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'tools/vendor/bin/phpstan', '--memory-limit=-1']);

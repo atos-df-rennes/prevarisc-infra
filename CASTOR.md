@@ -163,11 +163,12 @@ castor symfony:validate
 ```
 
 Exécute dans l'ordre :
-1. **PHPStan** (niveau 10) — analyse statique
-2. **Rector** (dry-run) — détecte les transformations de code non appliquées
-3. **PHP-CS-Fixer** (dry-run) — vérifie le style sans modifier
-4. **Twig-CS-Fixer** (check) — vérifie les templates
-5. **PHPUnit** — tests (hors groupe `functional`)
+1. **Swiss Knife** — détecte les marqueurs de conflits Git oubliés
+2. **PHPStan** (niveau 10) — analyse statique
+3. **Rector** (dry-run) — détecte les transformations de code non appliquées
+4. **PHP-CS-Fixer** (dry-run) — vérifie le style sans modifier
+5. **Twig-CS-Fixer** (check) — vérifie les templates
+6. **PHPUnit** — tests (hors groupe `functional`)
 
 > C'est la commande à lancer systématiquement avant tout commit sur `prevarisc-migration`.
 
@@ -181,6 +182,68 @@ castor symfony:analyse
 ```
 
 Plus rapide que `validate` pour une itération rapide sur des erreurs de typage.
+
+---
+
+### `castor symfony:dependencies`
+**Contrôle les dépendances directes dépassées des deux projets Composer.**
+
+```bash
+castor symfony:dependencies                 # application et tools, résultats séparés
+castor symfony:dependencies --target=app    # require et require-dev de l'application
+castor symfony:dependencies --target=tools  # require du projet tools
+castor symfony:dependencies --limit=10      # seuil appliqué séparément à chaque projet
+```
+
+Swiss Knife est installé uniquement dans `prevarisc-migration/tools/`. La tâche
+exécute le même binaire dans le container `app`, depuis chacun des répertoires
+Composer. Elle ne modifie ni les contraintes ni les versions installées.
+Les deux projets sont contrôlés même si le premier échoue ; toute erreur
+d'exécution ou tout dépassement de seuil entraîne un code de sortie non nul.
+Le seuil doit être positif et l'échec se produit dès que le nombre atteint
+`--limit` (5 par défaut). Aucun filtre `--dev` n'est utilisé : les outils
+de développement sont déclarés dans `require` du projet `tools`.
+
+Cette tâche reste indépendante de `symfony:validate` car elle dépend du réseau
+et des versions publiées. Dans Swiss Knife 2.7.0, `breakpoint` utilise
+`composer outdated --direct --minor-only --ignore-platform-req=php` :
+ce n'est ni une veille exhaustive des nouvelles versions majeures, ni un audit
+de sécurité. Les résultats sont mis en cache pendant une semaine, avec une clé
+fondée sur `composer.lock` lorsqu'il existe. Une version signalée n'est pas
+nécessairement compatible avec le PHP du projet.
+
+---
+
+### `castor symfony:conflicts`
+**Détecte les marqueurs de conflits Git non résolus dans l'application.**
+
+```bash
+castor symfony:conflicts
+```
+
+Contrôle le répertoire applicatif, y compris les fichiers non suivis par Git.
+Swiss Knife exclut les répertoires `vendor` et `node_modules` ; la tâche exclut
+également les métadonnées `.git/`, `var/`, les bundles publics générés,
+les captures/vidéos Cypress et `bin/.phpunit/`.
+Un marqueur détecté fait échouer la commande. Ce contrôle sans modification
+est aussi la première étape de `symfony:validate`.
+
+---
+
+### `castor symfony:duplicates`
+**Diagnostique les blocs PHP copiés-collés dans `src/`.**
+
+```bash
+castor symfony:duplicates
+castor symfony:duplicates --min-tokens=200 --min-lines=10
+```
+
+Les seuils par défaut sont 150 tokens et 5 lignes, sans mode `--fuzzy`
+(les noms de variables restent significatifs). Les seuils doivent être positifs.
+La commande ne modifie pas les fichiers et reste indépendante de
+`symfony:validate`. Elle retourne un code non nul si elle trouve des duplications
+ou rencontre une erreur. Les ressemblances signalées sont des candidats à
+examiner, pas des obligations de mutualisation des règles métier.
 
 ---
 
