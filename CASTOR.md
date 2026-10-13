@@ -548,6 +548,21 @@ contrôle échoue dès que le nombre de paquets dépassés atteint `--limit`
 
 ---
 
+## `odtphp:*` — Bibliothèque OdtPHP
+
+```bash
+castor odtphp:dependencies             # seuil de 5
+castor odtphp:dependencies --limit=10   # seuil personnalisé
+castor odtphp:test                     # tests PHPUnit, dont golden master
+```
+
+La commande utilise Swiss Knife installé dans `../prevarisc-odtphp/`, monté
+dans le container `app`, sans modifier les dépendances. Le seuil doit être
+positif : le contrôle échoue dès que le nombre de paquets dépassés atteint
+`--limit` (5 par défaut), ou si la commande rencontre une erreur.
+
+---
+
 ## `git:*` — Propagation Git
 
 ### `castor git:merge-upwards` ⭐
