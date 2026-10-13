@@ -539,6 +539,12 @@ Commandes de vérification de l'application `prevarisc-passerelle-platau/`.
 | `castor platau:cs [--dry-run]` | PHP-CS-Fixer sur la passerelle |
 | `castor platau:analyse` | Psalm sur la passerelle |
 | `castor platau:test` | PHPUnit sur la passerelle |
+| `castor platau:dependencies [--limit=5]` | Swiss Knife sur les dépendances directes de la passerelle |
+
+`castor platau:dependencies` utilise le binaire Swiss Knife installé dans la
+passerelle, sans modifier les dépendances. Le seuil doit être positif : le
+contrôle échoue dès que le nombre de paquets dépassés atteint `--limit`
+(5 par défaut), ou si la commande rencontre une erreur.
 
 ---
 

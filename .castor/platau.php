@@ -35,6 +35,28 @@ function platauAnalyse(): void
     run(['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-passerelle-platau', 'app', 'vendor/bin/psalm']);
 }
 
+#[AsTask(name: 'dependencies', namespace: 'platau', description: 'Check outdated direct dependencies of the Plat\'AU application')]
+function platauDependencies(
+    #[ASOption(name: 'limit', mode: InputOption::VALUE_REQUIRED, description: 'Fail when the outdated package count reaches this limit')]
+    int $limit = 5
+): void
+{
+    if ($limit < 1) {
+        throw new InvalidArgumentException('The dependency limit must be greater than zero.');
+    }
+
+    io()->title('Checking Plat\'AU project dependencies');
+
+    $code = exit_code([
+        'docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-T', '-w', '/var/www/html/prevarisc-passerelle-platau',
+        'app', 'vendor/bin/swiss-knife', 'breakpoint', '--limit', (string) $limit,
+    ]);
+    if (0 !== $code) {
+        io()->error(sprintf('Dependency check failed (exit code %d).', $code));
+        exit(1);
+    }
+}
+
 #[AsTask(name: 'test', namespace: 'platau', description: 'Test Plat\'AU application')]
 function platauTest(): void
 {
