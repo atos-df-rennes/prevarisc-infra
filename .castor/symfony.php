@@ -278,6 +278,18 @@ PHP
     }
 }
 
+#[AsTask(name: 'fixtures', namespace: 'symfony', description: 'Recreate the development database and load development fixtures (confirmation required)')]
+function symfonyFixtures(): void
+{
+    io()->title('Loading Symfony development fixtures');
+    io()->warning('The database configured in dev will be erased and recreated. Check the target connection before confirming.');
+
+    run(
+        ['docker', 'compose', '--file', 'compose.dev.yaml', 'exec', '-w', '/var/www/html/prevarisc-migration', 'app', 'php', 'bin/console', 'foundry:load-fixtures', 'developpement', '--env=dev'],
+        context: context()->withTty()
+    );
+}
+
 #[AsTask(name: 'test', namespace: 'symfony', description: 'Test Symfony application')]
 function symfonyTest(
     #[AsOption(name: 'all', mode: InputOption::VALUE_NONE, description: 'Lance la suite complète de tests incluant les tests fonctionnels')]

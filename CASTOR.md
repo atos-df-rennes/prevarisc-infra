@@ -174,6 +174,25 @@ Exécute dans l'ordre :
 
 ---
 
+### `castor symfony:fixtures`
+**Reconstruit la base de développement et charge le scénario Foundry `developpement`.**
+
+```bash
+castor symfony:fixtures
+```
+
+Charge les référentiels, le groupe par défaut et le compte administrateur
+(`admin` / `Fixture-only-password-123!`). Les prochains scénarios seront
+ajoutés dans la story d'entrée de l'application.
+
+**Attention : la base configurée en environnement `dev` est effacée et
+recréée après confirmation interactive de Foundry.** Vérifier la connexion
+cible avant de confirmer et utiliser uniquement une base locale jetable.
+La base de test dédiée reste indépendante. La tâche ne propose pas
+`--append`, incompatible avec les référentiels à IDs explicites.
+
+---
+
 ### `castor symfony:analyse`
 **Lance uniquement PHPStan.**
 
