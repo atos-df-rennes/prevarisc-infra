@@ -2,6 +2,7 @@
 
 use Castor\Attribute\AsOption;
 use Castor\Attribute\AsTask;
+use function Castor\capture;
 use function Castor\context;
 use function Castor\finder;
 use function Castor\io;
@@ -21,7 +22,9 @@ function dbShell(): void
 #[AsTask(name: 'dump', namespace: 'database', description: 'Make Prevarisc dump from db container to local host (WSL)')]
 function makeDump(
     #[ASOption(name: 'container', description: 'Nom du conteneur MySQL source')]
-    string $container = 'prevarisc-infra-db-1'
+    string $container = 'prevarisc-infra-db-1',
+    #[AsOption(name: 'database', description: 'Base source (sélection interactive si omise)')]
+    ?string $database = null
 ): void
 {
     io()->title('Making Prevarisc dump.');
@@ -32,8 +35,11 @@ function makeDump(
         return;
     }
 
+    $database = selectDumpDatabase($container, $database);
+    io()->info('Dumping database: '.$database);
+
     $dumpName = 'dump_sql/prevarisc_'.MARIADB_IDENTIFIER.'_'.date('YmdHis').'.sql';
-    run('docker exec -w / -i '.$container.' mariadb-dump -u root -p"planmusique" PRV_prevarisc_v2 > '.$dumpName);
+    run('docker exec -w / -i '.escapeshellarg($container).' mariadb-dump -u root -p"planmusique" -- '.escapeshellarg($database).' > '.escapeshellarg($dumpName));
 
     io()->success('Dump made successfully.');
 }
@@ -41,7 +47,9 @@ function makeDump(
 #[AsTask(name: 'load', namespace: 'database', description: 'Load a selected Prevarisc dump from local host (WSL) to db container')]
 function loadDump(
     #[ASOption(name: 'container', description: 'Nom du conteneur MySQL cible')]
-    string $container = 'prevarisc-infra-db-1'
+    string $container = 'prevarisc-infra-db-1',
+    #[AsOption(name: 'database', description: 'Base cible (sélection interactive si omise)')]
+    ?string $database = null
 ): void {
     io()->title('Loading Prevarisc dump.');
 
@@ -73,9 +81,34 @@ function loadDump(
 
     $dumpName = $dumpPath->getFilename();
     $dumpFullPath = (string) $dumpPath;
-    io()->info('Loading dump file: '.$dumpName);
+    $database = selectDumpDatabase($container, $database);
+    io()->info('Loading dump file: '.$dumpName.' into database: '.$database);
 
-    run('docker exec -i '.$container.' mariadb -u root -p"planmusique" PRV_prevarisc_v2 < '.$dumpFullPath);
+    run('docker exec -i '.escapeshellarg($container).' mariadb -u root -p"planmusique" -- '.escapeshellarg($database).' < '.escapeshellarg($dumpFullPath));
 
     io()->success('Dump loaded successfully.');
+}
+
+function selectDumpDatabase(string $container, ?string $database): string
+{
+    if ($database !== null) {
+        return $database;
+    }
+
+    $output = capture([
+        'docker', 'exec', $container, 'mariadb', '-u', 'root', '-pplanmusique',
+        '--batch', '--skip-column-names', '--execute', 'SHOW DATABASES',
+    ]);
+    $databases = array_values(array_filter(
+        explode("\n", trim($output)),
+        static fn (string $name): bool => $name !== '' && !in_array($name, ['information_schema', 'mysql', 'performance_schema', 'sys'], true)
+    ));
+
+    if ($databases === []) {
+        throw new RuntimeException('No database available in container: '.$container);
+    }
+
+    $default = array_search('PRV_prevarisc_v2', $databases, true);
+
+    return io()->choice('Please choose the database', $databases, $default === false ? 0 : $default);
 }

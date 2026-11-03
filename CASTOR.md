@@ -129,25 +129,31 @@ castor prevarisc:shell
 
 ---
 
-### `castor prevarisc:make-dump`
+### `castor database:dump`
 **Crée un dump SQL de la base de données.**
 
 ```bash
-castor prevarisc:make-dump
+castor database:dump
+castor database:dump --database PRV_prevarisc_v2_test
 ```
 
-Génère un fichier `prevarisc_YYYYMMDD.sql` à la racine de `prevarisc-infra/`.
+Propose les bases disponibles dans le conteneur (hors bases système), avec `PRV_prevarisc_v2` sélectionnée par défaut si elle existe, sinon la première base disponible. L'option `--database` permet de choisir directement la base sans invite.
+
+Génère un fichier `dump_sql/prevarisc_<identifiant MariaDB>_YYYYMMDDHHMMSS.sql`.
 
 ---
 
-### `castor prevarisc:load-dump`
+### `castor database:load`
 **Charge un dump SQL dans la base de données.**
 
 ```bash
-castor prevarisc:load-dump
+castor database:load
+castor database:load --database PRV_prevarisc_v2_test
 ```
 
-Détecte automatiquement les fichiers `.sql` à la racine. Si plusieurs fichiers existent, propose un choix interactif (le plus récent en premier).
+Détecte les fichiers `.sql` compatibles dans `dump_sql/`. Si plusieurs fichiers existent, propose un choix interactif (le plus récent en premier), puis le choix de la base cible, avec le même défaut que `database:dump`. L'option `--database` permet de choisir directement la base cible.
+
+Les deux tâches acceptent `--container` pour cibler un autre conteneur MySQL/MariaDB (par défaut : `prevarisc-infra-db-1`).
 
 ---
 
@@ -632,8 +638,8 @@ castor symfony:validate        # avant chaque commit ✅
 # Gestion de la base de données
 castor symfony:migration-status
 castor symfony:migrate
-castor prevarisc:make-dump
-castor prevarisc:load-dump
+castor database:dump
+castor database:load
 
 # Debugging
 castor prevarisc:logs app
