@@ -277,7 +277,7 @@ function authEnsureTestUser(string $mode, string $dbContainer): void
      * @var array{login: string, sso: int} $user
      */
     $user = match ($mode) {
-        'ldap'  => ['login' => 'testldap', 'sso' => 0],
+        'ldap'  => ['login' => 'testldap', 'sso' => 1],
         'cas'   => ['login' => 'testcas',  'sso' => 1],
         'ntlm'  => ['login' => 'testntlm', 'sso' => 1],
     };
