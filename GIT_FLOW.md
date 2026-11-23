@@ -213,6 +213,8 @@ git push origin vx.y.z
 
 > Le fichier `CHANGELOG.md` est mis à jour automatiquement avec la liste des commits classés par type (`feat`, `fix`, etc.).
 
+Pour `prevarisc-migration`, la version des assets est automatiquement dérivée de la version de `composer.json`, avec le préfixe `v`. Elle est lue lors de la compilation du conteneur Symfony : le cache doit donc être reconstruit au déploiement.
+
 ---
 
 | Type       | Format                          | Exemple                        |
