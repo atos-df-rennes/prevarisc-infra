@@ -22,11 +22,16 @@ services:
   # Utilisateur test : uid=testldap,ou=users,dc=prevarisc,dc=local / Prevarisc2024
   ldap:
     image: osixia/openldap:1.5.0
+    hostname: ldap
     restart: unless-stopped
     ports:
       - target: 389
         published: 3893
         protocol: tcp
+      - target: 636
+        published: 6363
+        protocol: tcp
+        host_ip: 127.0.0.1
     volumes:
       - ldap_data_worktree_auth:/var/lib/ldap
       - ldap_config_worktree_auth:/etc/ldap/slapd.d
@@ -41,6 +46,8 @@ services:
       LDAP_READONLY_USER: "true"
       LDAP_READONLY_USER_USERNAME: readonly
       LDAP_READONLY_USER_PASSWORD: planmusique
+      LDAP_CFSSL_HOSTNAME: ldap
+      LDAP_TLS_VERIFY_CLIENT: never
     command: ["--copy-service", "--loglevel", "warning"]
 
   # Interface web phpLDAPadmin pour gérer l'annuaire LDAP de test.

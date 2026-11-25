@@ -80,6 +80,7 @@ function authRun(array $cfg): void
         [
             'form — formulaire + base de données (dbtable)',
             'ldap — annuaire LDAP / Active Directory',
+            'ldaps — annuaire LDAP chiffré',
             'cas  — SSO CAS Apereo',
             'ntlm — SSO NTLM simulé (REMOTE_USER)',
         ]
@@ -111,6 +112,9 @@ function authRun(array $cfg): void
     // ── 3. Services SSO ────────────────────────────────────────────────────────
     io()->section('3/5 — Services SSO');
     authManageSsoServices($mode, $cfg);
+    if ('ldaps' === $mode) {
+        authTrustLdapCertificate($cfg);
+    }
 
     // ── 4. Utilisateur de test ─────────────────────────────────────────────────
     io()->section('4/5 — Utilisateur de test en base');
@@ -131,22 +135,23 @@ function authRun(array $cfg): void
  * Inclut PREVARISC_SYMFONY_LOGIN pour éviter de toucher httpd-prevarisc-config.conf,
  * fichier partagé entre la stack principale et le worktree.
  *
- * @param string $mode         form|ldap|cas|ntlm
+ * @param string $mode         form|ldap|ldaps|cas|ntlm
  * @param string $symfonyLogin 0|1
  * @param string $authConfFile Chemin vers le fichier auth de la stack cible
  */
 function authWriteConf(string $mode, string $symfonyLogin, string $authConfFile): void
 {
     $symfonyLoginLine = "SetEnv PREVARISC_SYMFONY_LOGIN {$symfonyLogin}";
+    $ldapEncryption = 'ldaps' === $mode ? 'ssl' : 'none';
 
     $content = match ($mode) {
-        'ldap' => <<<CONF
+        'ldap', 'ldaps' => <<<CONF
             # Mode LDAP — géré par castor authentification. Ne pas modifier manuellement.
             # Serveur OpenLDAP local simulant un Active Directory (sAMAccountName + objectClass: user).
             {$symfonyLoginLine}
             SetEnv PREVARISC_LDAP_ENABLED 1
             SetEnv PREVARISC_LDAP_HOST "ldap"
-            SetEnv PREVARISC_LDAP_PORT "389"
+            SetEnv PREVARISC_LDAP_ENCRYPTION "{$ldapEncryption}"
             SetEnv PREVARISC_LDAP_USERNAME "cn=admin,dc=prevarisc,dc=local"
             SetEnv PREVARISC_LDAP_PASSWORD "planmusique"
             SetEnv PREVARISC_LDAP_BASEDN "ou=users,dc=prevarisc,dc=local"
@@ -212,7 +217,7 @@ function authRestartApp(array $cfg): void
 /**
  * Démarre les services SSO requis (sous le projet de la stack cible) et arrête ceux qui ne le sont pas.
  *
- * @param string $mode form|ldap|cas|ntlm
+ * @param string $mode form|ldap|ldaps|cas|ntlm
  * @param array{project: string, composeFile: string, appContainer: string, dbContainer: string, authConfFile: string, appPort: string} $cfg
  */
 function authManageSsoServices(string $mode, array $cfg): void
@@ -226,7 +231,7 @@ function authManageSsoServices(string $mode, array $cfg): void
 
     /** @var array<string> $toStart */
     $toStart = match ($mode) {
-        'ldap'  => ['ldap', 'phpldapadmin'],
+        'ldap', 'ldaps' => ['ldap', 'phpldapadmin'],
         'cas'   => ['cas'],
         default => [],
     };
@@ -247,7 +252,7 @@ function authManageSsoServices(string $mode, array $cfg): void
         io()->text('Démarrage de : <info>' . implode(', ', $toStart) . '</info>');
         exit_code([...$composeArgs, 'up', '-d', ...$toStart]);
 
-        if ('ldap' === $mode) {
+        if (in_array($mode, ['ldap', 'ldaps'], true)) {
             authWaitForLdap($cfg['project']);
         }
 
@@ -262,7 +267,7 @@ function authManageSsoServices(string $mode, array $cfg): void
 /**
  * Vérifie l'existence de l'utilisateur de test en base et le crée si absent.
  *
- * @param string $mode        form|ldap|cas|ntlm
+ * @param string $mode        form|ldap|ldaps|cas|ntlm
  * @param string $dbContainer Nom du container MySQL cible
  */
 function authEnsureTestUser(string $mode, string $dbContainer): void
@@ -277,7 +282,7 @@ function authEnsureTestUser(string $mode, string $dbContainer): void
      * @var array{login: string, sso: int} $user
      */
     $user = match ($mode) {
-        'ldap'  => ['login' => 'testldap', 'sso' => 1],
+        'ldap', 'ldaps' => ['login' => 'testldap', 'sso' => 1],
         'cas'   => ['login' => 'testcas',  'sso' => 1],
         'ntlm'  => ['login' => 'testntlm', 'sso' => 1],
     };
@@ -313,7 +318,7 @@ function authEnsureTestUser(string $mode, string $dbContainer): void
 /**
  * Affiche un récapitulatif des informations de test.
  *
- * @param string $mode    form|ldap|cas|ntlm
+ * @param string $mode    form|ldap|ldaps|cas|ntlm
  * @param string $repo    migration|legacy
  * @param string $appPort Port HTTP de l'application
  */
@@ -330,6 +335,7 @@ function authShowInstructions(string $mode, string $repo, string $appPort): void
 
     switch ($mode) {
         case 'ldap':
+        case 'ldaps':
             $rows[] = ['Login', 'testldap'];
             $rows[] = ['Mot de passe', 'Prevarisc2024'];
             $rows[] = ['PhpLDAPadmin', 'http://localhost:8089  (cn=admin,dc=prevarisc,dc=local / planmusique)'];
@@ -357,6 +363,38 @@ function authShowInstructions(string $mode, string $repo, string $appPort): void
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * @param array{project: string, appContainer: string} $cfg
+ */
+function authTrustLdapCertificate(array $cfg): void
+{
+    $certificate = tempnam(sys_get_temp_dir(), 'prevarisc-ldap-ca-');
+    if (false === $certificate) {
+        throw new RuntimeException('Impossible de créer le fichier temporaire de la CA LDAP.');
+    }
+
+    try {
+        if (0 !== exit_code(['docker', 'cp', $cfg['project'].'-ldap-1:/container/service/slapd/assets/certs/ca.crt', $certificate])
+            || !chmod($certificate, 0644)) {
+            throw new RuntimeException('Impossible de récupérer la CA LDAP de test.');
+        }
+
+        $commands = [
+            ['docker', 'cp', $certificate, $cfg['appContainer'].':/usr/local/share/ca-certificates/prevarisc-ldap-test.crt'],
+            ['docker', 'exec', '--user', 'root', $cfg['appContainer'], 'update-ca-certificates'],
+            ['docker', 'exec', '--user', 'root', $cfg['appContainer'], 'sh', '-c', "printf '\\nTLS_CACERT /etc/ssl/certs/ca-certificates.crt\\n' >> /etc/ldap/ldap.conf"],
+            ['docker', 'exec', '--user', 'root', $cfg['appContainer'], 'apachectl', '-k', 'graceful'],
+        ];
+        foreach ($commands as $command) {
+            if (0 !== exit_code($command)) {
+                throw new RuntimeException('Impossible de configurer la CA LDAP de test dans le conteneur applicatif.');
+            }
+        }
+    } finally {
+        unlink($certificate);
+    }
+}
 
 /**
  * Vérifie si un container Docker est en cours d'exécution.
