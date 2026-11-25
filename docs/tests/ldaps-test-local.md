@@ -87,3 +87,27 @@ LDAP en clair. Vérifier le journal d'authentification et l'absence de bind sur
 389 dans la capture. L'échec peut incrémenter le compteur de tentatives du compte.
 Relancer le mode `ldaps` pour rétablir la CA, ou sélectionner `form` pour revenir
 à l'authentification locale.
+
+## Fichier de CA spécifique
+
+Sur cette stack de test uniquement, relancer le mode `ldaps`, puis copier la CA
+hors du magasin système avant de l'en retirer :
+
+```bash
+docker exec --user root prevarisc-infra-app-1 cp /usr/local/share/ca-certificates/prevarisc-ldap-test.crt /tmp/prevarisc-ldap-ca.crt
+docker exec --user root prevarisc-infra-app-1 rm /usr/local/share/ca-certificates/prevarisc-ldap-test.crt
+docker exec --user root prevarisc-infra-app-1 update-ca-certificates --fresh
+```
+
+Ajouter temporairement `SetEnv PREVARISC_LDAP_CA_CERT_FILE "/tmp/prevarisc-ldap-ca.crt"`
+dans `apache/httpd-auth-main.conf`, puis recharger Apache :
+
+```bash
+docker exec --user root prevarisc-infra-app-1 apachectl -k graceful
+```
+
+Après déconnexion, le compte de test doit pouvoir se connecter en LDAPS malgré
+l'absence de la CA dans le magasin système. Retirer ensuite cette ligne et
+recharger Apache : la connexion doit échouer sans repli en clair. Relancer le mode
+`ldaps` pour restaurer la configuration de test. Le fichier dans `/tmp` disparaît
+à la recréation du conteneur applicatif.
