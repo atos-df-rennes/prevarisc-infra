@@ -249,8 +249,16 @@ function authManageSsoServices(string $mode, array $cfg): void
     }
 
     if ([] !== $toStart) {
+        if (in_array($mode, ['ldap', 'ldaps'], true)
+            && 0 !== exit_code(['sh', 'ldap/generate-certs.sh'])) {
+            throw new RuntimeException('Impossible de générer les certificats LDAP de test (OpenSSL est requis).');
+        }
+
         io()->text('Démarrage de : <info>' . implode(', ', $toStart) . '</info>');
-        exit_code([...$composeArgs, 'up', '-d', ...$toStart]);
+        $recreate = in_array($mode, ['ldap', 'ldaps'], true) ? ['--force-recreate'] : [];
+        if (0 !== exit_code([...$composeArgs, 'up', '-d', ...$recreate, ...$toStart])) {
+            throw new RuntimeException('Impossible de démarrer les services SSO de test.');
+        }
 
         if (in_array($mode, ['ldap', 'ldaps'], true)) {
             authWaitForLdap($cfg['project']);
@@ -375,7 +383,7 @@ function authTrustLdapCertificate(array $cfg): void
     }
 
     try {
-        if (0 !== exit_code(['docker', 'cp', $cfg['project'].'-ldap-1:/container/service/slapd/assets/certs/ca.crt', $certificate])
+        if (0 !== exit_code(['docker', 'cp', '-L', $cfg['project'].'-ldap-1:/container/run/service/slapd/assets/certs/ca.crt', $certificate])
             || !chmod($certificate, 0644)) {
             throw new RuntimeException('Impossible de récupérer la CA LDAP de test.');
         }

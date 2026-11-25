@@ -50,9 +50,18 @@ rester actif. Le prochain changement de mode Castor régénère ce fichier.
 ## LDAPS
 
 Relancer `castor symfony:authentification` et sélectionner `ldaps`. La tâche
-installe la CA générée par l'annuaire dans le magasin de confiance du conteneur
-applicatif puis recharge Apache. Cette CA de test disparaît à la recréation du
+génère avec OpenSSL (requis sur l'hôte) une CA locale et un certificat serveur
+pour `ldap`, puis installe cette CA dans le magasin de confiance du conteneur
+applicatif et recharge Apache. Cette CA de test disparaît à la recréation du
 conteneur applicatif : relancer le mode `ldaps` pour la réinstaller.
+
+Les certificats sont conservés dans `ldap/certs/` (ignoré par Git) et réutilisés
+tant qu'ils sont valides au moins un jour. Ils sont générés également en mode
+`ldap`, car l'annuaire expose les deux ports. La CA privée de signature est
+supprimée après génération ; seule la clé privée du serveur est conservée.
+Ne pas partager ce répertoire ni utiliser ces certificats hors du développement.
+La CA expirée intégrée à `osixia/openldap:1.5.0` n'est plus utilisée.
+Pour un lancement Compose manuel, exécuter d'abord `sh ldap/generate-certs.sh`.
 
 Redémarrer la capture, se déconnecter et se reconnecter avec le compte de test.
 La connexion doit réussir ; les échanges sont sur le port 636 et commencent par

@@ -35,6 +35,8 @@ services:
     volumes:
       - ldap_data_worktree_auth:/var/lib/ldap
       - ldap_config_worktree_auth:/etc/ldap/slapd.d
+      # Certificats locaux préparés par Castor, sans utiliser la CA expirée de l'image.
+      - ./ldap/certs:/container/service/slapd/assets/certs
       # Bootstrap LDIF : peuplé uniquement à la première initialisation du volume.
       # Ordre alphabétique : 30-schema chargé avant 50-bootstrap.
       - ./ldap/schema-ad-compat.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/30-schema-ad-compat.ldif:ro
@@ -46,7 +48,9 @@ services:
       LDAP_READONLY_USER: "true"
       LDAP_READONLY_USER_USERNAME: readonly
       LDAP_READONLY_USER_PASSWORD: planmusique
-      LDAP_CFSSL_HOSTNAME: ldap
+      LDAP_TLS_CRT_FILENAME: ldap.crt
+      LDAP_TLS_KEY_FILENAME: ldap.key
+      LDAP_TLS_CA_CRT_FILENAME: ca.crt
       LDAP_TLS_VERIFY_CLIENT: never
     command: ["--copy-service", "--loglevel", "warning"]
 
