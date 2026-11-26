@@ -22,14 +22,21 @@ services:
   # Utilisateur test : uid=testldap,ou=users,dc=prevarisc,dc=local / Prevarisc2024
   ldap:
     image: osixia/openldap:1.5.0
+    hostname: ldap
     restart: unless-stopped
     ports:
       - target: 389
         published: 3893
         protocol: tcp
+      - target: 636
+        published: 6363
+        protocol: tcp
+        host_ip: 127.0.0.1
     volumes:
       - ldap_data_worktree_auth:/var/lib/ldap
       - ldap_config_worktree_auth:/etc/ldap/slapd.d
+      # Certificats locaux préparés par Castor, sans utiliser la CA expirée de l'image.
+      - ./ldap/certs:/container/service/slapd/assets/certs
       # Bootstrap LDIF : peuplé uniquement à la première initialisation du volume.
       # Ordre alphabétique : 30-schema chargé avant 50-bootstrap.
       - ./ldap/schema-ad-compat.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/30-schema-ad-compat.ldif:ro
@@ -41,6 +48,10 @@ services:
       LDAP_READONLY_USER: "true"
       LDAP_READONLY_USER_USERNAME: readonly
       LDAP_READONLY_USER_PASSWORD: planmusique
+      LDAP_TLS_CRT_FILENAME: ldap.crt
+      LDAP_TLS_KEY_FILENAME: ldap.key
+      LDAP_TLS_CA_CRT_FILENAME: ca.crt
+      LDAP_TLS_VERIFY_CLIENT: never
     command: ["--copy-service", "--loglevel", "warning"]
 
   # Interface web phpLDAPadmin pour gérer l'annuaire LDAP de test.

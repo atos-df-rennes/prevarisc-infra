@@ -12,6 +12,7 @@ apache/httpd-auth-main.conf
 /dump_sql/*.sql
 /.merge-upwards-state.json
 /.copilot-conflict-context.txt
+/ldap/certs/
 # Worktrees de migration (repos git imbriqués)
 prevarisc-migration-worktree-*/
 prevarisc-worktree-*/
